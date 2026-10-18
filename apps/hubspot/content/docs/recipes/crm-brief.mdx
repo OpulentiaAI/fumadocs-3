@@ -1,0 +1,110 @@
+---
+title: 'Build a read-only CRM brief'
+description: 'Resolve a contact, read associated records and communication history, and produce a bounded brief with evidence and explicit unknowns.'
+---
+
+Produce a contact brief without changing the CRM. The result should distinguish the person you resolved, the records and communications actually read, and the questions those reads cannot answer. A short brief with explicit coverage is more useful than a confident account narrative assembled from an ambiguous identity or a single results page.
+
+This recipe is **source-verified, not runtime-tested** against HubSpot Agent CLI Skills commit `a015a48982b922279d8521677b7c72b0acfb9506`. No live commands, authentication or API calls were run while authoring it. Every command block below is copied exactly from the cited source; its IDs and example email are illustrative, not real account data. Consult the [CLI reference](/docs/reference/hubspot-cli) for output and pagination caveats.
+
+## 1. Establish read-first authorisation
+
+Before accessing data, establish which HubSpot portal you may read, the contact or company in scope, the purpose of the brief and who may receive it. Limit fields and message excerpts to that purpose. If the portal or identity is uncertain, stop before expanding the search. An authorised lookup is not authorisation to correct a contact, enrich it, assign an owner, create a task or export unrelated records.
+
+Use the [quickstart](/docs/get-started/quickstart) for environment preparation. This recipe contains no mutations. If a finding later warrants a change, propose it separately under [safe writes](/docs/guides/safe-writes); do not append a write to the brief workflow.
+
+## 2. Resolve identity with an exact key
+
+Start with the task-authorised email, normalised to lowercase. The source's exact example is:
+
+```bash
+hubspot objects search --type contacts --filter "email=jane@acme.com" \
+  --properties email,firstname,lastname,company,lifecyclestage,hubspot_owner_id
+```
+
+[Source: exact email lookup](https://github.com/OpulentiaAI/hubspot-agent-cli-skills/blob/a015a48982b922279d8521677b7c72b0acfb9506/crm-lookup/SKILL.md#L39-L53).
+
+Inspect the returned ID, email, name and company together. Treat no result as “not found in this query”, not proof the person does not exist. Treat multiple plausible results as unresolved identity; do not merge records or choose by display name alone. If a name-fragment search is needed, remember that `~` matches tokens rather than arbitrary substrings. [Source: lookup constraints](https://github.com/OpulentiaAI/hubspot-agent-cli-skills/blob/a015a48982b922279d8521677b7c72b0acfb9506/crm-lookup/SKILL.md#L95-L99).
+
+Read the live property schema if requested fields differ from the example:
+
+```bash
+hubspot properties list --type contacts --format table
+```
+
+[Source: property discovery](https://github.com/OpulentiaAI/hubspot-agent-cli-skills/blob/a015a48982b922279d8521677b7c72b0acfb9506/crm-data-quality/SKILL.md#L17-L26).
+
+## 3. Add associated deal context, not an account dump
+
+After resolving the contact ID, inspect only associations relevant to the brief. The source demonstrates reading a contact's associated deals and filtering out closed ones:
+
+```bash
+hubspot associations list --from contacts:12345 --to deals | jq -c '{id}' \
+| hubspot objects get --type deals --properties dealname,amount,dealstage,hs_is_closed \
+| jq -c 'select(.properties.hs_is_closed != "true")'
+```
+
+[Source: association-to-batch-read pattern](https://github.com/OpulentiaAI/hubspot-agent-cli-skills/blob/a015a48982b922279d8521677b7c72b0acfb9506/crm-lookup/SKILL.md#L64-L77).
+
+The contact ID in this block and the activity ID in the next block are different upstream examples. They are not a runnable end-to-end dataset: substitute the same resolved, authorised contact ID consistently before use. The pipe batches object reads rather than creating a process per record.
+
+Translate deal stages using the selected portal's actual pipelines:
+
+```bash
+hubspot pipelines list --type deals --format jsonl
+```
+
+[Source: pipeline discovery and embedded stages](https://github.com/OpulentiaAI/hubspot-agent-cli-skills/blob/a015a48982b922279d8521677b7c72b0acfb9506/deal-management/SKILL.md#L31-L49).
+
+Do not treat stage IDs or owner IDs as portable labels. Include a currency only if it is known; an amount alone does not establish one. Note which associations or requested fields were not read rather than filling gaps from a company name.
+
+## 4. Read communication history within the agreed window
+
+For a recent-contact brief, this source example requests ten activities:
+
+```bash
+hubspot activities list --contact 73235 --limit 10
+```
+
+[Source: activity selector and limit](https://github.com/OpulentiaAI/hubspot-agent-cli-skills/blob/a015a48982b922279d8521677b7c72b0acfb9506/communication-history/SKILL.md#L27-L35).
+
+The source documents flat activity rows with `id`, `type`, `timestamp`, `lastModified`, `title`, `body`, `status` and `owner_id`, sorted newest-first. Summarise observed calls, emails, notes, meetings and tasks using their IDs and timestamps. Do not call this a complete history merely because the command succeeded. Ten recent activities are a bounded sample. [Source: activity output](https://github.com/OpulentiaAI/hubspot-agent-cli-skills/blob/a015a48982b922279d8521677b7c72b0acfb9506/communication-history/SKILL.md#L21-L25).
+
+For an as-of-date brief, consider `lastModified` as well as the event timestamp. A note created before the cutoff but edited afterwards cannot establish exactly what was known at the cutoff. Keep that limitation visible rather than presenting its current body as a historical snapshot.
+
+### If the brief also needs inbox conversations
+
+CRM activity history and Conversations threads are different evidence surfaces. The source says contact-thread lookup requires both an associated contact ID and an inbox ID. To claim coverage across inboxes, enumerate every authorised inbox and page its contact-filtered results; do not assume one inbox covers the account. [Source: contact-thread association](https://github.com/OpulentiaAI/hubspot-agent-cli-skills/blob/a015a48982b922279d8521677b7c72b0acfb9506/conversation-history-brief/SKILL.md#L19-L21), [cross-inbox collection](https://github.com/OpulentiaAI/hubspot-agent-cli-skills/blob/a015a48982b922279d8521677b7c72b0acfb9506/conversation-history-brief/SKILL.md#L52-L87).
+
+A known, authorised message can be read using this exact source example:
+
+```bash
+hubspot conversations messages get --thread-id 111 --message-id 222 --format jsonl
+```
+
+[Source: individual message](https://github.com/OpulentiaAI/hubspot-agent-cli-skills/blob/a015a48982b922279d8521677b7c72b0acfb9506/conversation-history-brief/SKILL.md#L138).
+
+Use the source's JSON-envelope paging pattern when collecting whole result sets. JSONL conversation lists hide the cursor and can silently stop at the first 100 rows. Resolve a channel ID before naming the channel type, and allow for a missing subject. If message content, an inbox or a page is inaccessible, report that as a coverage gap, not “no conversations”. [Sources: paging](https://github.com/OpulentiaAI/hubspot-agent-cli-skills/blob/a015a48982b922279d8521677b7c72b0acfb9506/conversation-history-brief/SKILL.md#L23-L47), [thread fields](https://github.com/OpulentiaAI/hubspot-agent-cli-skills/blob/a015a48982b922279d8521677b7c72b0acfb9506/conversation-history-brief/SKILL.md#L79-L87).
+
+## 5. Write the brief with an evidence boundary
+
+Use a compact structure that keeps observation separate from interpretation:
+
+| Section               | What to include                                                                                               |
+| --------------------- | ------------------------------------------------------------------------------------------------------------- |
+| Identity              | Portal context, resolved contact ID and the matching evidence; mark ambiguity explicitly.                     |
+| Current CRM context   | Observed lifecycle value, ownership ID or resolved label, and relevant associated deals.                      |
+| Recent communications | Activity or message ID, timestamp, channel only if established, and a short factual summary.                  |
+| Assessment            | Clearly labelled inference supported by specific observed records; do not invent intent, health or sentiment. |
+| Unknowns and coverage | Retrieval time, requested cutoff, limits, inboxes covered, unread content, missing fields and access errors.  |
+| Proposed next action  | A recommendation for the authorised recipient, not a claim that the action was performed.                     |
+
+Keep links to records when returned, or stable object/activity/message identifiers when no link is available. Avoid reproducing full email bodies or unnecessary personal details. If someone said they would do something, report it as a recorded statement unless completion is supported by later evidence.
+
+## 6. Check the result before handing it over
+
+Confirm that the resolved contact ID was used consistently, each substantive claim has a record or message behind it, and the output does not imply broader coverage than the reads established. Check that a page limit, a missing scope or an inaccessible inbox has not been converted into an absence claim. The recipe is complete when the brief and its unknowns are delivered to the authorised audience; no CRM change is needed to finish it.
+
+## Source and reuse
+
+This page is original editorial guidance with command examples copied from HubSpot Agent CLI Skills, copyright 2026 HubSpot, Inc., under [Apache-2.0](https://github.com/OpulentiaAI/hubspot-agent-cli-skills/blob/a015a48982b922279d8521677b7c72b0acfb9506/LICENSE). It is an adaptation, not an upstream recipe or runtime validation. Retain the licence and relevant notices when redistributing copied source material.

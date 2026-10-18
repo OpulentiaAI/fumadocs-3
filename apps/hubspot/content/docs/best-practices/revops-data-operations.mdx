@@ -1,0 +1,50 @@
+---
+title: 'Operate HubSpot data as an owned revenue service'
+description: 'Plan field-level policies, provenance, refresh cycles and repair ownership for HubSpot contact, company and deal data.'
+---
+
+A data operation needs a queue, an owner and a definition of acceptable output. Treat HubSpot enrichment and hygiene as a maintained service rather than a sequence of unrelated clean-ups. The objective is a dataset whose important values have a known source, freshness policy and repair path, not simply more populated properties.
+
+Source: [Deepline RevOps data operations](https://deepline.com/docs/guides/revops-data-operations). Read date: **2026-10-18**. This is original offline guidance, with **no live HubSpot execution** or account-specific verification. Source licensing is unknown; source prose and code have not been reused.
+
+## Deepline-specific context vs HubSpot adaptation
+
+The source connects operational data quality with field policy, provider costs, provenance and exception ageing. Deepline integration and agent references describe possible execution surfaces, not an assertion that your portal has any configured integration or validated provider route.
+
+The proposed HubSpot adaptation separates a small amount of actionable CRM metadata from an external field-level operations ledger. HubSpot's [CRM documentation](https://developers.hubspot.com/docs/api-reference/latest/crm/understanding-the-crm) describes objects, properties and associations. It does not provide the entire service model recommended here, including supplier-cost allocation, precedence rules and cross-system repair ownership.
+
+## Prerequisites and feature caveats
+
+Agree a service catalogue with sales, marketing and customer operations: which datasets are maintained, who consumes them and which decisions depend on them. Inventory contact, company and deal properties, duplicate-resolution rules and other writers before proposing new fields. Use the [properties API guide](https://developers.hubspot.com/docs/api-reference/legacy/crm/properties/guide) to inspect definitions and types rather than inferring semantics from labels.
+
+This design can begin from authorised exports. A later API implementation needs the relevant endpoint scopes and secure credential custody. Native workflow access depends on qualifying Professional or Enterprise subscriptions and object availability; custom code actions have the narrower Data Hub Professional or Enterprise requirement. Check [workflow creation](https://knowledge.hubspot.com/workflows/create-workflows) and [action availability](https://knowledge.hubspot.com/workflows/choose-your-workflow-actions) before selecting that route. No paid feature is presumed provisioned.
+
+## Define the operating model
+
+For each maintained field, record its HubSpot object and internal property name, business owner, approved sources, precedence, expiry rule, validation, allowed writer and downstream use. For example, company employee count might be refreshable research data, while a deal's negotiated amount remains seller-owned. A provider's newer observation is not automatically entitled to overwrite a salesperson's confirmed fact.
+
+Use contact and company record IDs as destination identities. Store proposed custom metadata such as `dataops_quality_state`, `dataops_last_reviewed_at` and `dataops_receipt_url` only after schema approval. The detailed ledger should track field, observed value, source reference, observation date, acceptance decision and workflow version. A single record-level freshness timestamp cannot honestly represent several fields refreshed on different days.
+
+## Implementation steps
+
+1. **Create intake classes.** Separate new-record validation, missing-field enrichment, expired-evidence refresh and user-reported corrections. Give each request a persistent identity and priority based on business impact. A routing-blocking company identity error should not sit behind cosmetic formatting work.
+
+2. **Assess the current state.** Read only the properties and associations needed by the policy. Use [contacts](https://developers.hubspot.com/docs/api-reference/legacy/crm/objects/contacts/guide) and [companies](https://developers.hubspot.com/docs/api-reference/legacy/crm/objects/companies/guide) documentation to map records. Retain an input snapshot so a later proposal can identify what changed while work was underway.
+
+3. **Buy information only when it can resolve a gap.** Reuse still-valid evidence. Request a provider field only if its format, licence and freshness meet the target policy. Count a provider outage separately from a legitimate no-result. Store rejected evidence and its reason in the controlled ledger, not as authoritative CRM data.
+
+4. **Stage field-level proposals.** Show current and candidate values, source precedence, age and the destination owner. Group harmless, pre-authorised custom metadata updates separately from identity, association and commercial changes. Do not let one accepted field justify overwriting the whole contact or company record.
+
+5. **Close the loop with repairs.** Link a repair task to the affected company, contact or deal, using the documented [task capabilities](https://developers.hubspot.com/docs/api-reference/legacy/crm/activities/tasks/guide). Assign the team that can fix the source, not merely the person who noticed the defect. Track first detection and due time so repeated scans do not conceal backlog age.
+
+## Approval boundary
+
+RevOps owns field policy, business owners resolve conflicting facts, security approves access and procurement approves provider spending. Automate assessment and proposal preparation. Enable later writes only for an explicit property allowlist with a precedence rule. Changing contact identity, company associations, owner, lifecycle stage or deal economics requires a reviewed decision. A service definition is not authority to activate every downstream workflow consuming the data.
+
+## Failure handling
+
+Keep states for accepted, unchanged, review required, dependency failed and outcome unknown. Reconcile partial batches by record and field; do not rerun successful expensive lookups because another record failed. For a write timeout, inspect the destination before deciding whether a retry is safe. Prevent simultaneous writers through application ownership and coordination; a pre-write comparison is useful but is not an atomic HubSpot transaction guarantee.
+
+## Validation and service review
+
+Build offline cases for conflicting sources, mixed-age fields, duplicate companies, a changed destination value, expired data rights and a provider outage. Verify that every important field has a policy and every unresolved item has an owner. In a separately approved live pilot, inspect a small representative cohort and read back each permitted change and association. Review accepted-field coverage, time to source repair, repeat defects and total cost per accepted field. Exclude unknown and failed assessments from clean-data claims, and use repeated failures to improve intake policies rather than endlessly repairing the same exports.

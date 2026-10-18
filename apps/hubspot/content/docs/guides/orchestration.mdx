@@ -1,0 +1,87 @@
+---
+title: 'Orchestrate bounded agent work'
+description: 'Define ownership, order dependent tasks and verify completion without mistaking setup guidance for runtime permission enforcement.'
+---
+
+Orchestration is useful when independent tasks can produce evidence in parallel and one owner can integrate the results. Start by defining what each task may read, write and activate. A successful installation is not permission to connect an account, create a private knowledge store or schedule recurring work.
+
+This guide uses the public setup repository at commit `d0ddeb2474c57a76b7f8e5e0b23385ba9c502b4c` as a concrete example. That revision contains three tracked text files: a README, an agent setup checklist and a macOS installer. It does **not** contain the packaged orchestration runtime. The recommendations below are an operating practice, not a claim that this repository implements task isolation, a scheduler or permission inheritance controls. See the [complete tracked tree](https://github.com/OpulentiaAI/icantbelieveitsnotagi/tree/d0ddeb2474c57a76b7f8e5e0b23385ba9c502b4c).
+
+For initial setup, begin with the [quickstart](/docs/get-started/quickstart). Before assigning a task that changes state, read [safe writes](/docs/guides/safe-writes).
+
+## Know which layer you are coordinating
+
+The distribution has three distinct layers. The downloadable archive supplies the desktop app and a packaged runtime. The installer copies the app into the current user's Applications folder. Agent-led onboarding then configures optional providers and knowledge storage. The README describes Node, Python, Git and knowledge tools inside the package, but those components cannot be inspected from these three tracked files. [Source: README.md, lines 25–29](https://github.com/OpulentiaAI/icantbelieveitsnotagi/blob/d0ddeb2474c57a76b7f8e5e0b23385ba9c502b4c/README.md#L25-L29).
+
+Keep installation, runtime health and account readiness as separate outcomes. The setup checklist requires separate signature, CLI and visible-window results; it also says provider binaries and account authorisation are separate from the app package. A coordinator should preserve those boundaries rather than reporting that “everything is ready” when only one layer has passed. [Source: AGENT-SETUP.md, lines 14–47](https://github.com/OpulentiaAI/icantbelieveitsnotagi/blob/d0ddeb2474c57a76b7f8e5e0b23385ba9c502b4c/AGENT-SETUP.md#L14-L47).
+
+## Give every task a bounded contract
+
+Use one accountable owner for the overall result. Each delegated task should have its own checkable objective and a precise output boundary. Parallel workers can share read access, but they should not edit the same file, publish to the same destination or configure the same account concurrently.
+
+A practical task brief includes:
+
+- **Objective and evidence:** state the question to answer and the source revision to inspect, so the result can be checked independently.
+- **Read and write scope:** name the permitted inputs and the exact output file or system records. A worker that discovers a wider need reports it instead of widening its assignment.
+- **Authority:** distinguish reading, reversible local edits, external writes and recurring activation. Passing context to a worker must not silently add new authority.
+- **Dependencies and completion:** name the input another task must produce, the checks that prove success and the person or coordinator that accepts the handoff.
+- **Stop conditions:** specify what to do when access is missing, an action's outcome is uncertain or an existing destination would be replaced.
+
+For example, one worker can inspect the installer while another summarises onboarding instructions, provided both are read-only and produce separate outputs. The coordinator then compares their conclusions against the pinned sources. By contrast, installing an app and configuring a provider in the same shared destination should be ordered, because provider setup depends on the installed runtime and its guidance.
+
+These ownership rules are recommendations. The tracked installer does not create worker identities, sandbox child tasks or check delegation permissions.
+
+## Order dependent work before starting it
+
+For this distribution, use the following dependency chain. The commands are reference examples from the setup material; they were not executed as part of preparing this guide.
+
+1. **Establish the release and verify its archive.** The checklist identifies release `macos-arm64-2026.10.09` and requires a successful checksum before extraction. A checksum mismatch stops this chain; it is not a reason to continue with an unverified archive. [Source: AGENT-SETUP.md, lines 5–9](https://github.com/OpulentiaAI/icantbelieveitsnotagi/blob/d0ddeb2474c57a76b7f8e5e0b23385ba9c502b4c/AGENT-SETUP.md#L5-L9).
+
+   ```sh
+   shasum -a 256 -c SHA256SUMS
+   ```
+
+2. **Check the extracted package before installation.** Keep the installer beside the app. The check mode verifies platform requirements and the source signature, then exits before copying files. It does not test an existing installation, provider readiness or a visible app window. [Source: installer, lines 9–18](https://github.com/OpulentiaAI/icantbelieveitsnotagi/blob/d0ddeb2474c57a76b7f8e5e0b23385ba9c502b4c/Install%20Opulent.command#L9-L18).
+
+   ```sh
+   /bin/bash "./Install Opulent.command" --check
+   ```
+
+3. **Install only after resolving destination conflicts.** The installer refuses an existing destination and tells the operator to quit and back up the old app. It does not perform that backup. Keep the old app and its data intact until the replacement has been verified. [Source: installer, lines 18–31](https://github.com/OpulentiaAI/icantbelieveitsnotagi/blob/d0ddeb2474c57a76b7f8e5e0b23385ba9c502b4c/Install%20Opulent.command#L18-L31).
+
+4. **Verify the installed app before provider configuration.** Run the separate signature and CLI checks, then inspect the actual window. The setup checklist explicitly distinguishes a successful launch request from a working window. [Source: AGENT-SETUP.md, lines 14–26](https://github.com/OpulentiaAI/icantbelieveitsnotagi/blob/d0ddeb2474c57a76b7f8e5e0b23385ba9c502b4c/AGENT-SETUP.md#L14-L26).
+
+5. **Read the installed runtime guidance before choosing a provider or store.** The checklist names `INSTALL.md`, `docs/onboarding.md`, `skills/opulent-onboarding/SKILL.md` and `runtime.json` inside the installed runtime. Those files are not in the tracked repository reviewed here, so their contents and commands remain unverified. [Source: AGENT-SETUP.md, lines 28–43](https://github.com/OpulentiaAI/icantbelieveitsnotagi/blob/d0ddeb2474c57a76b7f8e5e0b23385ba9c502b4c/AGENT-SETUP.md#L28-L43).
+
+Only start a dependent task after its prerequisite has produced the required evidence. A launch receipt or a worker's claim of success is not that evidence on its own.
+
+## Do not inherit automation permissions by accident
+
+An agent may run in an environment that already has account connections, filesystem access or a recurring runner. A worker or later scheduled run might receive some of that access, depending on the actual runtime configuration. This is a threat to check, not a behaviour established by these sources: the tracked files do not reveal how capabilities are inherited or restricted.
+
+Before activating recurring work, explicitly identify the owner, provider account, private store location, allowed reads and writes, trigger, intended recipients and means of stopping the runner. Inspect the runtime's effective access rather than assuming a narrow task prompt limits a broadly authorised connection. Do not let installation approval become recurring activation approval, and do not let one task's authority become every later task's default.
+
+The source checklist instructs agents to obtain an owner and private home before creating a store, keep credentials out of commands and transcripts, and restrict account connections and recurring runners to the user's requested scope. Those are **intended instructions**, not demonstrated runtime enforcement. The installer itself contains no provider authorisation, secret-handling policy or recurring-runner permission checks. [Source: AGENT-SETUP.md, lines 39–43](https://github.com/OpulentiaAI/icantbelieveitsnotagi/blob/d0ddeb2474c57a76b7f8e5e0b23385ba9c502b4c/AGENT-SETUP.md#L39-L43).
+
+## Separate implemented checks from operational promises
+
+The installer source implements platform gates, source and staged-copy signature verification, an existing-destination refusal, a free-space check and temporary staging cleanup. These checks reduce common installation failures; they do not establish publisher identity or prove the runtime is safe. The README says the preview uses an ad hoc signature and is neither Developer ID signed nor notarised. Keep macOS security settings enabled and treat any approval as a deliberate trust decision. [Sources: installer, lines 9–31](https://github.com/OpulentiaAI/icantbelieveitsnotagi/blob/d0ddeb2474c57a76b7f8e5e0b23385ba9c502b4c/Install%20Opulent.command#L9-L31), [README.md, lines 17–23](https://github.com/OpulentiaAI/icantbelieveitsnotagi/blob/d0ddeb2474c57a76b7f8e5e0b23385ba9c502b4c/README.md#L17-L23).
+
+The destination is checked a second time before the final move, which narrows a replacement race but does not make the check and move an atomic no-replace operation. The disk check compares app size plus 262,144 KiB with available space, while its error message asks for a fixed 1.5 GB; report the actual requirement rather than treating the message as a precise calculation. [Source: installer, lines 19–31](https://github.com/OpulentiaAI/icantbelieveitsnotagi/blob/d0ddeb2474c57a76b7f8e5e0b23385ba9c502b4c/Install%20Opulent.command#L19-L31).
+
+## Accept completion with evidence
+
+Collect a handoff that states the outcome, exact output location or affected records, checks performed and remaining limitations. For this setup workflow, keep the following results separate:
+
+- The release tag and installed path identify what was installed; the app's reported version `0.0.0` is not a useful release discriminator on its own.
+- A signature result records integrity verification, while the knowledge CLI result records whether its entry point works.
+- A visible app-window observation proves more than a successful `open` command.
+- A provider connection is complete only when it was actually verified. Account setup, store creation and recurring work remain separate until individually authorised and checked.
+
+The checklist requests this separation in its completion report. The README supplies the version limitation. [Sources: AGENT-SETUP.md, lines 45–47](https://github.com/OpulentiaAI/icantbelieveitsnotagi/blob/d0ddeb2474c57a76b7f8e5e0b23385ba9c502b4c/AGENT-SETUP.md#L45-L47), [README.md, line 39](https://github.com/OpulentiaAI/icantbelieveitsnotagi/blob/d0ddeb2474c57a76b7f8e5e0b23385ba9c502b4c/README.md#L39).
+
+The coordinator owns final acceptance. Reconcile worker outputs with the source revision and actual checks, preserve any unresolved blocker, and never turn an untested intention into a completed result.
+
+## Reuse the method, not unlicensed source text
+
+This page is original guidance derived from a source review. The three-file tracked tree contains no standalone licence file, and the reviewed file headers do not grant reuse rights. The README says notices and licence files remain inside the app and that packaging adds no rights to bundled third-party components. Do not infer permission to redistribute the app, copy its implementation or republish its prose from the repository being public. Review the relevant rights and bundled notices before reuse. [Sources: tracked tree](https://github.com/OpulentiaAI/icantbelieveitsnotagi/tree/d0ddeb2474c57a76b7f8e5e0b23385ba9c502b4c), [README.md, line 39](https://github.com/OpulentiaAI/icantbelieveitsnotagi/blob/d0ddeb2474c57a76b7f8e5e0b23385ba9c502b4c/README.md#L39).

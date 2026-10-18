@@ -1,0 +1,38 @@
+---
+title: 'Enrich HubSpot company records without weakening trusted data'
+description: 'Design a field-level company enrichment process with identity checks, provenance, controlled updates and measurable acceptance.'
+---
+
+An account enrichment programme should improve a decision, not merely increase the number of populated company properties. Start with the HubSpot company records used for segmentation and decide which missing attributes prevent useful routing. An accepted industry classification and a defensible employee range are more valuable than a complete-looking record assembled from incompatible entities.
+
+Source: [Deepline account enrichment guide](https://deepline.com/docs/guides/account-enrichment). Source read date: **2026-10-18**. This is an original offline implementation plan; **no live HubSpot execution** or account-specific verification has taken place. No source code is reproduced.
+
+## Deepline-specific guidance versus this HubSpot adaptation
+
+The source frames enrichment around accepted fields, company identity, provider fallbacks and the cost of useful results. Its named provider integrations and execution tooling belong to Deepline. They are not evidence that HubSpot runs a provider waterfall or applies the proposed safeguards automatically.
+
+This adaptation uses HubSpot companies as the destination and an external staging ledger for proposals. The property names beginning `ops_` below are recommended custom properties, not built-in HubSpot features. HubSpot documents company properties, company record IDs, associations and individual updates in its [Companies API guide](https://developers.hubspot.com/docs/api-reference/legacy/crm/objects/companies/guide).
+
+## Prerequisites and licensing
+
+Obtain an approved company export, a field ownership matrix, provider usage rights and a named RevOps reviewer. In a later implementation, authorise only the object read/write scopes needed by the chosen integration. Inspect the portal's property definitions before selecting fields or enumeration values; HubSpot's [Properties API](https://developers.hubspot.com/docs/api-reference/latest/crm/properties/guide) distinguishes internal names, labels, data types and field types.
+
+A manual review-and-import process can be designed without assuming access to the full workflows tool. If native workflows are selected, confirm a qualifying Professional or Enterprise subscription and the particular actions available in that portal; [workflow access and permissions](https://knowledge.hubspot.com/workflows/create-workflows) are separate from API access. This plan does not require a custom object or a paid scoring feature.
+
+## Implementation steps
+
+1. **Fix the identity before enriching.** Carry the object type and HubSpot company ID together. Preserve `name` and `domain` as observed. A domain is useful matching evidence, but a parent and operating subsidiary can share a web presence. Put uncertain matches in a review file rather than creating another company. HubSpot recommends domains for duplicate avoidance, but that recommendation is not a legal-entity resolution policy.
+2. **Choose a small field contract.** For example, collect industry, headquarters country and employee-size evidence. Maintain `ops_enrichment_state`, `ops_enrichment_checked_at` and `ops_enrichment_receipt_url` as proposed operational properties. Keep a provider's employee range in a separate proposed text property unless its meaning is compatible with the chosen numeric destination. Never convert an unknown count to zero.
+3. **Build a field-level proposal.** For every candidate, record the company ID, original value, candidate value, provider record identifier, source date, entity scope and reason. Map provider categories to the portal's accepted industry options. Preserve the raw provider label when there is no exact approved mapping.
+4. **Evaluate precedence.** An empty, workflow-owned attribute may qualify for an evidence-backed fill. A seller-confirmed value, acquisition conflict or inconsistent headquarters definition requires review. Resolve associated contacts and deals by record ID for context, but do not move their company associations as a side effect of enrichment.
+5. **Prepare an authorised write set.** Limit a future update to approved properties. Immediately reread the company and compare the relevant values with the reviewed snapshot. A changed snapshot invalidates that proposal. Read-before-write is a recommended conflict check, not a claim of atomic compare-and-set support. Read the record again after any future update and reconcile each property separately.
+
+## Approval boundary and failure handling
+
+The offline deliverable authorises no writes. A subsequent pilot needs approval for its company sample, provider budget, field list and overwrite policy. Ownership, lifecycle stage, identity merges, contact reassociation and customer communication remain excluded unless separately authorised.
+
+Distinguish no match, rejected field, provider outage and conflicting evidence. Retry only temporary operational failures within a fixed budget; do not pay another provider merely to obtain a preferred answer. Store a repair owner and due date with each unresolved proposal. A timeout after an eventual write would require reading the company first, not replaying the entire batch blindly.
+
+## Validation and operating measures
+
+Use an authorised fixture set containing an ordinary company, subsidiary, rebrand, stale employee range, invalid industry mapping and concurrent edit. Check that accepted identities and accepted fields have separate counts, unchanged fields generate no updates, and associations remain untouched. Reconcile attempted records to accepted, held or failed outcomes without double counting retries. Evaluate total provider and review cost per accepted field, alongside the accuracy of the segmentation decision the field supports. These are proposed acceptance tests, not tests already executed in HubSpot.

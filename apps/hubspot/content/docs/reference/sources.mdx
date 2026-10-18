@@ -1,0 +1,48 @@
+---
+title: Sources, provenance and reuse
+description: Fixed source revisions, what was inspected, and the limits on reusing upstream material.
+---
+
+These pages are original synthesis of three public repositories. Citations identify the inspected commit rather than a moving default branch. Source inspection verifies what the repository says and implements; it does not prove current third-party data, account access or production behaviour.
+
+## Source revisions
+
+| Repository                   | Inspected commit                           | Material used                                                                                                    |
+| ---------------------------- | ------------------------------------------ | ---------------------------------------------------------------------------------------------------------------- |
+| Sponsor context showcase     | `662ddba58c42f28ae71d0aca1a9cbb7794ec3d26` | Campaign fixtures, evidence contracts, execution and rendering code, validation rules and dashboard data loading |
+| HubSpot Agent CLI Skills     | `a015a48982b922279d8521677b7c72b0acfb9506` | Skill workflows, exact command examples, pagination helper, JSON patterns and licence                            |
+| I Can't Believe It's Not AGI | `d0ddeb2474c57a76b7f8e5e0b23385ba9c502b4c` | All three tracked files: README, agent setup guide and macOS installer                                           |
+
+Open the pinned trees: [sponsor showcase](https://github.com/Git-Godssoldier/opulent-sponsor-context-showcase/tree/662ddba58c42f28ae71d0aca1a9cbb7794ec3d26), [HubSpot skills](https://github.com/OpulentiaAI/hubspot-agent-cli-skills/tree/a015a48982b922279d8521677b7c72b0acfb9506) and [installation repository](https://github.com/OpulentiaAI/icantbelieveitsnotagi/tree/d0ddeb2474c57a76b7f8e5e0b23385ba9c502b4c).
+
+## What the research establishes
+
+The sponsor source has substantive implementation behind its README: a six-key evidence envelope, compliance and client-decision gates, a draft renderer that refuses blocked targets, a validator and a dashboard that reads a run packet on each request. Its client materials are supplied claims, not independent verification. The included PDF and PPTX were not independently re-extracted for this starter; campaign details are attributed to the repository's text extracts and structured packet.
+
+The HubSpot source is a collection of 18 skills and supporting examples, not the CLI implementation. Command syntax was checked against those files. No HubSpot login, query or mutation was executed. Live command help, schema, permissions and portal-specific IDs still need checking before use.
+
+The installation repository is a distribution wrapper, not a tracked orchestration engine. Its shell source checks platform and signatures, stages a copy and refuses an existing destination. Provider consent, knowledge-store ownership and recurring-runner scope are operator instructions. Neither the release archive nor the packaged runtime was inspected or launched.
+
+## Sponsor showcase: MIT
+
+The repository includes an [MIT licence](https://github.com/Git-Godssoldier/opulent-sponsor-context-showcase/blob/662ddba58c42f28ae71d0aca1a9cbb7794ec3d26/LICENSE). Reuse of covered software and associated documentation is permitted under its conditions, including retaining the copyright and permission notice in copies or substantial portions. It is supplied without warranty.
+
+Do not assume that licence grants independent rights to client decks, third-party brands, logos, personal information or external website content. Public availability also does not authorise outreach. This starter avoids copying the decks and private contact values and labels the sample campaign as historical source data.
+
+## HubSpot skills: Apache-2.0
+
+The repository includes [Apache License 2.0](https://github.com/OpulentiaAI/hubspot-agent-cli-skills/blob/a015a48982b922279d8521677b7c72b0acfb9506/LICENSE), with a HubSpot copyright notice. If distributing copied or adapted upstream material, include the licence, retain applicable notices, mark modified files and preserve any applicable NOTICE attribution supplied with that material. The licence does not provide general trademark permission or HubSpot service access.
+
+Short command examples on these pages are attributed to fixed source lines; the explanatory prose is newly authored. The content bundle includes `licenses/hubspot-Apache-2.0.txt` and `licenses/sponsor-MIT.txt`; retain these files and applicable notices when integrating or redistributing the material. A citation alone is not a substitute for licence compliance.
+
+## Installation repository: no explicit reuse grant found
+
+The complete tracked inventory at the inspected commit contains only the README, setup guide and installer. No licence file or explicit general licence grant was found in them. Treat its code and prose as reference-only unless the rights holder grants permission; do not copy the installer or setup guide into a product on the assumption that a public repository is open-source licensed.
+
+The orchestration guide here describes observed boundaries in original language. It does not reproduce the unlicensed setup prose or claim that the packaged runtime enforces a task policy.
+
+## Fixture provenance
+
+The offline `fixtures/sponsor-crm.json` contains invented companies, contacts, domains, deals and local associations. Category archetypes and package labels map to cited showcase files, while identities and amounts are synthetic. It is neither a portal export nor a ready-to-run import payload. See [seed-data mapping](/docs/guides/seed-data) for the promotion boundary and [safe writes](/docs/guides/safe-writes) before any separately authorised sandbox import.
+
+These summaries are practical reuse guidance, not legal advice. Resolve uncertain rights with the relevant rights holder before redistributing substantial source material.

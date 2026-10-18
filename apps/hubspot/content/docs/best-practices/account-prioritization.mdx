@@ -1,0 +1,38 @@
+---
+title: 'Prioritise HubSpot accounts against evidence and team capacity'
+description: 'Translate company fit and engagement evidence into explainable priority tiers, review queues and realistic seller actions.'
+---
+
+A priority tier should tell an account team what to do next and why. Ranking every HubSpot company from most to least interesting is not enough: a team with capacity for twenty research briefs needs a queue that respects that limit and exposes uncertain inputs. Separate the commercial attractiveness of an account from confidence in the evidence supporting it.
+
+Source: [Deepline account prioritisation guide](https://deepline.com/docs/guides/account-prioritization). Source read date: **2026-10-18**. This original offline implementation plan involves **no live HubSpot execution**. Its suggested thresholds and custom properties are recommendations, not observed portal behaviour.
+
+## Deepline-specific guidance versus this HubSpot adaptation
+
+Deepline's guide combines fit, engagement, intent, source freshness and accountable next actions. Its research integrations and execution environment are Deepline-specific. The HubSpot adaptation below stores an explainable decision on a company record while preserving detailed evidence outside the CRM. It does not claim that HubSpot provides the source's external research signals automatically.
+
+HubSpot supports companies, properties and associations with contacts and deals, as described in the [Companies API documentation](https://developers.hubspot.com/docs/api-reference/legacy/crm/objects/companies/guide). Native company scoring is a possible implementation choice, not a requirement for the proposed prioritisation policy.
+
+## Prerequisites and licensing
+
+Agree an ideal customer profile, exclusions, seller capacity and one accountable queue owner. Obtain an authorised company snapshot with company IDs and relevant associated contact/deal IDs. Review the portal's actual property definitions rather than assuming a label is an API name; consult the [Properties API guide](https://developers.hubspot.com/docs/api-reference/latest/crm/properties/guide).
+
+The [lead scoring documentation](https://knowledge.hubspot.com/scoring/understand-the-lead-scoring-tool) makes company scoring available through eligible Marketing Hub or Sales Hub Professional/Enterprise subscriptions. Objects and score types have different entitlements. If that feature is unavailable, calculate proposed tiers offline and review a file instead. The [full workflows tool](https://knowledge.hubspot.com/workflows/create-workflows) also has qualifying subscription and action requirements; do not assume a score authorises automatic task creation or assignment.
+
+## Implementation steps
+
+1. **Define eligibility before ranking.** Use a company ID plus object type as the stable key. Exclude disallowed territories and records whose identity remains unresolved. Keep active-customer and active-deal policies explicit: either create separate queues or explain why those records can compete with net-new accounts. Do not change `lifecyclestage` to make the queue fit.
+2. **Separate evidence dimensions.** Propose company properties `ops_fit_band`, `ops_engagement_band`, `ops_priority_tier`, `ops_priority_reason` and `ops_priority_reviewed_at`. Keep evidence URLs, observation dates and rule version in a linked decision receipt. Missing employee data means unknown fit on that dimension, not poor fit. An advertising observation is not proof of purchase intent.
+3. **Make tiers actionable.** An illustrative policy might send strong-fit companies with recent first-party engagement to research review, strong-fit companies without current engagement to monitoring, and uncertain identities to repair. Define freshness windows and exceptions before evaluating the dataset. Do not publish arbitrary numeric thresholds as externally validated conversion predictors.
+4. **Apply capacity after eligibility.** Sort a review queue using an approved tie-breaker, such as evidence recency followed by company ID. Allocate only the number of briefs the team can deliver. Preserve an eligible-but-deferred state so capacity constraints do not become negative fit signals. Associated contacts provide evidence context, while the existing company owner remains unchanged.
+5. **Prepare controlled publication.** A reviewer approves tier, reason and next action together. A future writer should reread the company, confirm the source properties have not changed, update only the reviewed operational fields and read them back. Compare-before-write reduces conflicts but does not create a transactional guarantee. Assignments and outreach require their own authorisation.
+
+## Approval boundary and failure handling
+
+This document permits neither score activation nor CRM writes. Before implementation, approve the cohort, rules, queue capacity and named operator. Changes to owner, lifecycle stage, deal stage, subscription status or outbound enrolment are outside the tiering decision.
+
+Send stale signals, contradictory employee definitions and missing action owners to distinct queues. If research collection fails, keep the last accepted evidence with an expired marker rather than interpreting the outage as low interest. Hold a company whose range crosses two customer segments. Route disagreements to the queue owner with both sources, not a model-generated compromise.
+
+## Validation and outcome review
+
+Test a capacity overflow, identical scores, a customer with an open deal, an uncertain subsidiary and an account with no engagement data. Verify that every selected company has a reason, current evidence and a feasible next step; every deferred account remains visible; and no contact or deal association changes. Back-test tier outcomes on an untouched historical cohort with a fixed observation window. Compare accepted opportunities and pipeline contribution by tier, but do not infer causal lift from a ranking that was already influenced by seller effort. These are planned tests; no live outcomes are claimed.

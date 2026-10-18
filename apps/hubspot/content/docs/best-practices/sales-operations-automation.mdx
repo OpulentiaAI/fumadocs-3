@@ -1,0 +1,50 @@
+---
+title: 'Automate HubSpot sales operations without taking over seller judgement'
+description: 'Plan rule-driven routing checks, follow-up reminders and repair tasks with explicit ownership, approval and outcome verification.'
+---
+
+The safest starting point is recurring work with a clear policy: checking unassigned records, identifying overdue handoffs or preparing a routing decision for review. Automate the administrative boundary first. Do not treat every recurring sales judgement as a rule merely because it happens often.
+
+Source: [Deepline sales operations automation](https://deepline.com/docs/guides/sales-operations-automation). Read date: **2026-10-18**. This original guide describes an offline plan, with **no live HubSpot execution**, routing change or CRM update. Source licensing remains unestablished; no source prose or code is copied.
+
+## Deepline-specific context vs HubSpot adaptation
+
+The Deepline source connects routing, pipeline controls, follow-up tracking, receipts and exceptions to accepted operational outcomes. Integration and agent references do not prove that the organisation's routing rules or approval controls are already implemented.
+
+This HubSpot adaptation uses a specific example: triage contacts that lack an accountable owner and prepare an internal assignment proposal. HubSpot documents contact properties, company relationships and task activities. The territory logic, fairness policy, escalation rules and safe replay mechanism below are recommended application controls rather than documented automatic behaviour of the CRM API.
+
+## Prerequisites and licensing
+
+Obtain a signed-off routing matrix covering territory, segment, account ownership, capacity and exclusions. Identify the authoritative owner directory and existing automations that write `hubspot_owner_id`. Decide what should happen outside working hours and when every eligible rep is unavailable. An unowned exception needs a fallback operational owner before the workflow begins.
+
+HubSpot's [workflow creation guide](https://knowledge.hubspot.com/workflows/create-workflows) lists qualifying Professional or Enterprise subscriptions and notes object-specific restrictions. Custom code actions require Data Hub Professional or Enterprise under [workflow actions](https://knowledge.hubspot.com/workflows/choose-your-workflow-actions). If these are unavailable, prepare proposals externally or operate a manual queue rather than assuming workflow actions exist. Any later API integration needs only the approved endpoint scopes, not blanket CRM access.
+
+## Record model
+
+Use contact record ID, `email`, `hubspot_owner_id` and the required qualification context from the [contacts API](https://developers.hubspot.com/docs/api-reference/legacy/crm/objects/contacts/guide). Inspect related [company records](https://developers.hubspot.com/docs/api-reference/legacy/crm/objects/companies/guide) for an existing account owner before considering a territory assignment. A contact working at a strategic account may follow account ownership rather than a generic country rule.
+
+Propose custom properties `salesops_route_state`, `salesops_route_reason`, `salesops_policy_version` and `salesops_receipt_url` if those help operators. They are not HubSpot defaults. Verify types and internal names using the [properties guide](https://developers.hubspot.com/docs/api-reference/legacy/crm/properties/guide). Keep the full rule evaluation and candidate owners externally so the latest metadata does not masquerade as a complete assignment audit.
+
+## Implementation steps
+
+1. **Choose one bounded cohort.** Start with unowned contacts that satisfy an agreed intake contract. Exclude existing customers, partner-managed accounts or records under active dispute unless the policy explicitly includes them. Keep excluded and failed assessments in the denominator so the workflow cannot hide difficult cases.
+
+2. **Resolve account context.** Read contact-to-company relationships using verified [association definitions](https://developers.hubspot.com/docs/api-reference/latest/crm/associations/associate-records/guide). Shared email domains and multiple employment relationships require explicit handling. Do not overwrite an association merely to make the routing rule simpler.
+
+3. **Evaluate deterministic rules first.** Apply exclusions, named-account precedence, territory and capacity in an approved order. If an AI classifier proposes a segment, label it as uncertain evidence until reviewed. An inferred segment should not bypass ownership precedence.
+
+4. **Prepare a proposal and internal task.** Show the current owner, proposed owner, rule version and reason. A routing-review task should contain the exact decision and deadline, not a generic “check contact” instruction. The [tasks API](https://developers.hubspot.com/docs/api-reference/legacy/crm/activities/tasks/guide) supports an owner ID, subject, body, due time and record associations. Link the task to the affected contact and relevant company.
+
+5. **Recheck before eventual assignment.** In a separately authorised implementation, read `hubspot_owner_id` immediately before changing it; a rep or another integration may already have assigned the record. Re-read after the approved update and inspect any triggered downstream effects. An owner field changing successfully is not enough if the assigned rep cannot access the record.
+
+## Approval boundary
+
+Automatic assessment and task proposals are acceptable within the defined policy. New ownership assignments require an authorised routing policy and reviewed pilot; ambiguous identity or exceptions need a person. Territory redesign, bulk reassignment, lifecycle changes, deal-stage changes and customer outreach are separate approval boundaries. Do not add them as convenient side effects to the first workflow.
+
+## Failure handling
+
+Classify no eligible owner, conflicting company ownership, incomplete territory data, permission failure and uncertain write outcome separately. Assign each exception to an operational owner with a repair deadline. Avoid retry storms when an owner ID is invalid. Keep a stable contact-and-policy effect key so rescans do not produce repeated tasks or reassign a record that has already been resolved.
+
+## Validation and business acceptance
+
+Offline fixtures should cover a strategic account, shared domain, absent country, full rep capacity, inactive owner and a manual assignment occurring after proposal generation. Verify that policy precedence is explicit and every eligible record reaches assigned, reviewed, excluded or repair-required state. A later authorised pilot must inspect actual ownership, visibility and associated tasks. Measure manual effort saved per accepted handoff, assignment latency and reopened exceptions; a high count of completed workflow runs is not evidence that sellers received usable work.

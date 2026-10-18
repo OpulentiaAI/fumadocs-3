@@ -1,0 +1,49 @@
+---
+title: 'Prepare evidence-led outbound drafts in HubSpot'
+description: 'Design a HubSpot outbound preparation process with account evidence, contact eligibility, reviewable drafts and a separate sending approval.'
+---
+
+Source: [Deepline outbound personalisation workflow](https://deepline.com/docs/guides/outbound-personalization-workflow). Source and HubSpot documentation read on 2026-10-18.
+
+This is an offline implementation plan. No live HubSpot execution, contact enrolment or message sending has taken place. The intended output is a reviewable draft for a resolved contact, not an automatically launched campaign. Personalisation should explain a plausible business reason to speak, without inventing a buyer's priorities or implying a relationship that does not exist.
+
+## Deepline-specific versus HubSpot adaptation
+
+The Deepline source separates research, CRM changes and message preparation, and places a human decision before sending. Its orchestration and connected-provider capabilities belong to Deepline; they are not built-in HubSpot behaviours. This adaptation uses HubSpot contacts, associated companies and review tasks as the operating context. Evidence capture, draft versioning, suppression reconciliation and approval invalidation are recommended integration controls that must be implemented separately.
+
+The documented HubSpot capabilities are narrower: contacts can be retrieved and updated, tasks can be created and associated, and eligible users can enrol contacts in sequences. Sequence availability does not establish permission to contact someone. A populated email property, successful enrichment or paid seat cannot substitute for your organisation's lawful-use and suppression policy.
+
+## Prerequisites and feature licensing
+
+Have an approved audience definition, an accountable sales reviewer and permitted sources for account research. Define retention and access rules before copying personal information into a CRM. Read the destination property definitions and grant an integration only the object access required for the planned pilot. The [contacts API guide](https://developers.hubspot.com/docs/api-reference/legacy/crm/objects/contacts/guide) documents record-ID and email retrieval; retain the resolved contact ID rather than treating every campaign row as a new person.
+
+[HubSpot's sequence enrolment documentation](https://knowledge.hubspot.com/sequences/enroll-contacts-in-a-sequence) specifies Sales Hub or Service Hub Professional or Enterprise availability, an assigned Sales or Service seat, relevant permissions and a connected personal inbox. Contact-based workflow enrolment requires Sales Hub or Service Hub Enterprise. A contact can be in only one sequence at a time. Confirm the actual sender's access and account entitlements before choosing that route. Where unavailable, the deliverable remains a reviewed draft; do not buy a subscription or invent an alternative sending API as part of this plan.
+
+## Proposed HubSpot data model
+
+Use the contact's `email`, `firstname`, `lastname` and resolved record ID, then inspect company associations to identify the account relevant to this approach. Do not equate the contact's text `company` value with an association to a company object. The [associations guide](https://developers.hubspot.com/docs/api-reference/latest/crm/associations/associate-records/guide) explains relationships and direction-specific types; discover the applicable type rather than guessing a numeric identifier.
+
+Proposed custom contact properties, not built-in HubSpot fields, are `outreach_draft_status`, `outreach_draft_version`, `outreach_review_due_at` and `outreach_evidence_ref`. Create them only after administrator approval and validate their types through the [properties API](https://developers.hubspot.com/docs/api-reference/legacy/crm/properties/guide). Keep the full draft, evidence excerpts and reviewer decision in a controlled external store; a compact CRM reference avoids using one mutable property as the only audit record.
+
+## Practical implementation steps
+
+1. Freeze a small eligible audience with contact IDs, campaign purpose and the current suppression decision. Exclude unresolved identity, active customer restrictions and duplicate contact attempts before spending on research.
+2. Retrieve the contact and relevant company. Capture only business evidence that supports the message purpose, including its URL, observation date and what it actually establishes. A job advertisement can support a statement that a role was advertised, not a claim that its budget is approved.
+3. Build a short evidence-to-claim checklist. Separate direct facts from your proposed commercial hypothesis. Remove unsupported specifics instead of asking a language model to fill the gap. Avoid sensitive personal inferences even if a source is public.
+4. Produce a draft version tied to the contact, company and evidence revision. Keep CRM corrections separate: discovering a different employer should open identity review, not silently change the association while drafting.
+5. Create one review task only under an approved pilot policy. The [tasks API guide](https://developers.hubspot.com/docs/api-reference/legacy/crm/activities/tasks/guide) documents `hs_task_subject`, `hs_task_body`, owner assignment and required due-date property `hs_timestamp`. Associate the task with the contact and, where justified, company; retain its task ID to reconcile retries.
+6. Have the reviewer approve the exact text, recipient, sender and channel. Immediately before any later authorised send, re-evaluate suppression, existing engagement and current enrolment. Approval for an old draft does not authorise a revised draft or a different recipient.
+
+## Approval boundary
+
+This guide authorises no external action. A future rollout should distinguish internal research preparation from CRM writes and from communication. Administrators approve the schema and allowed task-writing fields; a sales owner approves the audience and final message; compliance owns contact eligibility. No sequence enrolment, unsubscribe override, owner reassignment or lifecycle change should be an incidental consequence of draft preparation. Record a refusal as a valid terminal outcome, not a failure to be retried.
+
+## Failure handling
+
+If evidence disappears or conflicts with the CRM, keep the draft blocked and ask the reviewer to resolve the specific claim. If a contact changes employer, invalidate both the association assumption and the draft approval. A task-creation timeout leaves an uncertain outcome: reconcile the stored task identity and associated records before creating another. Expired credentials or missing permissions need repair, not an attempt through a broader credential. A bounced or suppressed contact must not be made eligible merely because another provider supplies a new address.
+
+## Validation and operating measures
+
+Use offline fixtures covering an eligible prospect, an opted-out contact, an already enrolled contact, a disputed employer, missing evidence and a repeated review event. Check that every personalised claim has a source, the draft is attached to the intended identity, repeated events do not create duplicate tasks, and revised text loses its prior approval. Test missing sequence permissions as an expected blocked state. During a separately authorised internal pilot, read back task properties and associations; API acceptance alone is insufficient.
+
+Measure reviewer acceptance, unsupported-claim rate, duplicate-attempt prevention and time to an approved draft. Any later qualified-response analysis should report its audience and observation window, without claiming that personalisation alone caused the response. The plan remains unverified against a live HubSpot account.

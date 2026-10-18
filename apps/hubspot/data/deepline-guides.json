@@ -1,0 +1,401 @@
+{
+  "readDate": "2026-10-18",
+  "requestedRoot": "https://deepline.com/docs/guides/",
+  "resolvedRoot": "https://deepline.com/docs/templates",
+  "discoveryMethod": "Entry raw HTML, every guide raw HTML and embedded path strings, robots-advertised sitemap documents, linked llms.txt; alternate .md links normalised to guide URLs.",
+  "coverageStatement": "All 39 distinct guide page URLs discovered in the entry HTML, linked llms resource, advertised sitemaps and every retrieved guide HTML. Alternate linked .md representations map to the same 39 guides. No inaccessible guide pages or representations were found.",
+  "scopeLimit": "Coverage describes publicly discoverable linked pages as read on this date, not an assertion about unlinked or private pages.",
+  "expectedGuideCount": 39,
+  "guides": [
+    {
+      "url": "https://deepline.com/docs/guides/account-enrichment",
+      "title": "Account enrichment: improve coverage without bad CRM data",
+      "slug": "account-enrichment",
+      "retrievalStatus": "retrieved",
+      "httpStatus": 200,
+      "sourceSha256": "acfc0fa67e5e0c9274f1beb97dc86bab85d719aa54da5487bec2856d1ef55523",
+      "readDate": "2026-10-18",
+      "page": "/docs/best-practices/account-enrichment"
+    },
+    {
+      "url": "https://deepline.com/docs/guides/account-prioritization",
+      "title": "Account prioritization: choose where your team should spend time",
+      "slug": "account-prioritization",
+      "retrievalStatus": "retrieved",
+      "httpStatus": 200,
+      "sourceSha256": "235a1f2294ca173a6fed862232cc7d88f3efec67aa06d70ce19cffff6848962c",
+      "readDate": "2026-10-18",
+      "page": "/docs/best-practices/account-prioritization"
+    },
+    {
+      "url": "https://deepline.com/docs/guides/account-research-automation",
+      "title": "Account research automation: produce useful briefs with evidence",
+      "slug": "account-research-automation",
+      "retrievalStatus": "retrieved",
+      "httpStatus": 200,
+      "sourceSha256": "e732833625357408b091ed252f6153b9bd2b5adb0783f131629940bd72196354",
+      "readDate": "2026-10-18",
+      "page": "/docs/best-practices/account-research-automation"
+    },
+    {
+      "url": "https://deepline.com/docs/guides/account-scoring-workflows",
+      "title": "Account scoring workflows: make prioritization explainable",
+      "slug": "account-scoring-workflows",
+      "retrievalStatus": "retrieved",
+      "httpStatus": 200,
+      "sourceSha256": "347b498a3709759ef989f1a278ed7083ea8050b156d334f46524d732146aa812",
+      "readDate": "2026-10-18",
+      "page": "/docs/best-practices/account-scoring-workflows"
+    },
+    {
+      "url": "https://deepline.com/docs/guides/apollo-claude-code",
+      "title": "Apollo + Claude Code Integration - Company and Contact Match Guide",
+      "slug": "apollo-claude-code",
+      "retrievalStatus": "retrieved",
+      "httpStatus": 200,
+      "sourceSha256": "2016e292f690dbb514466d3c4d6aa2409af38b923871f4a625942a4ed1bc0ce5",
+      "readDate": "2026-10-18",
+      "page": "/docs/best-practices/apollo-claude-code"
+    },
+    {
+      "url": "https://deepline.com/docs/guides/automated-email-verification",
+      "title": "Automated Email Verification Before Outbound",
+      "slug": "automated-email-verification",
+      "retrievalStatus": "retrieved",
+      "httpStatus": 200,
+      "sourceSha256": "d4788aa9deb49571c1f1633ee952c0aa7cfd6fc64ac5d25a3d942662b74b326b",
+      "readDate": "2026-10-18",
+      "page": "/docs/best-practices/automated-email-verification"
+    },
+    {
+      "url": "https://deepline.com/docs/guides/b2b-data-enrichment-waterfall",
+      "title": "B2B data enrichment tools: build a reliable waterfall",
+      "slug": "b2b-data-enrichment-waterfall",
+      "retrievalStatus": "retrieved",
+      "httpStatus": 200,
+      "sourceSha256": "f558089da7e6aee19bae8cafbddcc714a6081ce17ec828da90ba9d7cb9b87f76",
+      "readDate": "2026-10-18",
+      "page": "/docs/best-practices/b2b-data-enrichment-waterfall"
+    },
+    {
+      "url": "https://deepline.com/docs/guides/bring-your-own-key-data-enrichment",
+      "title": "Bring-your-own-key data enrichment: governance and economics",
+      "slug": "bring-your-own-key-data-enrichment",
+      "retrievalStatus": "retrieved",
+      "httpStatus": 200,
+      "sourceSha256": "b8fd96350f96549cc5c9227bca75f057dc2e4e968300ca82d0995ec7fd90606a",
+      "readDate": "2026-10-18",
+      "page": "/docs/best-practices/bring-your-own-key-data-enrichment"
+    },
+    {
+      "url": "https://deepline.com/docs/guides/buying-committee-mapping",
+      "title": "Buying committee mapping: turn contacts into a decision process",
+      "slug": "buying-committee-mapping",
+      "retrievalStatus": "retrieved",
+      "httpStatus": 200,
+      "sourceSha256": "80a6ea1e167240d296feedf385e37d1f52a07c772d87335ea956c49769c2d119",
+      "readDate": "2026-10-18",
+      "page": "/docs/best-practices/buying-committee-mapping"
+    },
+    {
+      "url": "https://deepline.com/docs/guides/company-domain-enrichment",
+      "title": "Enrich a Company Domain into a Checked Account Record",
+      "slug": "company-domain-enrichment",
+      "retrievalStatus": "retrieved",
+      "httpStatus": 200,
+      "sourceSha256": "8b8b946dde59dc17f19ce6870ee4ef7627e25c57626342798c95d380ff0a84e5",
+      "readDate": "2026-10-18",
+      "page": "/docs/best-practices/company-domain-enrichment"
+    },
+    {
+      "url": "https://deepline.com/docs/guides/competitive-advertising-intelligence",
+      "title": "Competitive Advertising Intelligence: Build a Cited Brief",
+      "slug": "competitive-advertising-intelligence",
+      "retrievalStatus": "retrieved",
+      "httpStatus": 200,
+      "sourceSha256": "c2da4138e1472878cb94b2792a30a214494b41a8409f097393cd4737aa5855ab",
+      "readDate": "2026-10-18",
+      "page": "/docs/best-practices/competitive-advertising-intelligence"
+    },
+    {
+      "url": "https://deepline.com/docs/guides/crm-data-governance",
+      "title": "CRM data governance: assign owners, sources, and write rules",
+      "slug": "crm-data-governance",
+      "retrievalStatus": "retrieved",
+      "httpStatus": 200,
+      "sourceSha256": "984ab2df5a029a1e06e606508b20ddd63112858f525a1176ee2efa00f0b07dd1",
+      "readDate": "2026-10-18",
+      "page": "/docs/best-practices/crm-data-governance"
+    },
+    {
+      "url": "https://deepline.com/docs/guides/crm-data-quality-automation",
+      "title": "CRM data quality automation: validation and safe writes",
+      "slug": "crm-data-quality-automation",
+      "retrievalStatus": "retrieved",
+      "httpStatus": 200,
+      "sourceSha256": "f136f151d0fc7e80ead882b90e9b24a58b2a092a73409541866ef6a17174097c",
+      "readDate": "2026-10-18",
+      "page": "/docs/best-practices/crm-data-quality-automation"
+    },
+    {
+      "url": "https://deepline.com/docs/guides/crm-workflow-automation",
+      "title": "CRM workflow automation: define safe writes before you automate",
+      "slug": "crm-workflow-automation",
+      "retrievalStatus": "retrieved",
+      "httpStatus": 200,
+      "sourceSha256": "76972c317bbc6501e4288d7b7327bb785cc7881810567d9a2264e213a19a8df2",
+      "readDate": "2026-10-18",
+      "page": "/docs/best-practices/crm-workflow-automation"
+    },
+    {
+      "url": "https://deepline.com/docs/guides/data-provenance-in-crm",
+      "title": "Data provenance in CRM",
+      "slug": "data-provenance-in-crm",
+      "retrievalStatus": "retrieved",
+      "httpStatus": 200,
+      "sourceSha256": "e2136361e6cf3bfc2359cac2b0229a55c31468da6996869a7ff2f5907aa802c0",
+      "readDate": "2026-10-18",
+      "page": "/docs/best-practices/data-provenance-in-crm"
+    },
+    {
+      "url": "https://deepline.com/docs/guides/dataforseo-via-deepline",
+      "title": "DataForSEO via Deepline. SEO data from the CLI.",
+      "slug": "dataforseo-via-deepline",
+      "retrievalStatus": "retrieved",
+      "httpStatus": 200,
+      "sourceSha256": "82bdf8023606f96cfd5bd04fb07ed58086b59c4a49b62eecd09a8bcaabb8e9c3",
+      "readDate": "2026-10-18",
+      "page": "/docs/best-practices/dataforseo-via-deepline"
+    },
+    {
+      "url": "https://deepline.com/docs/guides/enrichment-api",
+      "title": "Enrichment API: how to build a safe production integration",
+      "slug": "enrichment-api",
+      "retrievalStatus": "retrieved",
+      "httpStatus": 200,
+      "sourceSha256": "6bbaf04fb219d9542a749b30def0a4fc8df597f117badb126c2b2a2544290b25",
+      "readDate": "2026-10-18",
+      "page": "/docs/best-practices/enrichment-api"
+    },
+    {
+      "url": "https://deepline.com/docs/guides/enrichment-cost-optimization",
+      "title": "Enrichment cost optimization",
+      "slug": "enrichment-cost-optimization",
+      "retrievalStatus": "retrieved",
+      "httpStatus": 200,
+      "sourceSha256": "e4add2ae66ffe461bd892cc79370f85d816f8de6c9870cac048539958ba256b2",
+      "readDate": "2026-10-18",
+      "page": "/docs/best-practices/enrichment-cost-optimization"
+    },
+    {
+      "url": "https://deepline.com/docs/guides/free-trial-signup-enrichment",
+      "title": "Enrich Free Trial Signups Without Blocking Onboarding",
+      "slug": "free-trial-signup-enrichment",
+      "retrievalStatus": "retrieved",
+      "httpStatus": 200,
+      "sourceSha256": "ba71553e6338005a750a7bed63a544b3091fc75198f5162f5f6193a354d0836e",
+      "readDate": "2026-10-18",
+      "page": "/docs/best-practices/free-trial-signup-enrichment"
+    },
+    {
+      "url": "https://deepline.com/docs/guides/gtm-provider-consolidation",
+      "title": "GTM provider consolidation: reduce redundant data spend safely",
+      "slug": "gtm-provider-consolidation",
+      "retrievalStatus": "retrieved",
+      "httpStatus": 200,
+      "sourceSha256": "dde561cc7f1dbc0534a4db489607c14199dda9226357bedfdfb8960ef3602989",
+      "readDate": "2026-10-18",
+      "page": "/docs/best-practices/gtm-provider-consolidation"
+    },
+    {
+      "url": "https://deepline.com/docs/guides/hubspot-enrichment-workflows",
+      "title": "HubSpot enrichment workflows: safe CRM write-back",
+      "slug": "hubspot-enrichment-workflows",
+      "retrievalStatus": "retrieved",
+      "httpStatus": 200,
+      "sourceSha256": "5af9060020a341244f4bbe0151dbd9ab164c978b92c4a86e7a54ec0ba5f385f7",
+      "readDate": "2026-10-18",
+      "page": "/docs/best-practices/hubspot-enrichment-workflows"
+    },
+    {
+      "url": "https://deepline.com/docs/guides/hubspot-lead-routing",
+      "title": "Automate HubSpot lead routing with clear rules",
+      "slug": "hubspot-lead-routing",
+      "retrievalStatus": "retrieved",
+      "httpStatus": 200,
+      "sourceSha256": "13b6c58fdd3ae39a82e4e5204a58a4c7f91e77707125f19c85ec9b62134f1a44",
+      "readDate": "2026-10-18",
+      "page": "/docs/best-practices/hubspot-lead-routing"
+    },
+    {
+      "url": "https://deepline.com/docs/guides/inbound-lead-routing",
+      "title": "Inbound lead routing: a practical control design",
+      "slug": "inbound-lead-routing",
+      "retrievalStatus": "retrieved",
+      "httpStatus": 200,
+      "sourceSha256": "c9d84b045421606c11b5cf45e8bae8352cf5c87f2fc2b8cba810f40b1f940c21",
+      "readDate": "2026-10-18",
+      "page": "/docs/best-practices/inbound-lead-routing"
+    },
+    {
+      "url": "https://deepline.com/docs/guides/outbound-personalization-workflow",
+      "title": "Outbound personalization workflow",
+      "slug": "outbound-personalization-workflow",
+      "retrievalStatus": "retrieved",
+      "httpStatus": 200,
+      "sourceSha256": "d1ab8285e7f4d040cff368ee07b52696452d173e58ae3ca8849f085a96ff715a",
+      "readDate": "2026-10-18",
+      "page": "/docs/best-practices/outbound-personalization-workflow"
+    },
+    {
+      "url": "https://deepline.com/docs/guides/phone-enrichment-workflows",
+      "title": "Phone enrichment workflows: validate before you route or call",
+      "slug": "phone-enrichment-workflows",
+      "retrievalStatus": "retrieved",
+      "httpStatus": 200,
+      "sourceSha256": "9e169f634e407f19ae8008504f9fa380f5da309334b8df04740580590e768867",
+      "readDate": "2026-10-18",
+      "page": "/docs/best-practices/phone-enrichment-workflows"
+    },
+    {
+      "url": "https://deepline.com/docs/guides/pipeline-hygiene",
+      "title": "Pipeline hygiene: controls for deals that keep moving",
+      "slug": "pipeline-hygiene",
+      "retrievalStatus": "retrieved",
+      "httpStatus": 200,
+      "sourceSha256": "a9a7dc8ba43fd3fe7908a0d48d5f309adc3110c1577f197b0fa706080eafbdae",
+      "readDate": "2026-10-18",
+      "page": "/docs/best-practices/pipeline-hygiene"
+    },
+    {
+      "url": "https://deepline.com/docs/guides/post-call-crm-automation",
+      "title": "Post-call CRM automation",
+      "slug": "post-call-crm-automation",
+      "retrievalStatus": "retrieved",
+      "httpStatus": 200,
+      "sourceSha256": "d6ad257a454ec96cdac639f05d369d877cc0c1702a98c377019eff77240e39bf",
+      "readDate": "2026-10-18",
+      "page": "/docs/best-practices/post-call-crm-automation"
+    },
+    {
+      "url": "https://deepline.com/docs/guides/provider-access-management",
+      "title": "Provider access management: control data keys, rights, and usage",
+      "slug": "provider-access-management",
+      "retrievalStatus": "retrieved",
+      "httpStatus": 200,
+      "sourceSha256": "b96f7b930a1eede59e9a5913d5b17f7ef369940a765c99c3873170b6afe9f50a",
+      "readDate": "2026-10-18",
+      "page": "/docs/best-practices/provider-access-management"
+    },
+    {
+      "url": "https://deepline.com/docs/guides/revenue-data-quality",
+      "title": "Revenue data quality",
+      "slug": "revenue-data-quality",
+      "retrievalStatus": "retrieved",
+      "httpStatus": 200,
+      "sourceSha256": "d24c028b82795b69c06d47f0de6c55a252913735c5139cace446286450bc9455",
+      "readDate": "2026-10-18",
+      "page": "/docs/best-practices/revenue-data-quality"
+    },
+    {
+      "url": "https://deepline.com/docs/guides/revops-data-operations",
+      "title": "RevOps data operations: manage quality, cost, and accountability",
+      "slug": "revops-data-operations",
+      "retrievalStatus": "retrieved",
+      "httpStatus": 200,
+      "sourceSha256": "7d4f3363cfd8125465a816542aaf80a9d29fe7dcbf0d4ed7f0060c7358e3099b",
+      "readDate": "2026-10-18",
+      "page": "/docs/best-practices/revops-data-operations"
+    },
+    {
+      "url": "https://deepline.com/docs/guides/revops-workflow-automation",
+      "title": "RevOps workflow automation: build reliable workflows",
+      "slug": "revops-workflow-automation",
+      "retrievalStatus": "retrieved",
+      "httpStatus": 200,
+      "sourceSha256": "7f35a25439dc0e504d459e75a20eee991e7ae530878f6dec81de30598428d57b",
+      "readDate": "2026-10-18",
+      "page": "/docs/best-practices/revops-workflow-automation"
+    },
+    {
+      "url": "https://deepline.com/docs/guides/sales-account-planning-template",
+      "title": "Sales Account Planning Template for Excel (Free CSV)",
+      "slug": "sales-account-planning-template",
+      "retrievalStatus": "retrieved",
+      "httpStatus": 200,
+      "sourceSha256": "b6e4a28e9e50482b071675c2e5644dd40b4210932e45800e675bd300d32dba8d",
+      "readDate": "2026-10-18",
+      "page": "/docs/best-practices/sales-account-planning-template"
+    },
+    {
+      "url": "https://deepline.com/docs/guides/sales-follow-up-automation",
+      "title": "Sales follow-up automation: drafts, controls, and timing",
+      "slug": "sales-follow-up-automation",
+      "retrievalStatus": "retrieved",
+      "httpStatus": 200,
+      "sourceSha256": "31ac2774f17137604b58917f484e99470f37232ad3adfd65c122baf2b0cf5694",
+      "readDate": "2026-10-18",
+      "page": "/docs/best-practices/sales-follow-up-automation"
+    },
+    {
+      "url": "https://deepline.com/docs/guides/sales-operations-automation",
+      "title": "Sales operations automation",
+      "slug": "sales-operations-automation",
+      "retrievalStatus": "retrieved",
+      "httpStatus": 200,
+      "sourceSha256": "dfd2edcb526d97bd0a4b92362b132af5cdb1284f940106cf47e8f684387dbccc",
+      "readDate": "2026-10-18",
+      "page": "/docs/best-practices/sales-operations-automation"
+    },
+    {
+      "url": "https://deepline.com/docs/guides/tam-enrichment",
+      "title": "TAM enrichment: build an addressable market you can trust",
+      "slug": "tam-enrichment",
+      "retrievalStatus": "retrieved",
+      "httpStatus": 200,
+      "sourceSha256": "f22a2395073a3866cc52638d15225eec07466ece4af8b84caf410b4c2f4bf1e3",
+      "readDate": "2026-10-18",
+      "page": "/docs/best-practices/tam-enrichment"
+    },
+    {
+      "url": "https://deepline.com/docs/guides/validate-incoming-csv-files",
+      "title": "Validate Incoming CSV Files Before CRM Enrichment",
+      "slug": "validate-incoming-csv-files",
+      "retrievalStatus": "retrieved",
+      "httpStatus": 200,
+      "sourceSha256": "9973cd223bef1380cefb68748a6de8e9c13325392419068e02a1f8053cf27243",
+      "readDate": "2026-10-18",
+      "page": "/docs/best-practices/validate-incoming-csv-files"
+    },
+    {
+      "url": "https://deepline.com/docs/guides/verified-contact-details-from-profiles",
+      "title": "Get Verified Contact Details from Professional Profiles",
+      "slug": "verified-contact-details-from-profiles",
+      "retrievalStatus": "retrieved",
+      "httpStatus": 200,
+      "sourceSha256": "7cd14f4593131288fbb33244ff145ecf710558e7709baea649ce04f99e14fa06",
+      "readDate": "2026-10-18",
+      "page": "/docs/best-practices/verified-contact-details-from-profiles"
+    },
+    {
+      "url": "https://deepline.com/docs/guides/waterfall-enrichment-claude-code",
+      "title": "How to Run Waterfall Enrichment in Claude Code (2026)",
+      "slug": "waterfall-enrichment-claude-code",
+      "retrievalStatus": "retrieved",
+      "httpStatus": 200,
+      "sourceSha256": "676329fefaa47e576ad1c784f656d84249ae630ebcb2e87c7e79491334ab69bb",
+      "readDate": "2026-10-18",
+      "page": "/docs/best-practices/waterfall-enrichment-claude-code"
+    },
+    {
+      "url": "https://deepline.com/docs/guides/workflow-observability-for-revops",
+      "title": "Workflow observability for RevOps",
+      "slug": "workflow-observability-for-revops",
+      "retrievalStatus": "retrieved",
+      "httpStatus": 200,
+      "sourceSha256": "f1d626a7cee4a23747136f15e9117042aa67a2f0bd4a87d7d60b8529e325b8b9",
+      "readDate": "2026-10-18",
+      "page": "/docs/best-practices/workflow-observability-for-revops"
+    }
+  ]
+}

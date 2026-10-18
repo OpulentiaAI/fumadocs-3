@@ -1,0 +1,50 @@
+---
+title: Start with evidence, not a send button
+description: A read-first path from sponsor research to a CRM brief, with explicit review gates.
+---
+
+This starter brings together three different kinds of source: a sponsor-research application, a HubSpot skills library and an orchestration setup guide. They are examples to learn from, not evidence that your portal is connected or that a sponsor has agreed to participate.
+
+The examples below were checked against repository content at fixed commits. They were not executed against HubSpot or a research provider. Consult your installed CLI's help before relying on a command, and use an authorised test portal for the first write.
+
+## Choose a bounded outcome
+
+Begin with one company, one research question and one deliverable. A useful first task is: “Read the supplied evidence for this company, identify unknowns and prepare an account brief. Do not send a message or modify CRM records.” This defines a result without silently authorising outreach.
+
+The sponsor example uses Nocturnal Valley as a client-supplied campaign. Its attendance is disputed, its available inventory is not supplied and its sponsor-conflict list is incomplete. Treat those as first-class states, not missing copy to fill. The campaign dates are in September 2026, so the example is historical by October 2026; it is not a current sales opportunity.
+
+## Inspect the HubSpot surface
+
+These source commands discover supported object types and the contact schema:
+
+```bash
+hubspot objects types
+hubspot properties list --type contacts
+```
+
+The executable is `hubspot`, not the separate `hs` developer CLI. The skills repository does not ship the executable, authentication implementation or a complete installation guide for it. Have an administrator provision the appropriate CLI and account access; do not substitute a similarly named package or guess a login command.
+
+[Source: bulk operations, lines 22–24](https://github.com/OpulentiaAI/hubspot-agent-cli-skills/blob/a015a48982b922279d8521677b7c72b0acfb9506/bulk-operations/SKILL.md#L22-L24).
+
+## Read a known company
+
+The source uses this exact example. Replace the illustrative domain with an owner-approved canonical domain before running it:
+
+```bash
+hubspot objects search --type companies --filter "domain=acme.com" \
+  --properties name,domain,industry,annualrevenue,hubspot_owner_id
+```
+
+An empty result means the lookup found no matching record; it does not prove the company does not exist. Multiple results require identity review before any association or update. Search examples return a page, not a guarantee of complete coverage.
+
+[Source: CRM lookup, lines 39–53](https://github.com/OpulentiaAI/hubspot-agent-cli-skills/blob/a015a48982b922279d8521677b7c72b0acfb9506/crm-lookup/SKILL.md#L39-L53).
+
+## Produce a reviewable result
+
+Keep the brief small: resolved company identity, cited activity, existing CRM context, unknowns and next action. A research result must retain its source and observation date. A CRM match must retain its record ID. Neither a company's category nor a retrieved employee title proves that the company has an open sponsorship budget.
+
+Stop at the requested boundary. A brief is not a campaign, a draft is not a sent email and a dry run is not a write. Continue with the [CRM brief recipe](/docs/recipes/crm-brief), the [sponsor qualification recipe](/docs/recipes/sponsor-qualification) or the [safe-write guide](/docs/guides/safe-writes).
+
+## Source boundary
+
+The six-key evidence model and explicit unknown states come from the [sponsor dossier contract](https://github.com/Git-Godssoldier/opulent-sponsor-context-showcase/blob/662ddba58c42f28ae71d0aca1a9cbb7794ec3d26/skills/opulent-sponsor-context-showcase/references/sponsor-dossier-contract.md#L5-L43). The pages in this starter are original synthesis. See [provenance and reuse](/docs/reference/sources) before copying upstream code or client materials.

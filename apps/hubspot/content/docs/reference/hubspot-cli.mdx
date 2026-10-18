@@ -1,0 +1,98 @@
+---
+title: 'HubSpot agent CLI reference'
+description: 'Source-backed CRM command patterns, coverage limits and safety boundaries for the HubSpot agent CLI.'
+---
+
+The `hubspot` agent CLI works with CRM records and automation. It is a different tool from `hs`, the `@hubspot/cli` developer CLI used for apps, themes and modules. Choosing the wrong binary changes the task you can perform. [Source: CLI identity](https://github.com/OpulentiaAI/hubspot-agent-cli-skills/blob/a015a48982b922279d8521677b7c72b0acfb9506/workflow-automation/SKILL.md#L19-L28).
+
+This reference is **source-verified, not runtime-tested**. Its examples were checked against repository commit `a015a48982b922279d8521677b7c72b0acfb9506`; no HubSpot command, login, installation or API request was executed. Statements about responses and limits below describe that source, not independent confirmation of the currently installed CLI. The source makes `hubspot <command> --help` authoritative if examples drift. [Source: authority](https://github.com/OpulentiaAI/hubspot-agent-cli-skills/blob/a015a48982b922279d8521677b7c72b0acfb9506/bulk-operations/SKILL.md#L22-L24).
+
+## Start with authority and a bounded read
+
+Read-first authorisation means establishing the permitted portal, record set, purpose and output destination before accessing CRM data. Permission to produce a brief does not authorise changing records, assigning conversations, generating tokens or exporting a whole portal. Use the [quickstart](/docs/get-started/quickstart) to establish the environment; use [safe writes](/docs/guides/safe-writes) only when a separately authorised task requires a mutation.
+
+All IDs, domains, emails and filenames below are source examples, not live inputs. Replace them only with task-authorised values. Read the live schema and portal-specific IDs rather than treating example values as defaults.
+
+## Discover the shape before querying
+
+The source recommends schema discovery and distinguishes property names from enum option values. These exact examples inspect contact properties, ticket priority options and deal pipelines:
+
+```bash
+hubspot properties list --type contacts --format table
+hubspot properties options-list --type tickets hs_ticket_priority | jq -r '.value'
+hubspot pipelines list --type deals --format jsonl
+```
+
+Sources: [contact schema](https://github.com/OpulentiaAI/hubspot-agent-cli-skills/blob/a015a48982b922279d8521677b7c72b0acfb9506/crm-data-quality/SKILL.md#L17-L26), [ticket enums](https://github.com/OpulentiaAI/hubspot-agent-cli-skills/blob/a015a48982b922279d8521677b7c72b0acfb9506/ticket-resolution/SKILL.md#L30-L46), [deal pipelines](https://github.com/OpulentiaAI/hubspot-agent-cli-skills/blob/a015a48982b922279d8521677b7c72b0acfb9506/deal-management/SKILL.md#L31-L49).
+
+Pipeline, stage and owner IDs vary by portal. The `pets` custom type in the next example must exist in the selected portal; the command illustrates inspection, not a built-in object type:
+
+```bash
+hubspot schemas get --type pets
+```
+
+[Source: custom schema inspection](https://github.com/OpulentiaAI/hubspot-agent-cli-skills/blob/a015a48982b922279d8521677b7c72b0acfb9506/custom-object-management/SKILL.md#L18-L34).
+
+## Look up identity, then expand deliberately
+
+An exact email lookup is a narrower starting point than a name search:
+
+```bash
+hubspot objects search --type contacts --filter "email=jane@acme.com" \
+  --properties email,firstname,lastname,company,lifecyclestage,hubspot_owner_id
+```
+
+[Source: exact lookup](https://github.com/OpulentiaAI/hubspot-agent-cli-skills/blob/a015a48982b922279d8521677b7c72b0acfb9506/crm-lookup/SKILL.md#L39-L53).
+
+For a known set of IDs, batch reads avoid spawning a process for every record:
+
+```bash
+hubspot objects get --type contacts 12345 67890 23456 --properties email,firstname
+```
+
+[Source: batch reads](https://github.com/OpulentiaAI/hubspot-agent-cli-skills/blob/a015a48982b922279d8521677b7c72b0acfb9506/bulk-operations/SKILL.md#L56-L73).
+
+The documented search language uses `AND` within one `--filter` and OR across repeated flags. `~` means a whole-word token match, not a substring or regular expression. `@!=` excludes unset properties, so a query that means “none of these values, or empty” needs a separate missing-property group. The source lists a maximum of five filter groups, six conditions per group and eighteen conditions overall. [Source: filter semantics and limits](https://github.com/OpulentiaAI/hubspot-agent-cli-skills/blob/a015a48982b922279d8521677b7c72b0acfb9506/audience-targeting/SKILL.md#L19-L31).
+
+## Understand output and coverage
+
+The documented default read shape is JSONL, with CRM fields nested under `.properties`. Write results carry per-input `ok` or `error` values; a mixed result stream must not be described as complete success. [Source: output contracts](https://github.com/OpulentiaAI/hubspot-agent-cli-skills/blob/a015a48982b922279d8521677b7c72b0acfb9506/bulk-operations/SKILL.md#L44-L54).
+
+The source caps object list/search pages at 100 records. Its pagination helper selects search when passed a separate `--filter` argument, requests `--format json`, extracts `.data[]` and follows `.meta.next` through `--after`. The helper truncates its output file before collecting results, so choose a dedicated authorised destination rather than an existing evidence file. [Source: helper implementation](https://github.com/OpulentiaAI/hubspot-agent-cli-skills/blob/a015a48982b922279d8521677b7c72b0acfb9506/bulk-operations/resources/pagination-loop.sh#L23-L84).
+
+Conversations need special attention: JSONL output omits the next-page cursor. A first-page redirect is not a complete inbox export, and increasing the limit is not the documented fix. Collect JSON envelopes and page until the cursor is empty; if that has not happened, label the result partial. [Source: conversations pagination](https://github.com/OpulentiaAI/hubspot-agent-cli-skills/blob/a015a48982b922279d8521677b7c72b0acfb9506/conversation-history-brief/SKILL.md#L23-L47).
+
+## Activity history and reporting
+
+These exact examples read a contact timeline and deal calls:
+
+```bash
+hubspot activities list --contact 73235
+hubspot activities list --deal 67890 --activity-type CALL
+```
+
+[Source: activity selection](https://github.com/OpulentiaAI/hubspot-agent-cli-skills/blob/a015a48982b922279d8521677b7c72b0acfb9506/communication-history/SKILL.md#L27-L35).
+
+Activity rows are documented as flat objects with ISO 8601 `timestamp` and `lastModified`, unlike raw activity objects whose `hs_timestamp` is Unix milliseconds. A point-in-time brief must consider `lastModified`, because content edited after the cutoff is not historical evidence merely because its activity timestamp is older. [Source: activity shape and cutoff](https://github.com/OpulentiaAI/hubspot-agent-cli-skills/blob/a015a48982b922279d8521677b7c72b0acfb9506/communication-history/SKILL.md#L21-L25).
+
+The wider skill inventory covers segmentation, data quality, enrichment, deal and ticket management, quote-to-cash, ownership, retention, reporting, custom objects, workflow automation and conversation triage. Many of those tasks write data; their inclusion in the library is not permission to run them. For a bounded read-only application, follow the [CRM brief recipe](/docs/recipes/crm-brief).
+
+## Mutation boundaries that matter
+
+The source requires a dry-run → digest → confirm flow for irreversible updates, upserts, deletes, merges and specified metadata operations, even for one record. The apply step must use the same inputs, and the documented digest expires after 300 seconds. Copy the confirmation value from the preview; do not infer it from record count or command name. The source says `--force` is deprecated and ignored. [Source: write gating](https://github.com/OpulentiaAI/hubspot-agent-cli-skills/blob/a015a48982b922279d8521677b7c72b0acfb9506/bulk-operations/SKILL.md#L129-L160).
+
+A dry run is not universally semantic validation. For workflow creation the source says the preview makes no API call and can accept a JSON body missing required workflow fields. Workflow updates are full replacement, not patch operations: a partial body can silently clear enrolment criteria. Preserve the full fetched body and revision when an authorised update is required. [Sources: dry-run limitation](https://github.com/OpulentiaAI/hubspot-agent-cli-skills/blob/a015a48982b922279d8521677b7c72b0acfb9506/workflow-automation/SKILL.md#L81-L113), [full PUT warning](https://github.com/OpulentiaAI/hubspot-agent-cli-skills/blob/a015a48982b922279d8521677b7c72b0acfb9506/workflow-automation/resources/workflow-json-reference.md#L144-L152).
+
+Local operation history is an audit log, not an undo mechanism:
+
+```bash
+hubspot history --since 1h --format table
+```
+
+[Source: audit and recovery limits](https://github.com/OpulentiaAI/hubspot-agent-cli-skills/blob/a015a48982b922279d8521677b7c72b0acfb9506/bulk-operations/SKILL.md#L162-L174).
+
+Visitor identification token creation is also outside a read-only brief. The source requires server-side generation, the visitor-identification scope and Professional or Enterprise entitlement; the private app token must never reach frontend code. [Source: visitor token requirements](https://github.com/OpulentiaAI/hubspot-agent-cli-skills/blob/a015a48982b922279d8521677b7c72b0acfb9506/visitor-identification/SKILL.md#L24-L31).
+
+## Source and reuse
+
+This page is an original editorial adaptation with copied command examples from the cited repository, not an upstream file or a runtime certification. Upstream copyright is 2026 HubSpot, Inc. The source is licensed under Apache-2.0; redistribution requires the licence and applicable notices, and modified source files need change notices. The licence grants no general trademark permission and disclaims warranties. Preserve the [licence text](https://github.com/OpulentiaAI/hubspot-agent-cli-skills/blob/a015a48982b922279d8521677b7c72b0acfb9506/LICENSE) with redistributed material; this page's link is not a substitute for packaging it.

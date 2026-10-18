@@ -1,0 +1,47 @@
+---
+title: 'Designing an inbound intake-to-owner handoff in HubSpot'
+description: 'Preserve submission context and consent while resolving contacts, classifying intent and assigning a verifiable response obligation.'
+---
+
+Source: [Deepline inbound lead routing](https://deepline.com/docs/guides/inbound-lead-routing). Source and HubSpot documentation read: 2026-10-18.
+
+This offline implementation plan has had no live HubSpot execution. It starts earlier than territory allocation: a form, partner referral or event submission needs classification, identity resolution and an accountable response even when company context is incomplete.
+
+## Deepline-specific behaviour versus HubSpot adaptation
+
+The source frames intake as a controlled transition from a normalised submission to a classified, owned record with a response deadline. Deepline's orchestration references do not establish that HubSpot automatically preserves every external submission or its consent context. This adaptation proposes an external event ledger and contact-based HubSpot handoff. The classification states, duplicate window and response policy are recommendations rather than native product defaults.
+
+HubSpot's [contacts guide](https://developers.hubspot.com/docs/api-reference/legacy/crm/objects/contacts/guide) documents retrieving a person by record ID or email and updating properties. It does not make an arbitrary partner-provided address a permission to contact that person. Keep business eligibility and communication authority distinct from technical record matching.
+
+## Prerequisites and licensing
+
+Agree how demo requests, support enquiries, job applications and partner introductions should be handled. Name both an intake owner and a territory-dispute owner. Obtain approved integration scopes, provider rights if optional enrichment is used, and an authoritative consent or lawful-basis policy for each channel.
+
+Check native workflow and task permissions in the actual portal. HubSpot documents [owner rotation](https://knowledge.hubspot.com/workflows/assign-and-rotate-record-owners-using-workflows) for Sales Hub or Service Hub Professional and Enterprise and eligible paid seats. Generic contact routing should not assume the separate Leads object or its beta distribution features. An external queue or manual review can supply intake control without assuming paid native custom code; that action has its own Data Hub Professional or Enterprise requirement in [workflow actions](https://knowledge.hubspot.com/workflows/choose-your-workflow-actions).
+
+## Define intake identity and properties
+
+Preserve the submission ID, source channel, received time, contact identifiers, original message, consent evidence and source campaign or partner reference. Treat the same event delivered twice differently from two legitimate requests by the same person. Keep those events in a secured ledger rather than overwriting their context in one contact field.
+
+Suggested custom contact properties include `ops_inbound_classification`, `ops_intake_state`, `ops_last_request_at`, `ops_response_due_at` and `ops_intake_receipt`. These are proposed internal names to create and validate with the [Properties API](https://developers.hubspot.com/docs/api-reference/legacy/crm/properties/guide), not built-ins. Preserve `hubspot_owner_id` until the ownership policy decides otherwise. Resolve the contact's relevant company through associations, not the company-name text alone.
+
+## Implementation steps
+
+1. **Persist the submission first.** Record the original channel context and event identity before any lookup. Validate required contact details without inventing missing company or consent information. Keep malformed submissions visible to the intake operator rather than silently dropping them.
+2. **Classify the request.** Apply explicit rules that distinguish sales demand from customer support or unrelated enquiries. An existing customer seeking help should not enter an acquisition sequence. Where the message is ambiguous, create a review obligation while preserving its received time.
+3. **Resolve the person and company.** Prefer a saved contact ID, then approved matching inputs. Review conflicting identifiers. HubSpot [CRM Search](https://developers.hubspot.com/docs/api-reference/latest/crm/search-the-crm) documents indexing delay and result limits, so a recent absent search result is not sufficient reason to create a duplicate.
+4. **Apply ownership precedence.** Preserve protected account ownership and partner rules before territory allocation. Retrieve eligible owner identifiers using the [Owners API](https://developers.hubspot.com/docs/api-reference/latest/crm/owners/guide); write owner `id`, not `userId`. Missing company identity should lead to a named intake reviewer, not an indefinitely unowned contact.
+5. **Set the response obligation.** Compute the due instant from submission time and an agreed calendar. HubSpot's [Tasks API](https://developers.hubspot.com/docs/api-reference/legacy/crm/activities/tasks/guide) documents due date, assignee and record associations. Create one deduplicated task for the relevant request and persist its ID. A contact with two separate enquiries may legitimately require separate tasks under the approved policy.
+6. **Verify the handoff.** Read the contact owner and intake metadata, then the task's due time, assignee and associations. Only mark completed when the person responsible can identify both the request and the expected next action.
+
+## Approval boundary
+
+Approve classification rules, ownership precedence and response deadlines before activation. Ambiguous identity, partner disputes and changes to protected ownership require review. Consent evidence must follow the approved channel policy; an enrichment result cannot create it. Sending a message, adding marketing eligibility or enrolling a sequence is outside this intake handoff and requires separate authorisation.
+
+## Failure handling
+
+Separate unclassifiable, duplicate delivery, disputed territory, missing identity and integration errors. Assign each a repair owner and due time. A timeout after task creation requires reconciliation before another task is made. Do not reset response time when retrying. If optional enrichment fails, route the existing request to a reviewer with the known facts rather than waiting for perfect firmographics.
+
+## Validation and acceptance
+
+Plan fixtures for a demo, existing-customer support request, partner referral, repeated event, second genuine request and disputed account. Confirm classification accuracy, preserved source context, correct ownership and task associations. Measure submission-to-accepted-follow-up time only when acceptance has real evidence; task creation alone is not a human response. No production intake records or SLA outcomes were examined for this guide.

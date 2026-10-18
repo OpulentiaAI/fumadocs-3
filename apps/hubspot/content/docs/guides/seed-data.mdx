@@ -1,0 +1,55 @@
+---
+title: Map seed data without inventing CRM facts
+description: Separate source fixtures, proposed CRM mappings and live record identity.
+---
+
+A seed is a teaching fixture, not a live CRM import. The sponsor repository contains real company names and client-supplied campaign claims, but none of those rows proves a current relationship, a verified contact or a sponsor commitment.
+
+Use an explicit mapping layer. Preserve the upstream source path and commit for each fixture, and keep proposed CRM fields separate until the portal schema and the owner's intent have been checked.
+
+## Model the campaign and company separately
+
+The campaign packet describes Nocturnal Valley, an inaugural electronic-music and camping event at Astral Valley Art Park near St. Louis. Its listed dates are 24–26 September 2026. These are historical source values, not a recommendation to launch current outreach.
+
+Company rows belong in a separate collection keyed by canonical domain when one was supplied. A company's label, category and region fit can remain source attributes. Do not manufacture a HubSpot record ID or treat a target-list row as an existing account.
+
+| Source field      | Suggested application meaning     | CRM treatment                                           |
+| ----------------- | --------------------------------- | ------------------------------------------------------- |
+| `company`         | Display label from the source row | Candidate company name; resolve before write            |
+| `domain`          | Identity input when present       | Exact lookup candidate, never a guessed domain          |
+| `category`        | Client-list category              | Keep source provenance; map only to a verified property |
+| `region_fit`      | Supplied market rationale         | Research context, not proof of a business address       |
+| `activation_lead` | Candidate research lead           | Read and date the cited page before promoting it        |
+| `note`            | Restrictions or context           | Do not turn free text into a contact or commitment      |
+
+[Source: target fixture](https://github.com/Git-Godssoldier/opulent-sponsor-context-showcase/blob/662ddba58c42f28ae71d0aca1a9cbb7794ec3d26/campaigns/nocturnal-valley/targets.csv#L1-L33).
+
+## Useful public seed entities
+
+BeatBox Beverages, Electrolit and Sun Cruiser have supplied canonical domains and comparable-event leads in the source. Use them to demonstrate the distinction between a lead and a newly verified activation. Liquid Death supplies a category-level research example without the same explicit activation citation in its row.
+
+Anheuser-Busch has no resolved domain in the fixture because the client had not chosen between the parent and a distributor. NUTRL has a domain but is held for that same entry-point decision. Head Change is ambiguous; several cannabis rows are compliance-gated. Volcan X.A and Ciroc are explicitly lead-only because their exact domains were not supplied.
+
+These variations are valuable empty and blocked states. Do not “clean” them into runnable targets to make the demo look complete.
+
+## Preserve uncertainty in the data shape
+
+The dossier's required fields use `value`, `state`, `confidence`, `source`, `source_url` and `observed_at`. This envelope keeps the claim next to its evidence. The source distinguishes a company attribute from dated activity and allows unknowns to carry a reason.
+
+Attendance is disputed because the source holds conflicting total-attendee and daily-admission claims. Store the conflict, not an average. Package prices are a rate card; availability is unsupplied. Missing sponsor-exclusion names must not become `clear`.
+
+[Source: evidence envelope and gates](https://github.com/Git-Godssoldier/opulent-sponsor-context-showcase/blob/662ddba58c42f28ae71d0aca1a9cbb7794ec3d26/skills/opulent-sponsor-context-showcase/references/sponsor-dossier-contract.md#L5-L65).
+
+## Offline synthetic fixture
+
+The companion file `fixtures/sponsor-crm.json` contains three invented companies, three invented contacts, three illustrative deals and nine associations. Every domain and email is beneath `example.com`; the names are synthetic. Local `fixture_id` values are stable join keys, not HubSpot record IDs.
+
+It borrows only category archetypes and package names from the cited showcase files. Company names, domains, contact identities and deal amounts are invented. It preserves unknown activity, unavailable inventory and unresolved exclusions. One company is held for a client decision so a demo can exercise a blocked state. No record contains a verified sponsorship claim or permission to send.
+
+Read it directly into an offline demo. Do not pipe the whole file to HubSpot: it is an application fixture, not JSONL or an import payload. A later, separately authorised sandbox import must select valid properties, discover real pipeline and stage IDs, map returned record IDs and then create associations. Preserve fixture IDs in a local mapping instead of pretending they are portal IDs.
+
+## Define a CRM promotion gate
+
+Before mapping any row into HubSpot, inspect live properties, search by canonical domain and decide whether the match is unique. Keep custom fields in a proposed mapping document until the administrator confirms their schema and purpose. A research timestamp and an external citation are not substitutes for consent, contact verification or sending authority.
+
+Public pages should omit personal contact values, private sender details and raw receipts. Link the research source, show whether the record is supplied, retrieved, unknown or blocked, and explain the next action. Continue with [sponsor qualification](/docs/recipes/sponsor-qualification) and [safe writes](/docs/guides/safe-writes).

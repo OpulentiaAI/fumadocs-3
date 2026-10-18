@@ -1,0 +1,47 @@
+---
+title: 'Building a controlled HubSpot enrichment write-back'
+description: 'Resolve contacts and companies, validate field mappings, protect sales-owned data and reconcile each approved enrichment update.'
+---
+
+Source: [Deepline HubSpot enrichment workflows](https://deepline.com/docs/guides/hubspot-enrichment-workflows). Source and HubSpot documentation read: 2026-10-18.
+
+This is an offline implementation plan with no live HubSpot execution. Its unit of work is a specific approved property change on a resolved record, not an unqualified provider response or a successful integration run.
+
+## Deepline-specific behaviour versus HubSpot adaptation
+
+The source proposes a resolve, map, propose, write and verify discipline for Deepline-mediated enrichment. A Deepline connector may expose different options from the underlying HubSpot API, so inspect its actual action contract before implementation. This adaptation describes HubSpot's documented record operations without assuming any particular connector implements all of them. The evidence ledger, field precedence and per-record serialisation are recommended controls rather than native guarantees.
+
+HubSpot's [contacts API guide](https://developers.hubspot.com/docs/api-reference/legacy/crm/objects/contacts/guide) documents reading by record ID or email, updating properties and retrieving associations. Its [companies guide](https://developers.hubspot.com/docs/api-reference/legacy/crm/objects/companies/guide) covers the separate company object. A contact's company-name text field is not equivalent to an associated company record.
+
+## Prerequisites and licensing
+
+Choose one narrow use case, such as a reviewed company-industry fill, and name the RevOps repair owner. Obtain approved object scopes, provider rights, secret storage and a safe pilot cohort. Inventory every existing writer to the proposed destination fields. Account administrators must approve custom properties and confirm capacity before creating them.
+
+Native workflow actions are subscription-dependent. HubSpot lists custom code for Data Hub Professional and Enterprise in [workflow actions](https://knowledge.hubspot.com/workflows/choose-your-workflow-actions). An external worker may instead perform orchestration, but it still needs authorised API access and operating capacity. This plan assumes no custom object, native enrichment entitlement or unrestricted workflow action. Confirm the exact app and API version rather than treating all HubSpot integrations as interchangeable.
+
+## Specify the property and identity map
+
+Resolve destination identity as account, object type and string record ID. An email lookup can help locate a contact, but a changed email or contradictory product ID needs review. A company domain is a useful candidate signal, not permission to merge subsidiaries or agencies.
+
+For each permitted field, define the HubSpot internal name, expected type, allowed options, evidence age, source precedence and overwrite rule. The [Properties API](https://developers.hubspot.com/docs/api-reference/legacy/crm/properties/guide) documents schema retrieval and custom properties. Suggested metadata names such as `ops_enrichment_state`, `ops_enrichment_provider` and `ops_enrichment_receipt` are proposed custom fields. Keep `hubspot_owner_id`, `lifecyclestage`, strategic tier and deal values out of the enrichment allowlist.
+
+## Implementation steps
+
+1. **Read before enriching.** Resolve the existing record and obtain only the fields required by the use case. Preserve known-good values and skip fields whose approved freshness rule is already satisfied. An unresolved person should not become a new contact simply to make a batch complete.
+2. **Validate the provider candidate.** Check person or company identity, source time and field semantics. An industry label must map to an allowed internal option, while a phone needs independent identity and geography checks. A missing value means no update, not a request to clear a field.
+3. **Create a reviewable diff.** Persist old value, candidate value, provider, evidence reference, validation outcome and workflow version. Tie the diff to the input revision and a stable event identity. Approve individual fields rather than accepting an entire provider payload wholesale.
+4. **Check associations explicitly.** Retrieve the current contact-company relationship and confirm the intended company. HubSpot's [associations guide](https://developers.hubspot.com/docs/api-reference/latest/crm/associations/associate-records/guide) documents labels and directional type IDs. Do not copy an arbitrary association ID from another account or confuse an unlabeled relationship with a primary-company decision.
+5. **Apply a minimal update.** Re-read relevant values and withdraw stale proposals. Serialise your workers and coordinate other integrations; the read and write are not an atomic conflict check. Send only approved fields to the resolved record ID.
+6. **Verify the destination.** Retrieve the updated record directly and compare the intended properties. Retrieve relationships separately when association changes were approved. Object batch reads do not retrieve associations, so property read-back alone cannot prove a complete handoff.
+
+## Approval boundary
+
+An administrator should approve the object, field list, cohort and precedence rules before any automated writes. Low-risk fills may then follow those deterministic rules. Identity merges, human-value overwrites, primary-company changes, ownership, lifecycle movement and outreach require separate approval. A provider's confidence label cannot substitute for the business's authority to make those changes.
+
+## Failure handling
+
+Keep missing, invalid, conflicting, provider-error and CRM-write-error states distinct. Handle schema and permission errors as repair work rather than repeated provider calls. After a timeout following submission, reconcile the destination before another write. A partially successful batch must retain per-record receipts. If a company link fails after contact fields succeed, repair that relationship without re-enriching or creating another contact.
+
+## Validation and acceptance
+
+Plan tests for an existing contact, no match, multiple company candidates, incompatible enumeration, stale human edit, duplicate event and timeout after submission. Confirm protected fields remain unchanged and each required association points to the approved record. Accept only read-back-verified property changes with complete receipts; count unresolved handoffs separately. No acceptance tests have been run against a live portal for this guide.

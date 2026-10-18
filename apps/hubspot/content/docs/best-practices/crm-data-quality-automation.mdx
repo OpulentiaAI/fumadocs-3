@@ -1,0 +1,38 @@
+---
+title: 'Design a controlled HubSpot data-quality repair queue'
+description: 'Detect missing, invalid, stale and conflicting CRM values, then repair only authorised fields with reviewable evidence and reconciliation.'
+---
+
+A useful data-quality process reduces the chance that a seller, report or customer communication relies on an untrustworthy value. It should not pursue a universal completeness score by filling every blank. Start with a few fields that drive important decisions and build a repair queue that explains the problem, the evidence and the permitted correction.
+
+Source: [Deepline CRM data quality automation guide](https://deepline.com/docs/guides/crm-data-quality-automation). Source read date: **2026-10-18**. This original offline implementation plan involves **no live HubSpot execution** and no customer-record changes. It contains no copied source prose or code.
+
+## Deepline-specific guidance versus this HubSpot adaptation
+
+The source describes field-level rules, import validation, before-and-after evidence and safe write-back boundaries. Its illustrative integration actions belong to Deepline and must not be interpreted as enabled HubSpot safeguards. This adaptation recommends a HubSpot-specific detection and proposal model while preserving approval as a separate decision from successful enrichment.
+
+HubSpot's [Properties API documentation](https://developers.hubspot.com/docs/api-reference/latest/crm/properties/guide) provides the documented basis for property names, types and history. The [Contacts API](https://developers.hubspot.com/docs/api-reference/legacy/crm/objects/contacts/guide) and [Companies API](https://developers.hubspot.com/docs/api-reference/legacy/crm/objects/companies/guide) describe record retrieval and updates. None of these establishes that a proposed value is commercially correct.
+
+## Prerequisites and licensing
+
+Obtain a field ownership policy, authorised CRM snapshot, permitted source evidence and a responsible reviewer. Before accepting an incoming file, check headers, stable row identifiers, duplicate keys and required columns. Reconcile rejected rows to explicit reasons rather than dropping them from the downstream denominator.
+
+Inspect the actual property definitions, option values and account limits before creating operational fields. Proposed custom properties `ops_quality_state`, `ops_quality_checked_at` and `ops_quality_receipt_url` are suggested names, not built-in HubSpot fields. A daily external report can be reviewed without assuming native automation. If the full workflows tool is used later, verify a qualifying Professional or Enterprise subscription, required permissions and specific action availability in the [workflow documentation](https://knowledge.hubspot.com/workflows/create-workflows).
+
+## Implementation steps
+
+1. **Select consequential rules.** Begin with company routing attributes, contact identity and the deal fields used in forecasting or next-step planning. Define requiredness in lifecycle context. A missing close date on an unqualified inquiry is different from a missing close date on a committed forecast opportunity.
+2. **Classify the defect.** Separate absent, invalid, stale and conflicting values. A syntactically valid email with an employer conflict is not merely complete. A provider timeout supplies no conclusion about data validity. Record the object type and HubSpot record ID with every exception so identical IDs on different objects cannot collide.
+3. **Build a complete scan.** For future API-based detection, request the required properties and handle pagination. HubSpot's [CRM Search documentation](https://developers.hubspot.com/docs/api-reference/latest/crm/search-the-crm) specifies search limits and delayed visibility for newly changed records. Partition large scans deliberately and keep a checkpoint; one successful page does not prove whole-portal coverage.
+4. **Prepare a correction proposal.** Retain old value, candidate, source date, rule version, permitted writer and evidence. Deterministic formatting repairs may be eligible under a preapproved policy. Identity merges, inferred ownership and guessed close dates are not formatting repairs. Preserve company-contact and deal associations unless a separately reviewed association defect is in scope.
+5. **Reconcile a later approved change.** Reread the record immediately before updating, skip unchanged properties and hold proposals whose snapshot changed. After the update, read current values and classify each intended field as verified, rejected or uncertain. The comparison reduces conflicts but is not an atomic transaction or a guarantee against concurrent edits.
+
+## Approval boundary and failure handling
+
+The offline queue grants no write authority. A future pilot needs an approved object sample, exact field allowlist, overwrite rules and reviewer. Customer communication, consent, deal stage, commercial terms, ownership and merges require separate approval. A positive enrichment result must not imply approval for any of these actions.
+
+Give every unresolved defect a repair owner, due date and reason. A partial batch success is not a fully repaired batch; preserve record-level results and retry only the failed or unresolved portion after inspection. Never turn a permission error into an empty successful output. Recovery should generate a new reviewed proposal based on current data, not overwrite a subsequent valid edit with an old snapshot.
+
+## Validation and operating measures
+
+Use fixtures containing missing routing data, an invalid enumeration, a stale source, a duplicate import row, two plausible identities, a concurrent seller edit and an uncertain update response. Confirm input reconciliation, no changes to protected fields, separate handling of failed writes and read-back evidence for any future successful update. Track exception age, repair time, recurrence and business decisions affected. Investigate the upstream source that repeatedly creates defects rather than repeatedly cleaning the same symptom. These are planned acceptance checks; no live HubSpot scan, repair or behaviour test has been performed.

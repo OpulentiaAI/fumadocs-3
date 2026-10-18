@@ -1,0 +1,6 @@
+{
+  "title": "CRM foundations",
+  "icon": "Database",
+  "pages": ["seed-explorer", "seed-data", "safe-writes", "orchestration"],
+  "defaultOpen": true
+}

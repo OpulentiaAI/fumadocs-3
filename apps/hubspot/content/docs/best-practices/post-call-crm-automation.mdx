@@ -1,0 +1,46 @@
+---
+title: 'Post-call CRM automation in HubSpot without invented commitments'
+description: 'Design a transcript-to-HubSpot review process that preserves evidence, creates accountable tasks and protects commercial fields.'
+---
+
+A useful post-call process makes the next action dependable without turning a generated summary into a customer's promise. This plan starts when an authorised transcript is available, not when a calendar appointment ends. Its output is a reviewed call receipt, an approved action list and a precisely scoped set of HubSpot changes.
+
+Source: [Deepline post-call CRM automation](https://deepline.com/docs/guides/post-call-crm-automation). Read date: **2026-10-18**. This is an original offline implementation plan; **no live HubSpot execution** or CRM write has been performed. Source prose and code are not reproduced; source licensing has not been established.
+
+## Deepline-specific context vs HubSpot adaptation
+
+The source discusses transcript readiness, duplicate notifications, revised evidence and evidence-linked CRM proposals, and points towards Deepline integrations. Those references do not establish that any particular connector is installed or that a transcript provider supports a particular event in your account. Inspect that provider's current contract separately.
+
+The HubSpot design below is a recommendation. HubSpot documents notes, tasks and record associations; it does not, through those APIs alone, guarantee transcript extraction accuracy, cross-system idempotency or human approval. Your orchestration service must supply those controls.
+
+## Prerequisites and licensing
+
+Obtain permission to process recordings and transcripts, define retention and restrict transcript access to the appropriate sales team. Identify the target HubSpot account and authorise only the endpoint scopes required for the intended record reads and approved writes, following the [scope documentation](https://developers.hubspot.com/docs/apps/developer-platform/build-apps/authentication/scopes).
+
+A service outside HubSpot can prepare proposals without HubSpot workflow custom code. If using native workflows, check the account's qualifying Professional or Enterprise subscription and object/action availability in [Create workflows](https://knowledge.hubspot.com/workflows/create-workflows). Custom code actions specifically require Data Hub Professional or Enterprise according to [workflow actions](https://knowledge.hubspot.com/workflows/choose-your-workflow-actions). Neither option is assumed available here.
+
+## Record model and implementation steps
+
+1. **Identify the conversation and its revision.** Keep the provider's meeting identifier, transcript revision, readiness time and source reference in an external receipt. Resolve participants to contact record IDs, then select the intended company and deal. Several open deals at one company require an explicit choice; an email-domain match alone must not select the opportunity.
+
+2. **Extract evidence before proposing CRM edits.** Produce separate entries for decisions, objections, requested assets and next actions. Each entry needs a transcript location and speaker. Record an unstated date as unknown. An internal reminder date can be proposed, but label it as the team's deadline rather than a buyer commitment.
+
+3. **Separate account context from opportunity state.** Read deal properties such as `pipeline`, `dealstage`, `amount`, `closedate` and `hubspot_owner_id` before presenting a proposal. HubSpot's [deals guide](https://developers.hubspot.com/docs/api-reference/legacy/crm/objects/deals/guide) requires internal pipeline and stage IDs, not display labels. Do not move a stage merely because a summary says the call went well.
+
+4. **Prepare a note and task plan.** A reviewed call receipt can become a note containing the source reference, concise findings and the reviewer's decision. HubSpot documents `hs_note_body` and required `hs_timestamp` in the [notes guide](https://developers.hubspot.com/docs/api-reference/2026-03/crm/activities/notes/guide). Link the note to the selected deal and relevant contacts using the account's supported [association definitions](https://developers.hubspot.com/docs/api-reference/latest/crm/associations/associate-records/guide); do not guess association IDs.
+
+5. **Translate each accepted action into an accountable task.** The [tasks API](https://developers.hubspot.com/docs/api-reference/legacy/crm/activities/tasks/guide) documents `hs_task_subject`, `hs_task_body`, `hubspot_owner_id`, `hs_task_status` and required due-date field `hs_timestamp`. Validate that the assignee exists and that the proposed due time reflects the intended time zone. Associate the task with the deal and contact needed by the rep.
+
+## Approval boundary
+
+Allow automatic extraction and comparison only. A rep approves the note, task assignees and dates; the commercial owner separately approves stage, amount, owner or close-date changes. A customer-facing follow-up remains a draft. Store reviewer identity, decision time and the exact approved proposal revision outside the transcript text. If the transcript changes after approval, show a new diff rather than silently replacing the approved receipt.
+
+## Failure handling
+
+Treat missing transcripts as waiting, not empty conversations. Hold ambiguous participants and competing deals for a named operator. Preserve separate statuses for extraction failure, review rejection, write failure and verification failure. Track the intended note/task effects against the conversation revision so a duplicate event cannot create duplicates. After a timeout with an uncertain write outcome, reconcile recorded destination IDs and current CRM state before attempting anything again.
+
+The final pre-write comparison should detect a rep's intervening edits, but this is an application control, not a claim of atomic compare-and-swap support. Recheck the destination after any later authorised write and retain the observed values and association IDs.
+
+## Validation and acceptance
+
+Use offline fixtures for a clean transcript, no stated date, unknown speaker, revised transcript, two open deals, duplicate readiness event and response timeout. Require every proposed statement to trace to evidence and every approved action to have exactly one intended assignee and destination. In a separately authorised pilot, inspect note placement, task due times and associations in HubSpot, then replay the same input to prove no new effects occur. Measure calls with reviewed next steps within one business day, counting missing evidence and rejected proposals separately from completed handoffs.

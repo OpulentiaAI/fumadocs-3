@@ -1,0 +1,38 @@
+---
+title: 'Make HubSpot account scores reproducible and reviewable'
+description: 'Separate scoring inputs from outputs, version the rules and test score-to-action boundaries before CRM activation.'
+---
+
+An account score is a compact decision model. Its value comes from being reproducible: an operator should be able to take the same accepted evidence, apply the same rules and obtain the same result. Storing one unexplained number on a HubSpot company hides whether the account became more attractive or merely acquired a newly populated field.
+
+Source: [Deepline account scoring workflows guide](https://deepline.com/docs/guides/account-scoring-workflows). Source read date: **2026-10-18**. This original offline implementation plan includes **no live HubSpot execution**. Example weights, bands and acceptance rules are design recommendations, not documented HubSpot defaults or validated predictive models.
+
+## Deepline-specific guidance versus this HubSpot adaptation
+
+The Deepline source emphasises accepted signals, workflow version, explanation and action thresholds. Its external data sources and orchestration remain Deepline-specific. The HubSpot adaptation defines a company-level score contract with independent evidence quality checks. It deliberately keeps score computation separate from owner assignment and outreach.
+
+HubSpot documents a [native lead scoring tool](https://knowledge.hubspot.com/scoring/understand-the-lead-scoring-tool), including company fit, engagement and combined scoring on eligible plans. An external, versioned scoring calculation is an alternative implementation. Neither option removes the need for a local business policy.
+
+## Prerequisites and licensing
+
+Agree a precise business outcome, such as accepted opportunities within a fixed follow-up window. Select an untouched evaluation cohort and document how customer accounts, open opportunities and disallowed territories are handled. Identify each input's owner and freshness rule before choosing weights.
+
+Company scoring requires eligible Marketing Hub or Sales Hub Professional/Enterprise access according to the official scoring guide; contact and deal scoring entitlements differ. Do not assume that company scoring gives access to AI-generated contact scores. If native scoring is not available, keep the result offline until an administrator approves destination properties. Use the [Properties API guide](https://developers.hubspot.com/docs/api-reference/latest/crm/properties/guide) to inspect types and enumeration values. A downstream [workflow](https://knowledge.hubspot.com/workflows/create-workflows) needs its own subscription, permissions and action entitlement checks.
+
+## Implementation steps
+
+1. **Create a versioned input snapshot.** Key it by company object type and record ID, not company name. Include accepted firmographic evidence, associated-contact engagement evidence where authorised, source dates and unknown indicators. Preserve relationship context: one contact interacting with two companies must not transfer every signal to both accounts by accident. Use HubSpot's [documented company associations](https://developers.hubspot.com/docs/api-reference/legacy/crm/objects/companies/guide) to inspect record relationships.
+2. **Define the score contract.** Specify the allowed range, component weights, exclusions, stale-signal treatment and evidence required before a score can be published. Keep confidence as a separate dimension rather than simply giving unknown accounts a zero. Set a threshold boundary deliberately; a value exactly on the boundary must have one unambiguous result.
+3. **Keep output fields explanatory.** Proposed company properties include `ops_fit_score`, `ops_engagement_score`, `ops_score_state`, `ops_score_version` and `ops_score_receipt_url`. Save component contributions and rejected inputs in the external receipt. If native score properties are used instead, inspect their actual internal names rather than pretending these proposed properties are system-generated scores.
+4. **Connect a band to one action.** An illustrative high band may request seller review, a middle band may request missing research, and an unknown state may request identity repair. A high score is not permission to change `hubspot_owner_id`, create an opportunity or modify associated deals. Put a named action owner and service expectation beside the band.
+5. **Stage a controlled rollout.** Compare candidate rules against the baseline on the same frozen inputs. Have RevOps approve the chosen version, property destinations and cohort. Before a future write, reread the company and compare input revisions; after writing the approved result, read it back. This is a conflict-detection policy, not a guarantee of atomic update semantics.
+
+## Approval boundary and failure handling
+
+No scoring feature is activated and no property is created by this plan. A later pilot requires explicit approval of the model version, publication fields and permitted downstream actions. Account ownership, lifecycle stages, deal stages and communication eligibility stay outside the score writer's authority.
+
+Hold a score when identity is ambiguous, evidence has expired or the expected action is undefined. A provider error is not negative fit. Prevent repeated recalculation loops by recording which input revision produced the output. If native and external scores disagree, compare their definitions and source windows instead of assuming one is defective.
+
+## Validation and monitoring
+
+Test missing inputs, contradictory data, duplicated engagement, exact thresholds, stale evidence, deterministic reruns and a rule-version change. Recalculate every fixture manually and compare the explanation as well as the total. Review accepted opportunity rate by score band over a fixed period, including coverage and unknown rates. A rising average score is not evidence of better sales outcomes. Retain the previous rule for comparison, but treat rollback as a new approved publication rather than assuming property history automatically restores the operational model. All such tests remain planned; no live portal results are claimed.

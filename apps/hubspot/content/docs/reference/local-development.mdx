@@ -1,0 +1,51 @@
+---
+title: Run and verify the handbook
+description: Reproduce the HubSpot documentation app with the repository’s declared toolchain and validation commands.
+icon: Code
+---
+
+This app lives at `apps/hubspot` in the Fumadocs workspace. It consumes the local framework packages and does not require a HubSpot token, database or research-provider credential to run.
+
+## Install the workspace
+
+Use the Node version declared by the repository and its pinned `pnpm@12.8.1` package manager. Run these commands from the repository root:
+
+```bash
+corepack pnpm install --frozen-lockfile
+corepack pnpm exec turbo run build --filter='hubspot-automation^...'
+```
+
+The second command builds only this app’s workspace dependencies. It does not deploy anything or publish packages.
+
+## Start the app
+
+```bash
+corepack pnpm --filter hubspot-automation dev
+```
+
+The app listens on port 3000. Open the running app in your browser. The root redirects to the handbook; the sidebar, full-text search and synthetic CRM explorer are available without external service access.
+
+For a production build:
+
+```bash
+corepack pnpm --filter hubspot-automation build
+corepack pnpm --filter hubspot-automation start
+```
+
+## Check changes
+
+```bash
+corepack pnpm --filter hubspot-automation validate:content
+corepack pnpm --filter hubspot-automation test
+corepack pnpm --filter hubspot-automation types:check
+corepack pnpm exec oxlint apps/hubspot
+corepack pnpm exec oxfmt --check apps/hubspot
+```
+
+Content validation checks source-guide coverage, frontmatter, local links and navigation targets. The production build compiles and prerenders the MDX pages. Neither proves a live CRM integration; the guide examples remain source-verified until tested in an authorised portal.
+
+## Review the visible behaviour
+
+Check desktop and narrow mobile layouts, search results and the no-results state, sidebar navigation, light and dark themes, a missing-page response and the seed explorer. Select a record, change the status filter and confirm that a hidden record does not remain displayed as the active detail.
+
+Do not add real contact exports or credentials to this public app. Put any future live CRM connector behind a separately designed authentication, authorisation, review and audit boundary.

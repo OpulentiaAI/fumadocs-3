@@ -1,0 +1,38 @@
+---
+title: 'Attach competitive advertising evidence to HubSpot account research'
+description: 'Create a cited competitor advertising brief with controlled CRM summaries, reproducible coverage and clear limits on inference.'
+---
+
+Competitive advertising research is useful when it changes a testable marketing decision. It becomes misleading when a handful of creatives is presented as a competitor's budget, targeting strategy or conversion performance. Build an evidence sheet first, then give HubSpot users a short, dated interpretation with a link back to the underlying observations.
+
+Source: [Deepline competitive advertising intelligence guide](https://deepline.com/docs/guides/competitive-advertising-intelligence). Source read date: **2026-10-18**. This is an original offline implementation plan with **no live HubSpot execution** or live competitor measurements. No source prose, advertising copy or code is reproduced.
+
+## Deepline-specific guidance versus this HubSpot adaptation
+
+The source describes a bounded advertising question, advertiser resolution, observation-level evidence and hypotheses for the researcher's own marketing tests. Its maintained ad-intelligence Play, supported sources and execution costs are Deepline-specific. This guide does not claim that HubSpot can retrieve competitor ad libraries or determine another advertiser's spend.
+
+The HubSpot adaptation treats research as reviewed company context. HubSpot's [Companies API documentation](https://developers.hubspot.com/docs/api-reference/legacy/crm/objects/companies/guide) supports company properties and associations; it does not make an external research conclusion true. Keep the detailed evidence sheet outside CRM and store only a useful summary and reference in approved properties.
+
+## Prerequisites and licensing
+
+Choose one question, advertiser list, region, date window and permitted public sources. Establish the advertiser's relationship to the company record: operating company, brand, parent or agency. Confirm that screenshots and copied observations can be retained under the source's terms; this plan recommends original summaries rather than reproducing creatives.
+
+The proposed property model uses standard companies and suggested custom properties, subject to account limits and permission checks. Inspect types and internal names using the [Properties API](https://developers.hubspot.com/docs/api-reference/latest/crm/properties/guide). If scheduled CRM updates or reminders are later implemented with native workflows, a qualifying Professional or Enterprise plan and action-specific access are required according to [workflow documentation](https://knowledge.hubspot.com/workflows/create-workflows). The research method itself does not require HubSpot Ads access, and no Ads integration capability is assumed.
+
+## Implementation steps
+
+1. **Resolve the advertiser to an account.** Carry the HubSpot company ID, known domains, brand aliases and reviewed match explanation into the research job. A matching advertiser name alone is insufficient. Keep an agency or reseller separate when the public record does not establish that the intended competitor is the advertiser.
+2. **Create an observation sheet.** Use one row per distinct creative/source record. Retain source identifier, source URL, observed date, source-reported run dates where available, region, format, landing URL and a short original description. Label unavailable fields explicitly. A request failure and an empty successful search must produce different statuses.
+3. **Deduplicate at the correct level.** Repeated collection of one creative should not increase its theme count. Preserve materially different variants and record the counting rule. Compare later runs under the same scope; a new source or changed filter can explain a difference without implying a strategic shift.
+4. **Separate facts from hypotheses.** An observed demo offer supports a statement about the collected message, not the offer's profitability. A proposed test might compare a clearer setup explanation with the current page while keeping audience and offer constant. Specify the primary outcome and evaluation window before any future test, and avoid adopting unsupported competitor numerical claims.
+5. **Prepare the HubSpot summary.** Suggested custom properties `ops_ad_brief_url`, `ops_ad_research_checked_at`, `ops_ad_research_scope` and `ops_ad_research_state` are proposed, not built-in fields. Include a short finding and its uncertainty in the approved brief. Associate existing contacts or deals only if that link has a business reason and separate approval; do not manufacture an opportunity because a competitor advertises.
+
+## Approval boundary and failure handling
+
+A marketing owner approves the interpretation, circulation and any proposed experiment. Publishing advertisements, modifying audiences, changing budgets or contacting competitor employees is outside this plan. The offline evidence review does not authorise campaign activation or live CRM writes.
+
+If a source is blocked or unavailable, preserve that gap instead of reporting no advertising. If a landing page redirects, record the observed destination and avoid assuming that every viewer saw the same content. Conflicting advertiser identity holds the CRM summary until resolved. Later approved CRM updates should compare the reviewed property snapshot with the current record and read back the result; a timeout is an unknown outcome, not permission to append duplicate summaries.
+
+## Validation and operating measures
+
+Use a fictional fixture containing an exact creative repeat, two genuine variants, an advertiser alias, an unavailable source and a successful search with no result. Confirm that only distinct observed creatives contribute to counts, each material finding links to evidence, and every recommendation is labelled a hypothesis. Have a second reviewer reproduce the sample counts and identify all unknowns. Measure usable briefs and accepted test ideas rather than impressions, budget or ROI that the source never supplied. These are future acceptance checks, not executed HubSpot or advertising tests.

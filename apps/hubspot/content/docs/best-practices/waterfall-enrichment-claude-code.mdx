@@ -1,0 +1,48 @@
+---
+title: 'Plan a Claude Code email waterfall with a HubSpot review gate'
+description: 'Use inspected enrichment contracts, representative pilots and field-level acceptance before proposing HubSpot contact updates.'
+---
+
+A waterfall is useful when several authorised providers offer complementary coverage. It becomes expensive and risky when every provider runs for every row, any returned address counts as success or the resulting file is imported without identity review. The implementation should stop on accepted evidence, preserve unsuccessful outcomes and keep CRM publication separate from enrichment execution.
+
+Source: [Deepline waterfall enrichment in Claude Code](https://deepline.com/docs/guides/waterfall-enrichment-claude-code). Read date: **2026-10-18**. This is an original offline implementation plan; **no live HubSpot execution**, provider execution or CLI installation has been performed. Source licensing is not established, so no source code or copied command sequence appears here.
+
+## Deepline-specific context vs HubSpot adaptation
+
+The source describes using Claude Code to inspect a maintained Deepline Play, run a representative pilot and review provenance, usage and errors before scaling. It distinguishes maintained Play contracts from owned workflows and warns that the broad integration catalog does not define the stages of an individual waterfall. Pricing examples are time-sensitive and are deliberately not reused here.
+
+The HubSpot adaptation adds a reviewed source-to-contact mapping and a narrowly permitted CRM change set after the enrichment result. A provider waterfall, approval ledger and idempotency register are proposed integration components, not documented built-in HubSpot features. Claude Code is an execution interface, not an approver and not a substitute for data-use authority.
+
+## Prerequisites and licensing
+
+Obtain provider access, spending authority, a lawful data-use policy and a maximum pilot budget. Inspect the current workflow contract before choosing input columns, routes, stop conditions or billing assumptions. Keep provider and HubSpot credentials in a server-side secret store, not in prompts, input files or receipts.
+
+For HubSpot, verify contact read scopes and defer write permission until the approved publication stage. [The scopes guide](https://developers.hubspot.com/docs/apps/developer-platform/build-apps/authentication/scopes) explains that permissions are endpoint-specific. This design can run outside HubSpot without a workflow subscription. If moved into HubSpot workflows, confirm the [available products and actions](https://knowledge.hubspot.com/workflows/create-workflows); [custom code actions](https://knowledge.hubspot.com/workflows/choose-your-workflow-actions) specifically require Data Hub Professional or Enterprise. None of those licences includes third-party enrichment entitlement.
+
+## HubSpot mapping and proposed metadata
+
+Keep contact record ID, source person ID, name, current employer and employer domain in the input contract. Read current `email`, `firstname`, `lastname` and `jobtitle` only as needed; inspect actual property metadata rather than assuming all portal fields have universal names. The [contacts API documentation](https://developers.hubspot.com/docs/api-reference/legacy/crm/objects/contacts/guide) supports contact property operations.
+
+Proposed custom contact properties, not built-in fields, are `email_enrichment_state`, `email_evidence_date` and `email_enrichment_run_id`. Detailed stage receipts, provider costs and candidate rejection reasons belong in an external run ledger. A single CRM source field is insufficient when several providers contributed different evidence. The [properties API](https://developers.hubspot.com/docs/api-reference/legacy/crm/properties/guide) documents how to inspect definitions before any future schema creation.
+
+## Practical implementation steps
+
+1. **Specify acceptance before discovery.** Require a defensible person match, the correct employment frame and a permitted verification result. Decide how catch-all and unknown mailbox results behave. An address being syntactically valid is not the stopping criterion.
+2. **Inspect the selected route.** Have the builder record the current workflow identity, version, required inputs, declared provider sequence, timeout policy and billing units. A maintained route may be used unchanged; a custom provider order needs a separately owned and reviewed contract.
+3. **Prepare a representative pilot.** Select fictional or authorised examples with a clean match, a missing domain, an employment conflict and a likely no-result case. Use a CSV parser to create the subset so quoted multiline records remain intact. Retain the original file revision and row IDs.
+4. **Run only after approval in a future deployment.** Track each stage as skipped, completed, failed or rejected by policy. Advance to the next provider only when the contract permits it. A provider outage may merit retry rather than being disguised as a normal miss that triggers unlimited fallback spending.
+5. **Review economics and coverage.** Compare accepted rows against all input rows and include charges for attempted stages, verification, retries and manual repair. Do not extrapolate a universal per-row price from one successful provider call. Require explicit approval for the full-file spending envelope.
+6. **Prepare HubSpot proposals.** Resolve each accepted result to its existing contact ID. Show the old email, proposed email, person and employer evidence, verifier timestamp and route version. Keep company and deal associations unchanged unless separately reviewed; email domain alone is not proof that a person belongs on a particular deal.
+7. **Publish only the approved subset.** A future authorised writer should compare current contact state, skip unchanged fields and read back each affected record by ID. Link the observed result to the original enrichment receipt. CRM publication failure must not cause completed provider stages to run again.
+
+## Approval boundary
+
+Pilot execution, additional paid stages, full-file execution and CRM publication are distinct authorisations. The reviewer may permit designated enrichment metadata updates while requiring approval for primary email replacement, identity merges and employer changes. Sending or sequence enrolment remains outside this workflow. Accepted mailbox evidence does not establish permission to contact the person.
+
+## Failure handling
+
+Use explicit ambiguous, invalid, no-result and failed outcomes. Cache completed stage receipts under a stable input revision and workflow version. Bound retries and record the reason for stopping. If a write response is lost, retrieve the known contact and reconcile before another write; if provider state is uncertain, inspect its receipt before purchasing the lookup again. Never fabricate an email to make the accepted export complete.
+
+## Validation and release criteria
+
+Test early-stage acceptance, late-stage acceptance, all-provider misses, a verifier rejection, a timeout and a repeated input revision. Confirm that later stages are skipped after acceptance and that unchanged reruns add neither provider charges nor CRM side effects where the designed ledger permits reuse. Validate output columns against the approved HubSpot mapping and keep row counts reconciled. A future pilot must prove read-back and duplicate prevention before scale. This guide documents that validation plan, not observed live behaviour.

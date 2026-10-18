@@ -1,0 +1,50 @@
+---
+title: 'Design a recoverable HubSpot RevOps workflow'
+description: 'Separate enrichment, review and CRM writes so a HubSpot automation can be inspected, replayed and repaired safely.'
+---
+
+Start with one outcome: for example, an inbound contact is matched to the right company and placed in an owner-review queue. Do not bundle enrichment, assignment, deal creation and outbound messaging into an opaque success flag. Each stage should have a result that another operator can inspect and a failure state that someone can repair.
+
+Source: [Deepline RevOps workflow automation](https://deepline.com/docs/guides/revops-workflow-automation). Read date: **2026-10-18**. This original implementation plan is offline; **no live HubSpot execution**, workflow activation or CRM write has occurred. Source licensing is not established, so this guide does not reproduce source prose or code.
+
+## Deepline-specific context vs HubSpot adaptation
+
+The source presents narrow workflow contracts, accountable ownership, test cases, run receipts and safe reruns, with links to Deepline's execution surfaces. It does not specify your HubSpot workflow configuration or prove that a prebuilt integration implements every control.
+
+This adaptation recommends HubSpot contacts and companies as business records, with an external run ledger for coordination. HubSpot's [CRM model](https://developers.hubspot.com/docs/api-reference/latest/crm/understanding-the-crm) supplies records, properties and associations; cross-system idempotency, approval history and an atomic business transaction are not implied by that model.
+
+## Prerequisites and licensing
+
+Name a business owner for the outcome, a technical maintainer and an approver for record changes. Inspect competing automations and define a field allowlist. Obtain an approved integration identity with only the relevant [endpoint scopes](https://developers.hubspot.com/docs/apps/developer-platform/build-apps/authentication/scopes). Store secrets outside CRM properties and logs.
+
+Choose native workflows only after checking the portal's qualifying Professional or Enterprise subscription, supported object type and action availability in [Create workflows](https://knowledge.hubspot.com/workflows/create-workflows). Native custom code requires Data Hub Professional or Enterprise under [workflow actions](https://knowledge.hubspot.com/workflows/choose-your-workflow-actions). An external orchestrator is an alternative, not a way to assume access to paid HubSpot functionality. Keep this design executable as a manual review process until its feature dependencies are confirmed.
+
+## Recommended workflow contract
+
+For the company-match example, define the trigger as an accepted intake revision containing a stable source identity and contact context. The output is a reviewed company match and an assigned internal repair or review action. Permitted side effects should initially exclude ownership reassignment, lifecycle advancement, deal creation and customer communication.
+
+Propose custom contact properties `revops_match_state`, `revops_match_reviewed_at` and `revops_run_receipt_url`. These names are recommendations, not default HubSpot fields. Inspect [property definitions](https://developers.hubspot.com/docs/api-reference/legacy/crm/properties/guide) and valid options before mapping them. Keep the complete candidate set and execution history externally; a latest-run field cannot represent parallel runs or historical revisions.
+
+## Implementation steps
+
+1. **Capture and freeze the input.** Store source ID, revision, contact record ID, account ID, relevant property values and policy version. Separate a duplicate delivery from a new revision. An orchestration key should include the HubSpot account and object type so identical numeric IDs in different accounts cannot collide.
+
+2. **Resolve company identity.** Compare the supplied domain and organisation evidence against [company records](https://developers.hubspot.com/docs/api-reference/legacy/crm/objects/companies/guide). A shared parent domain, consultancy email or subsidiary name should lead to review, not an automatic association. Keep the contact's historical relationships intact unless the reviewer approves a change.
+
+3. **Prepare the effect plan.** Show the proposed [contact](https://developers.hubspot.com/docs/api-reference/legacy/crm/objects/contacts/guide) metadata update, intended company association and optional review task. Discover the correct [association definition](https://developers.hubspot.com/docs/api-reference/latest/crm/associations/associate-records/guide), rather than assuming labels or numeric IDs transfer between portals.
+
+4. **Review before committing effects.** The reviewer selects the company or rejects the match. Re-read the affected fields immediately before any later authorised write; a rep may have resolved the relationship already. Apply effects in a deliberate order and record each returned destination ID independently.
+
+5. **Verify and reconcile.** Read the record and relationship back. Mark the business outcome complete only when both metadata and the intended association are observed. If a review task is required, use the documented [task model](https://developers.hubspot.com/docs/api-reference/legacy/crm/activities/tasks/guide), including a responsible owner and due date.
+
+## Approval boundary
+
+Automatic stages may parse, normalise, compare and prepare proposals. The CRM owner approves identity and association changes; the sales owner approves ownership and commercial changes. Messaging remains outside this workflow. Any expansion of permitted effects requires a revised contract and fresh review, not merely a new branch hidden inside a classifier.
+
+## Failure handling
+
+Use distinct outcomes for invalid intake, no candidate, ambiguous match, provider failure, review rejected, partial write and verification unknown. Retry transient reads with a bound. Do not repeat successful writes when another effect fails. After a timeout, reconcile observed state and recorded effect IDs before replaying anything. Keep a repair queue with one named owner and a next action; a generic error log without accountability is not recovery.
+
+## Validation and release criteria
+
+Offline fixtures should cover a clean match, shared domain, changed CRM association, duplicate delivery, provider outage and a timeout after an effect may have succeeded. Assert that the same input produces the same proposal and that a rejected proposal cannot reach the write stage. A separately authorised pilot must demonstrate read-back, safe replay and a stop switch. Compare accepted matched-and-reviewed records with all eligible inputs, including exceptions. A workflow that runs frequently but leaves unassigned records behind has not met its business contract.

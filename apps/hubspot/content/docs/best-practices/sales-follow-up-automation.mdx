@@ -1,0 +1,48 @@
+---
+title: 'Prepare HubSpot sales follow-ups with evidence and review'
+description: 'Design a draft-first follow-up process with verified recipients, accountable tasks and a separate approval step before customer communication.'
+---
+
+A fast follow-up is useful only when it reaches the right person and says what the team can actually deliver. Separate transcript extraction, draft preparation and CRM task creation from sending. That separation makes it possible to improve turnaround without allowing generated prose to create a commercial promise.
+
+Source: [Deepline sales follow-up automation](https://deepline.com/docs/guides/sales-follow-up-automation). Read date: **2026-10-18**. This guide is original offline implementation guidance; **no live HubSpot execution**, email send or sequence enrolment has occurred. Source licensing is not established and source prose/code are not reproduced.
+
+## Deepline-specific context vs HubSpot adaptation
+
+The source recommends evidence-backed drafts, explicit recipients and dates, and separate approval for customer communication and commercial fields. Deepline integration links describe potential connections, not verified support for a particular mail-draft action in your HubSpot account.
+
+The HubSpot adaptation below uses contact and deal associations for context, a controlled draft store for review and tasks for accountable execution. HubSpot's [notes](https://developers.hubspot.com/docs/api-reference/2026-03/crm/activities/notes/guide) and [tasks](https://developers.hubspot.com/docs/api-reference/legacy/crm/activities/tasks/guide) APIs document CRM activities; neither should be presented as proof that a customer email was drafted in a connected inbox or delivered.
+
+## Prerequisites and licensing
+
+Require authorised meeting notes or a transcript, confirmed participants, the responsible rep and an approved channel policy. Check recording consent, sensitive information handling and the permitted audience for any transcript reference. A known mailbox or provider “valid” status is not evidence of permission to contact the person.
+
+If reminders are built with native workflows, verify subscription, object type and action availability under [Create workflows](https://knowledge.hubspot.com/workflows/create-workflows). Custom code actions require Data Hub Professional or Enterprise under [workflow actions](https://knowledge.hubspot.com/workflows/choose-your-workflow-actions). If the team later chooses sequences, HubSpot's [object guide](https://knowledge.hubspot.com/records/understand-objects) identifies a Sales or Service Hub Professional or Enterprise dependency; enrolment and sending requirements must still be checked separately. This plan does not require or authorise sequences.
+
+## Data and association model
+
+Resolve each intended recipient to an existing contact record ID and inspect `email`, name and company context using the [contacts guide](https://developers.hubspot.com/docs/api-reference/legacy/crm/objects/contacts/guide). Select the relevant deal by its record ID, not by taking the first opportunity attached to a company. Use the account's supported [association types](https://developers.hubspot.com/docs/api-reference/latest/crm/associations/associate-records/guide) for the contact, deal and resulting task.
+
+Propose custom deal metadata `followup_review_state`, `followup_due_at` and `followup_receipt_url` only if useful to the team. They are suggested custom properties, not native delivery indicators. Store draft revision, reviewer decision and any later send receipt in the controlled orchestration store. Never infer “sent” from a completed internal task.
+
+## Implementation steps
+
+1. **Extract a promise ledger.** Identify requested assets, agreed actions, responsible people and explicitly stated deadlines. Attach a source location to each item. Keep an internal recommended response date distinct from a date agreed with the customer. Unknown ownership or timing must remain a review question.
+
+2. **Build the recipient set.** Confirm who attended, who should receive the follow-up and whether copying additional colleagues is authorised. A transcript mentioning someone's name does not make them a recipient. For shared inboxes or recently changed employers, stop and ask the rep to confirm identity.
+
+3. **Prepare a concise draft.** Include a factual recap, only the promised resources that actually exist, and one clear next action. Do not invent attachments, pricing concessions, implementation dates or security assurances. Keep unsupported suggestions in reviewer notes rather than customer-facing text.
+
+4. **Create the internal handoff plan.** A task can ask the rep to review and send the approved draft, with `hs_task_subject`, `hs_task_body`, `hubspot_owner_id` and required due-date `hs_timestamp` as documented by the tasks API. Include a restricted draft reference and associate it with the contact and deal. If recording a reviewed recap as a note, use `hs_note_body` and the appropriate note timestamp; a CRM note is not a mail draft.
+
+5. **Record decisions separately from delivery.** Save approved draft revision, reviewer, review time and intended recipients. A later, independently authorised delivery step must use its own channel contract and return its own receipt. Keep draft accepted, send requested, delivery observed and delivery unknown as different states.
+
+## Approval boundary
+
+The rep approves content, recipients, assets and timing before any send. The commercial owner approves new commitments or changes to terms. Automation may prepare a draft and remind an internal owner under policy, but it must not silently enrol contacts, change deal stage or send a message because a deadline elapsed. Approval of one revision does not authorise a regenerated version with different promises.
+
+## Failure handling and validation
+
+Missing evidence, inaccessible assets and unclear recipients should produce held drafts with named repair owners. A bounced or unknown delivery outcome must not become a second blind send. Reconcile conversation ID, draft revision and any channel receipt before retrying, and avoid duplicate review tasks for repeated transcript events.
+
+Offline acceptance cases should cover no agreed deadline, contradictory notes, a missing promised file, a copied non-participant and a rep editing the draft after approval. Confirm that every factual commitment has evidence and every recipient was explicitly selected. A later authorised pilot should inspect task associations and time zones, then separately verify the chosen delivery channel. Measure meeting-to-approved-draft time and overdue handoffs, keeping unsent drafts and uncertain deliveries outside completed-follow-up totals.

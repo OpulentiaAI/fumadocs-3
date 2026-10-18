@@ -1,0 +1,48 @@
+---
+title: 'Preserving field-level data provenance in HubSpot'
+description: 'Design a HubSpot provenance model that records evidence, freshness, field ownership and conflicts without confusing history with verification.'
+---
+
+Source: [Deepline data provenance in CRM](https://deepline.com/docs/guides/data-provenance-in-crm). Source and HubSpot documentation read: 2026-10-18.
+
+This offline implementation plan has had no live HubSpot execution. It addresses a reporting problem that a populated field cannot solve: whether someone can explain where a value came from, when it was observed and why the business trusted it.
+
+## Deepline-specific behaviour versus HubSpot adaptation
+
+Deepline's source frames provenance as a control around critical CRM fields and authorised writers. Its integration references do not establish that HubSpot automatically retains a provider's supporting evidence. This adaptation recommends an external field-level evidence ledger, with concise pointers on HubSpot records. Neither the ledger format nor the proposed completeness metric is a documented HubSpot feature.
+
+HubSpot does document requesting current and historical property values using `propertiesWithHistory` in its [contacts](https://developers.hubspot.com/docs/api-reference/legacy/crm/objects/contacts/guide), [companies](https://developers.hubspot.com/docs/api-reference/legacy/crm/objects/companies/guide) and [deals](https://developers.hubspot.com/docs/api-reference/legacy/crm/objects/deals/guide) guides. Property history helps investigate changes, but an integration-originated update is not proof of the external claim behind that update.
+
+## Prerequisites and licensing
+
+Name a data steward and choose the few fields that materially affect segmentation, routing or forecasts. Secure read access to those objects and their history; request write access only for a later approved metadata rollout. Obtain provider retention and redistribution rights before saving raw evidence, especially personal data. A permission to view a CRM record does not imply permission to see every externally stored document.
+
+Inspect custom-property capacity and the [Properties API](https://developers.hubspot.com/docs/api-reference/legacy/crm/properties/guide). Use standard objects plus a secured ledger as the baseline, rather than assuming a custom object is licensed. Native custom code actions require Data Hub Professional or Enterprise according to [workflow actions](https://knowledge.hubspot.com/workflows/choose-your-workflow-actions); an external scheduled audit can perform the proposed analysis without depending on that action. All subscription entitlements still need account-level confirmation.
+
+## Design the evidence model
+
+A provenance row should identify the HubSpot account, object type, record ID and internal property name. Add the source system, source record identifier, observed-at time, fetched-at time, accepted-at time, validation decision, policy version and authorised writer. Keep observation and retrieval times distinct: downloading an old company estimate today does not make the estimate current.
+
+For a company employee estimate, retain the provider's range or methodology if supplied instead of manufacturing an exact headcount. For a contact job title, record whether the contact supplied it or a third party inferred it. For a deal amount, reference the approved commercial evidence rather than replacing it with a firmographic estimate.
+
+Suggested HubSpot custom properties include `ops_evidence_reference`, `ops_evidence_checked_at` and `ops_provenance_state`. They are proposed names, not built-ins. One record-level reference cannot fully represent every property; it should lead to a ledger that can distinguish each field. Avoid storing complete raw receipts in a long CRM text property that sales users can unintentionally expose.
+
+## Implementation steps
+
+1. **Inventory consumers.** Map each critical property to the reports, workflows and integrations that use it. Assign a steward, permitted writers, evidence requirements and a field-specific freshness window. A postal region and a buying signal need different expiry rules.
+2. **Reconstruct carefully.** Read current values and available property history. Link verifiable integration receipts to the relevant revisions. Where historical evidence is missing, label the source unknown; do not infer it merely because an enrichment app was installed at the time.
+3. **Preserve relationships.** Resolve contact-to-company and deal-to-company associations explicitly. HubSpot's [associations guide](https://developers.hubspot.com/docs/api-reference/latest/crm/associations/associate-records/guide) documents retrieving relationship IDs and labels. A provenance row for a company's industry must not be attributed to every company connected to a contact without a declared association policy.
+4. **Add prospective receipts.** Require approved writers to produce evidence before proposing a value. Record the pre-update value, decision and subsequent read-back result. Preserve rejected candidates outside the accepted-field history so they remain available for conflict review without becoming reporting inputs.
+5. **Expose useful status.** Show missing evidence, stale evidence and conflicting evidence as distinct conditions. An operator should be able to open a permission-controlled receipt and see a repair owner rather than an unexplained red flag.
+
+## Approval boundary
+
+Approve the field registry, retention schedule and source-precedence rules before backfilling metadata. Backfilling a provenance pointer is not permission to overwrite the underlying business value. Changing an owner, lifecycle stage, deal amount or primary company association requires a separate decision. Legal and privacy owners should decide what external evidence may be retained and who may access it.
+
+## Failure handling
+
+If the value updates but the ledger receipt fails, mark the handoff incomplete and reconcile it; do not invent a successful audit trail. If a source disappears, retain permitted identifiers and the last verified timestamp rather than pretending the URL remains live. When two sources disagree, keep both candidates and the decision reason. Ensure revoked access does not leave a publicly accessible evidence mirror.
+
+## Validation and acceptance
+
+Build fixtures for an unknown legacy value, two conflicting sources, a fresh fetch of old evidence, a changed company association and a repeated receipt. Confirm that timestamps retain their meaning, access controls apply and one field's evidence cannot satisfy another field's requirement. Measure completeness at the critical-field level: accepted current values with all required evidence divided by in-scope populated field instances. Report empty fields and stale evidence separately. These checks are planned acceptance tests; no HubSpot history or records were queried live for this guide.

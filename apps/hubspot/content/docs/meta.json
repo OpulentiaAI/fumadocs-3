@@ -1,0 +1,16 @@
+{
+  "pages": [
+    "---Get started---",
+    "index",
+    "get-started",
+    "---Operate your CRM---",
+    "guides",
+    "recipes",
+    "---Build with agents---",
+    "agents",
+    "---Best-practice library---",
+    "best-practices",
+    "---Reference---",
+    "reference"
+  ]
+}

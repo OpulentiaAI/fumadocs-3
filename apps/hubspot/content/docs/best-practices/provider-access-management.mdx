@@ -1,0 +1,48 @@
+---
+title: 'Govern enrichment-provider access around HubSpot'
+description: 'Plan least-privilege provider access, credential custody, data-rights checks and revocation without storing secrets in CRM records.'
+---
+
+Provider access is a business dependency, not just an API key. A workflow may have permission to query an enrichment service while lacking rights to retain a returned field or distribute it through the CRM. Build an access register that connects each approved use to its contract owner, credential reference, budget and dependent HubSpot fields.
+
+Source: [Deepline provider access management](https://deepline.com/docs/guides/provider-access-management). Read date: **2026-10-18**. This original guide is an offline implementation plan with **no live HubSpot execution**. No provider or CRM access was changed. Source licensing is unestablished, so neither source prose nor source code is reused.
+
+## Deepline-specific context vs HubSpot adaptation
+
+Deepline's source frames provider management around contracts, limits, dependent workflows, usage and safe reruns. It points to an integration catalogue but does not prove that an available integration carries your organisation's data rights or budget approval.
+
+The HubSpot adaptation recommended here uses CRM metadata to make dependencies visible while keeping credential custody and detailed access enforcement outside the CRM. HubSpot's documented object and property capabilities are storage mechanisms, not a substitute for a secrets manager, procurement register or legal decision.
+
+## Prerequisites and licensing
+
+Name procurement, security and operational owners. Review provider terms for permitted purposes, geographic restrictions, retention, redistribution and subcontractors. Inventory every existing workflow that reads provider data or writes HubSpot. Obtain current endpoint scopes from HubSpot's [scope reference](https://developers.hubspot.com/docs/apps/developer-platform/build-apps/authentication/scopes), and keep read-only assessment credentials distinct from any later write credential.
+
+A dedicated Provider custom object is optional, not a prerequisite. [HubSpot's object guidance](https://knowledge.hubspot.com/records/understand-objects) states that custom objects require Enterprise; association labels require Professional or Enterprise. Without those entitlements, keep the register externally and store a non-secret register link on relevant company records. Native workflow execution and custom code have their own subscription restrictions, documented under [workflow actions](https://knowledge.hubspot.com/workflows/choose-your-workflow-actions); provider access does not grant those features.
+
+## Recommended record model
+
+Keep the supplier's commercial company record separate from your prospect companies. If using a Provider object, propose custom properties `ops_provider_key`, `ops_contract_owner`, `ops_rights_reviewed_at`, `ops_approved_purposes`, `ops_usage_cap`, `ops_access_state` and `ops_register_url`. These names are a suggested schema, not HubSpot defaults. Choose data types and enumeration options through the [properties API guidance](https://developers.hubspot.com/docs/api-reference/legacy/crm/properties/guide), and inspect account limits before creation.
+
+Do not put tokens, credential material or authentication headers into properties, notes, tasks or error messages. A credential reference should identify an entry in a controlled secrets system, not contain the value. Keep detailed usage receipts and field-level licensing decisions in the external register rather than attaching large provider payloads to every contact.
+
+## Implementation steps
+
+1. **Map dependencies before granting access.** For each provider, list the consuming workflow version, business purpose, CRM object, allowed properties, refresh interval and downstream recipients. A work-email lookup and company-size lookup may need different retention and approval policies even when purchased from one supplier.
+
+2. **Separate source access from destination writes.** An enrichment worker can retrieve candidate values without the ability to alter deal stage or ownership. Define a second controlled write stage for allowed contact or company properties. Preserve the original CRM record ID so revocation never breaks identity reconciliation.
+
+3. **Make the budget enforceable outside the CRM.** Use the provider's actual billing unit and a local reservation ledger for concurrent requests. A HubSpot numeric cap property is useful context, but it does not prevent simultaneous workers from exceeding a budget. Count retries and unsuccessful billable requests as part of consumption.
+
+4. **Represent operational responsibility with tasks.** Create a proposed review task before contract expiry or rights-review expiry, linked to the supplier company or authorised Provider record. The [tasks API](https://developers.hubspot.com/docs/api-reference/legacy/crm/activities/tasks/guide) supports assigned owner, subject, body, due date and record associations. Include the register reference and required decision, not the key.
+
+5. **Rehearse revocation and recovery.** Describe how to pause consuming workflows, revoke or rotate the credential, check previously scheduled work and restore access after a successful minimal test. A fallback provider needs its own rights assessment and output-quality check; it is not automatically authorised by the primary supplier's outage.
+
+## Approval boundary
+
+Security approves scopes and credential custody; the contract owner approves spend and usage rights; the CRM data owner approves destination fields. Adding a provider, changing a fallback, broadening data distribution or raising a cap requires a fresh decision from the appropriate owner. Routine usage summaries can be computed automatically, but they must not renew contracts or silently expand permitted purposes.
+
+## Failure handling and validation
+
+Classify expired credentials, insufficient scopes, unclear retention rights, cap exhaustion and unavailable providers separately. Stop dependent writes on a rights failure, not merely provider calls. Assign repair tasks with due times and keep the denied operation's identity for reconciliation. Do not rotate keys repeatedly in response to an unexplained permission failure.
+
+Validate the plan with a dependency table: every destination field has a permitted source and accountable owner; every provider has a revocation path; no sample receipt exposes secrets. Offline tests should cover revoked access, simultaneous cap reservations, supplier replacement and a contract expiring during a batch. A later authorised pilot must prove that pausing access prevents further effects and that restored access only resumes explicitly eligible work. Evaluate spend per accepted output, not cost per successful HTTP response.
