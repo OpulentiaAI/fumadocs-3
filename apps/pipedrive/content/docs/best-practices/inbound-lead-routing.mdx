@@ -1,0 +1,43 @@
+---
+title: 'Designing an inbound intake-to-owner handoff in Pipedrive'
+description: 'Preserve submission context and consent while resolving persons, classifying intent and assigning a verifiable response obligation.'
+---
+
+Original source: [Inbound lead routing: a practical control design](https://deepline.com/docs/guides/inbound-lead-routing) — Deepline. Retrieved **2026-10-18**; source SHA-256: `c9d84b045421606c11b5cf45e8bae8352cf5c87f2fc2b8cba810f40b1f940c21`.
+
+This original offline adaptation has had no live Pipedrive or provider execution. No source prose/code is reproduced and source licensing remains unestablished. It starts before territory allocation: a submission needs classification, identity resolution and an accountable response even when organization context is incomplete.
+
+## Deepline-specific behaviour versus Pipedrive adaptation
+
+The source's intake states and duplicate window are operating recommendations, not built-in Pipedrive behaviour. Deepline's documented integrations are not assumed installed. This design uses an external submission ledger, existing Pipedrive [persons](https://developers.pipedrive.com/docs/api/v1/Persons) and, where appropriate, [leads](https://developers.pipedrive.com/docs/api/v1/Leads). A lead is a potential deal, not a synonym for every contact or support enquiry.
+
+## Prerequisites and licensing
+
+Agree how demo requests, support enquiries, job applications and partner referrals differ. Name intake and territory-dispute owners. Approve data rights, retention, channel eligibility and required [OAuth scopes](https://pipedrive.readme.io/docs/marketplace-scopes-and-permissions-explanations). Confirm user permissions and record visibility in the account. Use an external queue or manual review without assuming native rotation, custom-code actions or a particular paid automation feature.
+
+## Define intake identity and fields
+
+Preserve submission ID, source channel, received time, original message, consent evidence and campaign/partner reference in a restricted ledger. Distinguish two requests from the same person from two deliveries of one request. Keep exact event history externally rather than overwriting a single person field.
+
+Resolve person ID, `org_id` and current `owner_id`. If proposing a lead, select its UUID and retain `person_id`, `organization_id` and separate `owner_id`; the v1 lead organization key differs from `org_id`. A lead needs a title and at least one person or organization. Suggested intake state, classification and receipt labels are custom-field proposals, not API names: discover account-specific hashes and types through [field metadata](https://pipedrive.readme.io/docs/core-api-concepts-custom-fields). Leads share deal fields. In v2 person writes, use the documented `custom_fields` object.
+
+## Implementation steps
+
+1. **Persist the submission first.** Validate supplied contact details without inventing company or consent data. Malformed submissions remain visible to an operator.
+2. **Classify intent.** A customer seeking support should not enter an acquisition process. Ambiguous messages get a review obligation with the original received time preserved.
+3. **Resolve person and organization.** Prefer stored IDs, then corroborated matching inputs. The Persons API supports exact-match email search, but a result is not proof of unique business identity. Inspect all candidates and known mappings before creating anything.
+4. **Apply ownership precedence.** Preserve protected accounts and partner rules before territory allocation. Assign a Pipedrive user ID through `owner_id` only under the approved policy. Missing organization context goes to a named intake reviewer. See [Pipedrive lead routing](/docs/best-practices/pipedrive-lead-routing).
+5. **Set a response obligation.** Compute the deadline from submission time, calendar and timezone. For a v2 [activity](https://developers.pipedrive.com/docs/api/v1/Activities), use `subject`, `owner_id`, `due_date`, `due_time`, the applicable `lead_id`/`org_id`, and `participants` with a primary `person_id`. Keep the authoritative UTC instant externally and verify displayed scheduling in a pilot. Persist the activity ID before retrying.
+6. **Verify the handoff.** Read back the intended record's owner and metadata plus activity assignee, due time and links. Activity creation is not evidence that a human responded.
+
+## Approval boundary
+
+Approve classification, ownership precedence and deadlines before activation. Ambiguous identity, partner disputes, merges and protected-owner changes require review. Enrichment cannot create consent. Message sending, marketing eligibility and lead conversion are separate decisions, not incidental intake effects.
+
+## Failure handling
+
+Separate unclassifiable, duplicate delivery, disputed territory, missing identity and integration errors. Assign repair owners and due times. Reconcile a creation timeout before another activity or lead is created; do not reset response time. Optional provider failure should not prevent a reviewer receiving the known facts. Pause rate-limited work under the [Pipedrive rate-limit rules](https://pipedrive.readme.io/docs/core-api-concepts-rate-limiting).
+
+## Validation and acceptance
+
+Test a demo, support enquiry, partner referral, duplicate delivery, second genuine request and disputed account. Require correct classification, preserved source context, explicit owners and correct activity links. Measure submission-to-accepted-follow-up time, counting held and failed cases separately. No production records or SLA results were examined. See the [Pipedrive API reference](/docs/reference/pipedrive-api).

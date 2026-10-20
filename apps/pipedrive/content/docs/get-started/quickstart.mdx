@@ -1,0 +1,39 @@
+---
+title: Start with evidence, not a send button
+description: A read-first Pipedrive workflow with an offline plan and explicit review gates.
+---
+
+Start with the offline explorer, then use the documented Pipedrive API only when a separately authorised connection is available. This handbook does not install a Pipedrive CLI, connect your account or enable live writes. Its optional Deepline adapter is documented separately and has not been live-verified.
+
+## Choose a bounded outcome
+
+Begin with one organisation, one research question and one deliverable: “Read the supplied evidence, identify unknowns and prepare an account brief. Do not send a message or modify CRM records.” A brief is a complete result; it does not silently authorise outreach.
+
+The sponsor example uses Nocturnal Valley as a client-supplied campaign. Its attendance is disputed, available inventory is unsupplied and sponsor exclusions are incomplete. Its 24–26 September 2026 dates are historical by October 2026, not an upcoming opportunity.
+
+## Try the offline path first
+
+Open the [synthetic CRM explorer](/docs/guides/seed-explorer). Its organisations, persons, deals and relationship keys are local fixtures, not Pipedrive account data. No explorer action sends a message or creates a record.
+
+The local automation module produces a deterministic dry-run plan for one narrow operation: changing an existing deal's title. It is not a generic CRM import or person-update tool. An approval must be bound to that plan's digest and tenant; changing either requires a new approval. This is an application safety contract, not a Pipedrive API confirmation feature. See the [API and local automation reference](/docs/reference/pipedrive-api) for the runnable interface and [local development](/docs/reference/local-development) for tests.
+
+## Resolve a person with documented API reads
+
+After the account owner authorises a read, establish the Pipedrive company account, effective permissions and purpose. Start with an exact, task-authorised email rather than a broad export. The following are HTTP request shapes, not shell commands; substitute an authorised email and the returned numeric person ID:
+
+```http
+GET /api/v2/persons/search?term=reviewer%40example.com&fields=email&exact_match=true&limit=10
+GET /api/v2/persons/{id}
+```
+
+Pipedrive documents `exact_match` as a full, case-insensitive match. Search returns candidates, not proof of unique identity. Compare the person's name, email and organisation; stop if multiple plausible matches remain. A missing result can reflect permissions or query coverage and is not proof that the person does not exist.
+
+The [official Persons reference](https://developers.pipedrive.com/docs/api/v1/Persons) documents these v2 endpoints despite the reference URL's `v1` segment. Person reads and writes use Pipedrive fields such as `name`, `owner_id` and `org_id`; they do not use another CRM's property envelope. Custom fields and available options must be discovered in the target account. Authentication, endpoint versions and pagination are covered in the [API reference](/docs/reference/pipedrive-api).
+
+## Produce a reviewable result
+
+Keep the brief small: resolved Pipedrive identity, records actually read, cited activity, unknowns and a proposed next action. Retain the observation date and source for each research claim, and retain the tenant and record ID for each CRM match. Neither a category match nor an employee title proves a sponsorship budget.
+
+Use bounded reads and account for endpoint token costs. Pipedrive has a shared daily token budget and burst limits; do not retry a depleted daily budget as though it were a short transient error. Follow the [official rate-limiting guidance](https://pipedrive.readme.io/docs/core-api-concepts-rate-limiting).
+
+Continue with the [read-only brief recipe](/docs/recipes/crm-brief), [sponsor qualification](/docs/recipes/sponsor-qualification) or [safe-write guide](/docs/guides/safe-writes). Historical inspiration, licensing and source limitations are recorded in [sources and provenance](/docs/reference/sources).

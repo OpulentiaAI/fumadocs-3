@@ -1,0 +1,44 @@
+---
+title: 'Design a recoverable Pipedrive RevOps workflow'
+description: 'Separate evidence, review and CRM effects so an automation can be inspected, replayed and repaired safely.'
+---
+
+Original source: [RevOps workflow automation: build reliable workflows](https://deepline.com/docs/guides/revops-workflow-automation) — Deepline. Source retrieved: **2026-10-18**; source SHA-256: `7f35a25439dc0e504d459e75a20eee991e7ae530878f6dec81de30598428d57b`. Pipedrive documentation checked: **2026-10-20**.
+
+Choose one outcome, such as a reviewed organization match for an inbound person. Do not bundle enrichment, assignment, deal creation and messaging under one success flag. This original offline plan includes no live Pipedrive execution, provider execution or activation. Source licensing is unestablished; source prose and code are not reproduced.
+
+## Deepline-specific context versus Pipedrive adaptation
+
+The source's contract and receipt discipline informs this design, but its integration listings do not prove installation. Pipedrive [persons](https://developers.pipedrive.com/docs/api/v1/Persons) and [organizations](https://developers.pipedrive.com/docs/api/v1/Organizations) are business records; the external run ledger supplies approval history and effect coordination. Their APIs do not imply an atomic cross-system business transaction.
+
+## Prerequisites and licensing
+
+Name the business owner, maintainer and approver. Inspect competing automations, fields and the [necessary OAuth scopes](https://pipedrive.readme.io/docs/marketplace-scopes-and-permissions-explanations). Store secrets outside records and logs. Keep the design usable as manual review until a real integration contract is confirmed. No native custom-code workflow, universal round-robin action or subscription entitlement is assumed.
+
+## Recommended workflow contract
+
+The input is an accepted submission revision with stable source identity and person context. The output is a reviewed organization match and assigned internal review/repair work. Exclude owner reassignment, lead conversion, deal creation, stage movement and external communication initially.
+
+Optional labels `revops_match_state`, `revops_match_reviewed_at` and `revops_run_receipt_url` are [custom-field proposals](https://pipedrive.readme.io/docs/core-api-concepts-custom-fields), not built-ins. Resolve hashes, types and options and put v2 values in `custom_fields`. Preserve candidate sets and historical runs externally; the latest-run field is not an audit log.
+
+## Implementation steps
+
+1. **Freeze input.** Store source ID, revision, company account, entity type, person ID, relevant values and policy version. Separate duplicate delivery from a new revision. Scope keys by account and entity to avoid numeric-ID collisions.
+2. **Resolve organization identity.** Compare supplied domain, legal name and location against existing organizations. Shared parent domains, consultancy emails and subsidiaries require review. A person's current organization is expressed by `org_id`; do not model an arbitrary set of labelled employer associations or erase historical deal participation.
+3. **Prepare effects.** Show a minimal person metadata diff, the intended `org_id` change if any, and optional review activity. Read back the person and intended organization; use their documented link fields rather than inventing an association-type ID.
+4. **Review and recheck.** The reviewer chooses or rejects the match. Re-read relevant values before any authorised write and withdraw stale proposals. Coordinate writers, apply only approved effects and persist each returned ID separately.
+5. **Verify components.** Read person `org_id`, approved metadata and the organization directly. If an [activity](https://developers.pipedrive.com/docs/api/v1/Activities) is required, verify its `owner_id`, due date/time and `org_id`; use a primary participant to set its person in v2. Complete the business result only when every required effect is observed.
+
+## Approval boundary
+
+Parsing, comparison and proposals may run under policy. The CRM owner approves identity and organization-link changes; sales approves commercial and ownership changes. Messaging is separate. Expanding effects requires a revised reviewed contract, not a hidden classifier branch. See the [Pipedrive API reference](/docs/reference/pipedrive-api).
+
+## Failure handling
+
+Keep invalid input, no candidate, ambiguity, provider failure, rejected review, partial write and verification unknown distinct. Bound transient reads and do not replay successful effects when another fails. Reconcile known IDs after timeouts. Pause on `429` under the [company daily token budget and per-token burst model](https://pipedrive.readme.io/docs/core-api-concepts-rate-limiting).
+
+If [v2 webhooks](https://pipedrive.readme.io/docs/guide-for-webhooks-v2) are selected later, validate configured HTTP Basic authentication and expected account, persist before acknowledging, and deduplicate using `meta.company_id` plus event `meta.id` and consumer identity. Do not invent HMAC signatures or treat `meta.entity_id` as the event identity. A webhook is a refresh signal, not approval to mutate records.
+
+## Validation and release criteria
+
+Use fixtures for a clean match, shared domain, changed organization, duplicate event, provider outage and lost write response. Confirm rejected or stale proposals cannot write and replay adds no duplicate activities. A future authorised pilot must prove read-back, safe replay and a stop switch. Measure reviewed accepted matches against all eligible inputs, including exceptions; execution frequency alone is not success.

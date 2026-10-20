@@ -1,0 +1,48 @@
+---
+title: 'Enriching trial signups asynchronously into Pipedrive'
+description: 'Preserve onboarding while resolving signup identity, company evidence and replay-safe Pipedrive handoffs after registration.'
+---
+
+Source: [Deepline trial signup enrichment](https://deepline.com/docs/guides/free-trial-signup-enrichment). Source read date: 2026-10-18.
+
+This offline implementation plan has had no live Pipedrive execution. A valid signup should reach the product even when optional enrichment is slow or unavailable. The CRM handoff is a recoverable downstream process, not a condition for creating the user's account.
+
+## Deepline-specific behaviour versus Pipedrive adaptation
+
+The source separates the saved signup event from company lookup and later lifecycle decisions. It describes an input-revision example in which a user's company correction must survive an older result. Deepline discovery and enrichment actions belong to its tooling. This adaptation retains that event discipline but proposes Pipedrive persons, organisations and explicit record links as the destination. The queue, revision checks and handoff ledger are recommended application controls, not automatically supplied by Pipedrive.
+
+Pipedrive’s [Persons API](https://developers.pipedrive.com/docs/api/v1/Persons) documents person IDs, `owner_id`, `org_id`, and `emails`/`phones` arrays. A person is a contact, not a Pipedrive user. Treat employer linkage, primary-address selection and field updates as separately reviewed decisions; retain the existing organisation unless a linkage change is explicitly approved. Resolve an existing person before proposing creation; failed optional organisation lookup does not justify a duplicate person.
+
+All `ops_` names in this guide are proposed display labels or external-ledger columns, not literal Pipedrive API keys. Resolve each approved field against the account’s [custom-field metadata](https://pipedrive.readme.io/docs/core-api-concepts-custom-fields), validate its type and option IDs, and map it to its account-specific 40-character hash. For the v2 person, organisation and deal endpoints, send mapped values inside `custom_fields`; never send an `ops_` label as a top-level payload key. Deepline integrations mentioned by the source are documented upstream, not installed or executed here. Pipedrive references were reviewed on **2026-10-20**.
+
+## Prerequisites and licensing
+
+The product must durably store a signup event ID, product user ID, event time and the submitted identity before starting optional work. Agree privacy notices, retention and provider use with the appropriate owner. Secure a scoped integration, an exception queue and a service responsible for reconciling handoffs.
+
+Use an authorised export and review-first proposals as the baseline. Before a later integration, verify the actual Pipedrive permissions, field capacity and selected API contracts; API access, automation access, Campaigns access and provider rights are separate. This design requires no native scoring engine, custom-code workflow action or Pipedrive CLI. It does not assume that an account has any paid automation or enrichment feature. A trial signup is neither qualification nor consent for Campaigns or sales outreach.
+
+## Define the record model
+
+Use the product user ID as the external stable mapping key and retain the Pipedrive person ID once resolved. A proposed person custom field labelled `ops_product_user_id` is a searchable reference only where its type permits it; do not claim API-enforced uniqueness or upsert semantics. Enforce mapping uniqueness and event deduplication in the external service.
+
+Suggested custom fields include `ops_trial_started_at`, `ops_signup_input_revision`, `ops_company_match_state` and `ops_trial_evidence_reference`. They are proposed names, not default fields. Store product activity separately from enrichment status. For organisations, retain record ID, normalised domain and match evidence. A free-mail address does not establish the mailbox provider as the user's employer. A consultant may legitimately use one domain while evaluating for another organisation.
+
+## Implementation steps
+
+1. **Acknowledge the signup independently.** Commit the product account and event, then enqueue optional enrichment. The product response should not wait for a provider or Pipedrive. Record pending state without presenting inferred company details as user-confirmed facts.
+2. **Resolve the existing person.** Use the saved Pipedrive person ID first, then an approved product-ID or email candidate-match policy. Person email search can return candidates; it is not an atomic unique-email upsert. Review contradictory identities, and after uncertain creation reconcile the durable mapping and current records before any second create.
+3. **Find the organisation candidate.** Use a work domain only when appropriate and preserve user-entered corrections. Review creation and person `org_id` changes independently. A separately approved [lead](https://developers.pipedrive.com/docs/api/v1/Leads) has its own UUID and must link to a person or organisation (`organization_id` on the lead API); leads inherit deal custom fields. Do not create a lead, deal or activity simply because a trial began.
+4. **Compare revisions at application time.** If a user corrects the company while revision one is processing, retain the late result against revision one but do not apply it over revision two. Queue a new lookup only for the current revision. User-supplied and inferred values should remain distinguishable.
+5. **Stage and verify the handoff.** Propose only approved trial/evidence fields. After an authorised v2 person update, reread its fields and `org_id`. Retain the event-to-person mapping and organisation ID so repeated delivery reconciles existing work. When a future sales handoff is approved, resolve actual user `owner_id`, deal pipeline/stage IDs and any activity contract separately.
+
+## Approval boundary
+
+Approve the identity policy, field mapping and organisation-creation rules before enabling writes. Keep `owner_id`, lead conversion, deal `pipeline_id`/`stage_id`, scoring and communications outside enrichment. Successful employer matching is not qualification. A later handoff evaluates current account state, suppression and eligibility under its own policy.
+
+## Failure handling
+
+On provider failure, preserve the signup and an explicit unresolved or provider-error state. Do not score unknown company data as poor fit. On a timeout after a CRM write, read and reconcile the saved destination before repeating the operation. If a contact exists but organisation link fails, mark a partial handoff and repair only the relationship. Never make the user repeat signup to repair internal integration state.
+
+## Validation and acceptance
+
+Plan fixtures for a work email, personal email, existing contact, repeated event, changed company, slow provider and CRM permission failure. For every permitted signup, onboarding must complete independently. The revised company must survive stale callbacks, and retries must not duplicate persons or associations. Track enrichment latency, accepted matches, unresolved cases and handoff repair age separately from activation. Any later conversion analysis must avoid attributing causality to enrichment without an appropriate experiment.

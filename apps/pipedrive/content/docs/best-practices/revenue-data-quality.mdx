@@ -1,0 +1,40 @@
+---
+title: 'Improve Pipedrive revenue data without rewriting the forecast'
+description: 'Define stage-aware deal checks, protect seller-owned commercial fields and maintain a measurable repair queue.'
+---
+
+Original source: [Revenue data quality](https://deepline.com/docs/guides/revenue-data-quality) — Deepline. Source retrieved: **2026-10-18**; source SHA-256: `d24c028b82795b69c06d47f0de6c55a252913735c5139cace446286450bc9455`. Pipedrive documentation checked: **2026-10-20**.
+
+Decision-ready revenue data explains ownership, buying context and evidence for the next step. Filling every field does not achieve that. This original offline plan includes no live Pipedrive execution or account inspection. Source rights are unestablished; no source prose or code is reproduced.
+
+## Deepline-specific context versus Pipedrive adaptation
+
+Deepline integration references do not establish your account's schema or permissions. This design uses Pipedrive deals, persons, organizations and activities. Stage-specific checks, waivers and repair deadlines are recommended policies, not native guarantees of completeness or forecast accuracy.
+
+## Prerequisites and licensing
+
+Sales leadership defines each stage and its evidence requirements. Read target-account pipeline/stage metadata, field definitions, user mappings and competing automations. Begin with an export or approved read access; no particular native workflow or subscription is presumed. [Deal documentation](https://developers.pipedrive.com/docs/api/v1/Deals) defines numeric stage/pipeline IDs and separates `status` from stage. The normal deal list excludes archived deals, so define that coverage boundary explicitly.
+
+## Build a deal-centred quality contract
+
+Inspect `id`, `title`, `pipeline_id`, `stage_id`, `owner_id`, `status`, `value`, `currency`, `expected_close_date`, `person_id` and `org_id`. A populated deal linked to the wrong legal entity is still defective. Confirm that each stage belongs to the intended pipeline; display labels are not IDs.
+
+Suggested labels `revqa_state`, `revqa_primary_reason`, `revqa_first_detected_at`, `revqa_review_due_at` and `revqa_receipt_url` require approved [custom-field definitions](https://pipedrive.readme.io/docs/core-api-concepts-custom-fields). Map them to actual hashes and option IDs and use v2 `custom_fields`; do not send the labels as field keys. Keep UTC deadlines and every simultaneous defect in an external receipt rather than relying on one mutable primary reason.
+
+## Implementation steps
+
+1. **Version rules by pipeline and stage.** Unknown budget may be legitimate early in discovery but a missing contracting entity may block procurement. Explain why each field is required instead of applying a universal missing-value filter.
+2. **Check identity before completeness.** Resolve `org_id` and `person_id` against the intended records and review additional deal participants where necessary. Shared domains do not justify merging subsidiaries or selecting a decision maker.
+3. **Evaluate evidence freshness.** Link next steps to permitted notes or interactions and distinguish customer commitments from internal activity deadlines. An old stage calls for review, not automatic loss status.
+4. **Propose repairs.** Show current state, rule, evidence, recommended question and accountable reviewer. Never set `value` to zero, push `expected_close_date` forward or demote `stage_id` to improve a score.
+5. **Maintain one repair episode.** Under an approved policy, create an [activity](https://developers.pipedrive.com/docs/api/v1/Activities) with `subject`, `note`, `owner_id`, `due_date`, `due_time` and `deal_id`. Use primary person participants and `org_id` only where established. Reuse the same defect episode rather than creating a fresh activity on every scan, then verify its destination and owner.
+
+## Approval boundary
+
+Stewards can approve defined metadata normalisation; the commercial owner approves value, currency, stage, status, owner and closing-date changes. Bind each write to a reviewed revision and recheck seller edits. Assessment is not authority for outreach or conversion. See the [Pipedrive API reference](/docs/reference/pipedrive-api).
+
+## Failure handling and validation
+
+Separate unsupported stages, inaccessible records, missing links, stale evidence and uncertain outcomes. A permission failure means unassessed, not clean. Preserve the first-detected time; waivers need an expiry and reason. Reconcile writes before retrying, follow pagination and pause `429` responses using the documented [rate-limit model](https://pipedrive.readme.io/docs/core-api-concepts-rate-limiting).
+
+Offline fixtures should include unknown early-stage value, mixed currencies, obsolete stage, changed owner, inaccessible organization and overdue commitment. Reconcile assessed, excluded and failed deals. A later authorised pilot must read back metadata and verify activity links. Report aged critical exceptions, reopened defects and coverage; field population and successful scans alone do not prove reliable forecasts.

@@ -1,0 +1,40 @@
+---
+title: 'Attach competitive advertising evidence to Pipedrive account research'
+description: 'Create a cited competitor advertising brief with controlled CRM summaries, reproducible coverage and clear limits on inference.'
+---
+
+Competitive advertising research is useful when it changes a testable marketing decision. It becomes misleading when a handful of creatives is presented as a competitor's budget, targeting strategy or conversion performance. Build an evidence sheet first, then give Pipedrive users a short, dated interpretation with a link back to the underlying observations.
+
+Source: [Deepline competitive advertising intelligence guide](https://deepline.com/docs/guides/competitive-advertising-intelligence). Source read date: **2026-10-18**. This is an original offline implementation plan with **no live Pipedrive execution** or live competitor measurements. No source prose, advertising copy or code is reproduced.
+
+## Deepline-specific guidance versus this Pipedrive adaptation
+
+The source describes a bounded advertising question, advertiser resolution, observation-level evidence and hypotheses for the researcher's own marketing tests. Its maintained ad-intelligence Play, supported sources and execution costs are Deepline-specific. This guide does not claim that Pipedrive can retrieve competitor ad libraries or determine another advertiser's spend.
+
+This Pipedrive adaptation treats research as reviewed organisation context. The [Organizations API](https://developers.pipedrive.com/docs/api/v1/Organizations) provides the destination fields, not evidence that an external conclusion is correct. Keep detailed observations outside CRM and store only an approved summary and reference.
+
+All `ops_` names in this guide are proposed display labels or external-ledger columns, not literal Pipedrive API keys. Resolve each approved field against the account’s [custom-field metadata](https://pipedrive.readme.io/docs/core-api-concepts-custom-fields), validate its type and option IDs, and map it to its account-specific 40-character hash. For the v2 person, organisation and deal endpoints, send mapped values inside `custom_fields`; never send an `ops_` label as a top-level payload key. Deepline integrations mentioned by the source are documented upstream, not installed or executed here. Pipedrive references were reviewed on **2026-10-20**.
+
+## Prerequisites and licensing
+
+Choose one question, advertiser list, region, date window and permitted public sources. Establish the advertiser's relationship to the organisation record: operating company, brand, parent or agency. Confirm that screenshots and copied observations can be retained under the source's terms; this plan recommends original summaries rather than reproducing creatives.
+
+Use an authorised export and review-first proposals as the baseline. Before a later integration, verify the actual Pipedrive permissions, field capacity and selected API contracts; API access, automation access, Campaigns access and provider rights are separate. This design requires no native scoring engine, custom-code workflow action or Pipedrive CLI. It does not assume that an account has any paid automation or enrichment feature. No competitor-ad-library retrieval or advertising integration is assumed.
+
+## Implementation steps
+
+1. **Resolve the advertiser to an account.** Carry the Pipedrive organisation ID, known domains, brand aliases and reviewed match explanation into the research job. A matching advertiser name alone is insufficient. Keep an agency or reseller separate when the public record does not establish that the intended competitor is the advertiser.
+2. **Create an observation sheet.** Use one row per distinct creative/source record. Retain source identifier, source URL, observed date, source-reported run dates where available, region, format, landing URL and a short original description. Label unavailable fields explicitly. A request failure and an empty successful search must produce different statuses.
+3. **Deduplicate at the correct level.** Repeated collection of one creative should not increase its theme count. Preserve materially different variants and record the counting rule. Compare later runs under the same scope; a new source or changed filter can explain a difference without implying a strategic shift.
+4. **Separate facts from hypotheses.** An observed demo offer supports a statement about the collected message, not the offer's profitability. A proposed test might compare a clearer setup explanation with the current page while keeping audience and offer constant. Specify the primary outcome and evaluation window before any future test, and avoid adopting unsupported competitor numerical claims.
+5. **Prepare the Pipedrive summary.** Suggested custom fields `ops_ad_brief_url`, `ops_ad_research_checked_at`, `ops_ad_research_scope` and `ops_ad_research_state` are proposed, not built-in fields. Include a short finding and its uncertainty in the approved brief. Associate existing persons or deals only if that link has a business reason and separate approval; do not manufacture an opportunity because a competitor advertises.
+
+## Approval boundary and failure handling
+
+A marketing owner approves the interpretation, circulation and any proposed experiment. Publishing advertisements, modifying audiences, changing budgets or contacting competitor employees is outside this plan. The offline evidence review does not authorise campaign activation or live CRM writes.
+
+If a source is blocked or unavailable, preserve that gap instead of reporting no advertising. If a landing page redirects, record the observed destination and avoid assuming that every viewer saw the same content. Conflicting advertiser identity holds the CRM summary until resolved. Later approved CRM updates should compare the reviewed field snapshot with the current record and read back the result; a timeout is an unknown outcome, not permission to append duplicate summaries.
+
+## Validation and operating measures
+
+Use a fictional fixture containing an exact creative repeat, two genuine variants, an advertiser alias, an unavailable source and a successful search with no result. Confirm that only distinct observed creatives contribute to counts, each material finding links to evidence, and every recommendation is labelled a hypothesis. Have a second reviewer reproduce the sample counts and identify all unknowns. Measure usable briefs and accepted test ideas rather than impressions, budget or ROI that the source never supplied. These are future acceptance checks, not executed Pipedrive or advertising tests.

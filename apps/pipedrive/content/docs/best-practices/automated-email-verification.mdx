@@ -1,0 +1,40 @@
+---
+title: 'Design a pre-send email verification gate for Pipedrive persons'
+description: 'Keep mailbox evidence, person identity and communication permission separate when preparing an approved outbound cohort.'
+---
+
+Email verification answers a technical question at a point in time; it does not answer whether a contact should receive a campaign. Build three separate gates for person identity, mailbox evidence and communication eligibility. Only a record that passes the approved policy for all three belongs in a candidate sending cohort, and even that cohort needs a final eligibility check at the sending boundary.
+
+Source: [Deepline automated email verification guide](https://deepline.com/docs/guides/automated-email-verification). Source read date: **2026-10-18**. This is an original offline implementation plan with **no live Pipedrive execution**, verification requests or email sending. The source's damaged cost-example formatting was checked against its raw HTML; no ambiguous figures are reused.
+
+## Deepline-specific guidance versus this Pipedrive adaptation
+
+Deepline's guide describes inspecting a verifier's contract and orchestrating a checked gate. Its tool discovery and provider execution belong to Deepline. This Pipedrive adaptation proposes contact-level operational states and a separate decision receipt. It does not claim that Pipedrive performs third-party mailbox verification or treats a custom verified flag as campaign permission.
+
+The distinction is material: [Pipedrive Campaigns](https://support.pipedrive.com/en/article/campaigns-marketing-contacts) is a paid add-on that requires opt-in and a subscribed marketing status for campaign recipients. A favourable technical mailbox result cannot establish that permission or override an unsubscribe.
+
+All `ops_` names in this guide are proposed display labels or external-ledger columns, not literal Pipedrive API keys. Resolve each approved field against the account’s [custom-field metadata](https://pipedrive.readme.io/docs/core-api-concepts-custom-fields), validate its type and option IDs, and map it to its account-specific 40-character hash. For the v2 person, organisation and deal endpoints, send mapped values inside `custom_fields`; never send an `ops_` label as a top-level payload key. Deepline integrations mentioned by the source are documented upstream, not installed or executed here. Pipedrive references were reviewed on **2026-10-20**.
+
+## Prerequisites and licensing
+
+Select an authorised contact sample, an approved verification provider, its current response definitions and a documented suppression source. Have the privacy owner define eligibility for the intended communication type and jurisdiction. Marketing email, one-to-one sales activity and other channels are not interchangeable; this plan does not make a legal determination for any of them.
+
+Pipedrive’s [Persons API](https://developers.pipedrive.com/docs/api/v1/Persons) documents person IDs, `owner_id`, `org_id`, and `emails`/`phones` arrays. A person is a contact, not a Pipedrive user. Treat employer linkage, primary-address selection and field updates as separately reviewed decisions; retain the existing organisation unless a linkage change is explicitly approved. Campaigns and double opt-in are separate from third-party mailbox verification; this plan assumes neither the add-on nor an automation feature is enabled.
+
+## Implementation steps
+
+1. **Preserve the actual address.** Key the row by person object type, record ID and the exact address revision being evaluated. Keep the raw address and a comparison representation. Do not strip dots or plus suffixes globally: transformations can change identity outside providers that explicitly document equivalence. Check duplicate inputs before incurring lookup cost.
+2. **Resolve identity and suppression first.** Verify that the address belongs to the intended person and current employer where relevant. Read the authoritative communication permissions. [Pipedrive marketing status](https://support.pipedrive.com/en/article/campaigns-marketing-contacts) attaches to an email address, not to a lead or deal; creating another person record must not bypass an opt-out.
+3. **Map provider responses deliberately.** Proposed fields include `ops_mailbox_state`, `ops_mailbox_checked_at`, `ops_identity_state`, `ops_send_gate_state` and `ops_verification_receipt_url`. Suggested decisions are accepted, held, rejected and operational retry. These are local categories, not a universal provider schema. Keep catch-all and unknown outcomes visible; a network timeout provides no mailbox conclusion.
+4. **Bind the decision to the address.** Store the verifier’s original status, source time, policy version and permitted communication type. Use person `org_id` for employer context. Do not change organisation linkage or the `emails` collection as a verification side effect. A changed primary address invalidates the old gate.
+5. **Prepare a separate send handoff.** A later approved process may publish only gate metadata after rereading the person. Recheck suppression and freshness at the sending boundary. Never translate accepted verification into `marketing_status: subscribed`, a Campaigns send or automatic sales outreach.
+
+## Approval boundary and failure handling
+
+This guide authorises neither verification spend nor CRM writes nor sending. A pilot needs explicit approval of its sample, provider budget, policy and intended channel. Changes to subscription preferences require their own valid permission evidence; no reviewer may substitute a provider score for the contact's action.
+
+Use bounded retries for temporary provider errors and retain the original failure. Hold conflicting verifier observations instead of shopping for a favourable answer. When a suppression source is unavailable, fail closed for candidate sending rather than assuming eligibility. If a contact unsubscribes after the batch was built, the final gate must remove it even when all other evidence remains current.
+
+## Validation and acceptance
+
+Prepare fixtures for an eligible verified address, catch-all, invalid address, timeout, duplicate, changed employer, later opt-out and changed primary email. Confirm that only the first remains eligible under the example conservative policy. Test that rerunning the same address revision creates no duplicate candidate export and that held rows cannot leak into the accepted file. Count usable eligible identities, holds by reason and verification-to-use delay; measure actual delivery separately. These are offline acceptance criteria, not live Pipedrive results or an inbox-placement guarantee.

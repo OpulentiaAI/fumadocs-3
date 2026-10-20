@@ -1,0 +1,63 @@
+---
+title: Run and verify the Pipedrive handbook
+description: Use the repository toolchain to check the offline Pipedrive app without credentials or live writes.
+icon: Code
+---
+
+The app lives at `apps/pipedrive` in the Fumadocs workspace, with package name `pipedrive-automation`. The documentation, synthetic explorer and local plan/approval tests run without a Pipedrive token, database or research-provider credentials. The optional Deepline adapter is a separate, not-live-verified integration path; it is not required for local checks.
+
+## Use the declared toolchain
+
+Use the Node version and pinned package-manager version declared in the repository rather than guessing or upgrading them. Read the workspace setup instructions before installing dependencies. From the repository root, the workspace installation command is:
+
+```bash
+corepack pnpm install --frozen-lockfile
+```
+
+This installs local dependencies; it neither authenticates Pipedrive nor authorises a provider request.
+
+## Run offline checks first
+
+From the app directory:
+
+```bash
+cd apps/pipedrive
+node --test test/*.test.mjs
+node scripts/validate-content.mjs
+```
+
+The local test suite checks fixture and content behaviour and the plan/approval contract. Content validation checks frontmatter, guide coverage, links and navigation targets. These checks require no live CRM account and prove no live API compatibility or production replay protection.
+
+The [API reference](/docs/reference/pipedrive-api) documents the runnable plan interface, limited to an existing deal's title. Keep plan generation and approval tests offline: a deterministic dry run, even when approved, must not silently activate external writes. The executor's locked local journal must be retained for replay protection; production use also needs validated state persistence, tenant controls and read-back checks described in [safe writes](/docs/guides/safe-writes).
+
+## Start the documentation app
+
+From the repository root, build the app's workspace dependencies and start development:
+
+```bash
+corepack pnpm exec turbo run build --filter='pipedrive-automation^...'
+corepack pnpm --filter pipedrive-automation dev
+```
+
+The declared development script listens on port 3000. Open the running app in a browser and inspect the handbook, search and synthetic explorer. For a production build and local server:
+
+```bash
+corepack pnpm --filter pipedrive-automation build
+corepack pnpm --filter pipedrive-automation start
+```
+
+These commands are development instructions, not a statement that a particular checkout has been built or visually verified. A production documentation build does not deploy a CRM executor.
+
+## Check app changes
+
+```bash
+corepack pnpm --filter pipedrive-automation validate:content
+corepack pnpm --filter pipedrive-automation test
+corepack pnpm --filter pipedrive-automation types:check
+corepack pnpm exec oxlint apps/pipedrive
+corepack pnpm exec oxfmt --check apps/pipedrive
+```
+
+The production build compiles and prerenders MDX. Inspect desktop and narrow layouts, search results and no-results state, sidebar navigation, themes, a missing-page response and the seed explorer. Select a record, change the status filter and confirm a hidden record does not remain displayed as the active detail.
+
+Do not add real person exports, credentials or raw provider receipts to this public app. Test any future live connector separately in an authorised Pipedrive test account, verify the endpoint-specific field shapes and permissions, and record what was actually checked. Mintlify is discontinued and is not a supported documentation-provider dependency here.

@@ -1,0 +1,6 @@
+{
+  "title": "Reference",
+  "icon": "Library",
+  "pages": ["pipedrive-api", "local-development", "sources"],
+  "defaultOpen": false
+}

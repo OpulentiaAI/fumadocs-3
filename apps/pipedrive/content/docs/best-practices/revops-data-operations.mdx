@@ -1,0 +1,42 @@
+---
+title: 'Operate Pipedrive data as an owned revenue service'
+description: 'Maintain field policies, provenance, refresh cycles, costs and repair ownership for persons, organizations and deals.'
+---
+
+Original source: [RevOps data operations: manage quality, cost, and accountability](https://deepline.com/docs/guides/revops-data-operations) — Deepline. Source retrieved: **2026-10-18**; source SHA-256: `7d4f3363cfd8125465a816542aaf80a9d29fe7dcbf0d4ed7f0060c7358e3099b`. Pipedrive documentation checked: **2026-10-20**.
+
+Data operations need a queue, an owner and acceptable-output criteria. More populated fields are not the goal; known provenance, freshness and a repair path are. This original offline guide includes no live Pipedrive execution or account verification. Source licensing is unknown and source prose/code are not reused.
+
+## Deepline-specific context versus Pipedrive adaptation
+
+Deepline's provider and agent references describe possible execution surfaces, not installed integrations. The proposed service separates compact CRM metadata from an external field-level ledger. Pipedrive's record APIs supply storage and links, not supplier-cost allocation, precedence rules or cross-system ownership.
+
+## Prerequisites and feature caveats
+
+Agree maintained datasets, consumers and decision impact with business owners. Inventory fields, duplicate policies, existing writers and permissions. Inspect actual [custom-field metadata](https://pipedrive.readme.io/docs/core-api-concepts-custom-fields), not labels alone. An export and manual review can start the service; any later integration needs approved endpoint access, secrets custody and a supported execution contract. No native workflow custom code or paid automation feature is presumed.
+
+## Define the operating model
+
+For each field, record Pipedrive company account, entity type, record ID, field key/hash, owner, permitted sources, precedence, expiry, validation, writer and downstream use. Research-derived organization size may be refreshable while negotiated deal `value` and `currency` remain seller-owned. Newer provider evidence does not automatically outrank a confirmed human fact.
+
+Suggested labels `dataops_quality_state`, `dataops_last_reviewed_at` and `dataops_receipt_url` are optional custom-field proposals. Resolve actual hashes and types per entity; v2 person, organization and deal writes use `custom_fields`. Keep observation time, source, acceptance decision, version and full history externally. One record-level timestamp cannot honestly describe fields refreshed on different days.
+
+## Implementation steps
+
+1. **Classify intake.** Separate validation, missing-field enrichment, expired evidence and user corrections. Give each a persistent identity and impact-based priority. Organization-identity errors blocking routing outrank cosmetic formatting.
+2. **Assess current state.** Read only required [person](https://developers.pipedrive.com/docs/api/v1/Persons) and [organization](https://developers.pipedrive.com/docs/api/v1/Organizations) fields and retain an input snapshot. Use person `org_id` and deal `person_id`/`org_id` for established links, not inferred company names.
+3. **Buy evidence selectively.** Reuse valid receipts and request only approved gaps. Check format, rights and freshness. Keep outages separate from no-results; rejected candidates belong in the restricted ledger, not authoritative CRM fields.
+4. **Stage field proposals.** Show old and candidate values, precedence, evidence age and exact destination. Separate approved metadata fills from identity, employer, owner and commercial changes. One accepted field must not permit replacing an entire record or the person's email/phone arrays.
+5. **Close repairs.** Under an approved policy, link a [repair activity](https://developers.pipedrive.com/docs/api/v1/Activities) to the appropriate `deal_id` or `org_id`; set a person through primary participants for v2. Verify `owner_id`, due date/time and actual links. Assign the team able to repair the source, retaining first detection across scans.
+
+## Approval boundary
+
+RevOps owns policy, business owners resolve conflicting facts, security owns access and procurement approves spend. Only the explicit allowlist can proceed to a later approved writer. Person identity, `org_id`, deal links, ownership, stage/status and economics need review. A service catalogue is not authority to activate every consumer. See the [Pipedrive API reference](/docs/reference/pipedrive-api).
+
+## Failure handling
+
+Use accepted, unchanged, review required, dependency failed and outcome unknown states. Reconcile partial work by record and field; another row's failure must not repurchase successful evidence. Read known IDs after timeouts. Coordinate competing writers; pre-write comparison is not an atomic Pipedrive transaction. Schedule around the [daily company token budget and per-token burst limits](https://pipedrive.readme.io/docs/core-api-concepts-rate-limiting) and pause on `429`.
+
+## Validation and service review
+
+Test conflicting sources, mixed-age evidence, duplicate organizations, concurrent edits, expired rights and provider outage. Every important field needs a policy and every exception an owner. A future authorised pilot must read back permitted changes and links. Report accepted coverage, repair time, repeat defects and total accepted-field cost; exclude failed or unknown assessments from clean-data claims.

@@ -1,0 +1,40 @@
+---
+title: 'Enrich Pipedrive organisation records without weakening trusted data'
+description: 'Design a field-level company enrichment process with identity checks, provenance, controlled updates and measurable acceptance.'
+---
+
+An account enrichment programme should improve a decision, not merely increase the number of populated organisation fields. Start with the Pipedrive organisation records used for segmentation and decide which missing attributes prevent useful routing. An accepted industry classification and a defensible employee range are more valuable than a complete-looking record assembled from incompatible entities.
+
+Source: [Deepline account enrichment guide](https://deepline.com/docs/guides/account-enrichment). Source read date: **2026-10-18**. This is an original offline implementation plan; **no live Pipedrive execution** or account-specific verification has taken place. No source code is reproduced.
+
+## Deepline-specific guidance versus this Pipedrive adaptation
+
+The source frames enrichment around accepted fields, company identity, provider fallbacks and the cost of useful results. Its named provider integrations and execution tooling belong to Deepline. They are not evidence that Pipedrive runs a provider waterfall or applies the proposed safeguards automatically.
+
+Pipedrive’s [Organizations API](https://developers.pipedrive.com/docs/api/v1/Organizations) documents organisation IDs, `name`, `website`, `owner_id` and updates. People are [persons](https://developers.pipedrive.com/docs/api/v1/Persons) linked by `org_id`; [deals](https://developers.pipedrive.com/docs/api/v1/Deals) carry their own `person_id`, `org_id`, `owner_id`, `pipeline_id` and `stage_id`. These record links do not prove legal-entity identity or authorise reassignment.
+
+All `ops_` names in this guide are proposed display labels or external-ledger columns, not literal Pipedrive API keys. Resolve each approved field against the account’s [custom-field metadata](https://pipedrive.readme.io/docs/core-api-concepts-custom-fields), validate its type and option IDs, and map it to its account-specific 40-character hash. For the v2 person, organisation and deal endpoints, send mapped values inside `custom_fields`; never send an `ops_` label as a top-level payload key. Deepline integrations mentioned by the source are documented upstream, not installed or executed here. Pipedrive references were reviewed on **2026-10-20**.
+
+## Prerequisites and licensing
+
+Obtain an approved organisation export, a field ownership matrix, provider usage rights and a named RevOps reviewer. Inspect actual field definitions and option IDs before mapping industry or employee evidence. Keep provider ranges separate from exact counts; do not assume a display label is an API key.
+
+Use an authorised export and review-first proposals as the baseline. Before a later integration, verify the actual Pipedrive permissions, field capacity and selected API contracts; API access, automation access, Campaigns access and provider rights are separate. This design requires no native scoring engine, custom-code workflow action or Pipedrive CLI. It does not assume that an account has any paid automation or enrichment feature.
+
+## Implementation steps
+
+1. **Fix the identity before enriching.** Carry account identity, object type and Pipedrive organisation ID together. Preserve `name`, `website` and the original domain evidence. A shared website does not distinguish a parent from its operating subsidiary. Hold uncertain matches instead of creating another organisation; there is no domain-uniqueness guarantee in this design.
+2. **Choose a small field contract.** For example, collect industry, headquarters country and employee-size evidence. Maintain `ops_enrichment_state`, `ops_enrichment_checked_at` and `ops_enrichment_receipt_url` as proposed operational fields. Keep a provider's employee range in a separate proposed text field unless its meaning is compatible with the chosen numeric destination. Never convert an unknown count to zero.
+3. **Build a field-level proposal.** For every candidate, record the organisation ID, original value, candidate value, provider record identifier, source date, entity scope and reason. Map provider categories to the account's accepted industry options. Preserve the raw provider label when there is no exact approved mapping.
+4. **Evaluate precedence.** An empty, workflow-owned attribute may qualify for an evidence-backed fill. A seller-confirmed value, acquisition conflict or inconsistent headquarters definition requires review. Resolve associated persons and deals by record ID for context, but do not move their organisation links as a side effect of enrichment.
+5. **Prepare an authorised write set.** Limit a future update to approved fields. Immediately reread the company and compare the relevant values with the reviewed snapshot. A changed snapshot invalidates that proposal. Read-before-write is a recommended conflict check, not a claim of atomic compare-and-set support. Read the record again after any future update and reconcile each field separately.
+
+## Approval boundary and failure handling
+
+The offline deliverable authorises no writes. A subsequent pilot needs approval for its company sample, provider budget, field list and overwrite policy. Ownership, qualification state, identity merges, contact reassociation and customer communication remain excluded unless separately authorised.
+
+Distinguish no match, rejected field, provider outage and conflicting evidence. Retry only temporary operational failures within a fixed budget; do not pay another provider merely to obtain a preferred answer. Store a repair owner and due date with each unresolved proposal. A timeout after an eventual write would require reading the company first, not replaying the entire batch blindly.
+
+## Validation and operating measures
+
+Use an authorised fixture set containing an ordinary company, subsidiary, rebrand, stale employee range, invalid industry mapping and concurrent edit. Check that accepted identities and accepted fields have separate counts, unchanged fields generate no updates, and associations remain untouched. Reconcile attempted records to accepted, held or failed outcomes without double counting retries. Evaluate total provider and review cost per accepted field, alongside the accuracy of the segmentation decision the field supports. These are proposed acceptance tests, not tests already executed in Pipedrive.

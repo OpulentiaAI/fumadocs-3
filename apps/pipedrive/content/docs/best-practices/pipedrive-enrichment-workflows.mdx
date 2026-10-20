@@ -1,0 +1,45 @@
+---
+title: 'Building a controlled Pipedrive enrichment write-back'
+description: 'Resolve persons and organizations, validate field hashes, protect sales-owned data and reconcile every approved enrichment update.'
+---
+
+Original source: [HubSpot enrichment workflows: safe CRM write-back](https://deepline.com/docs/guides/hubspot-enrichment-workflows) — Deepline. Retrieved **2026-10-18**; source SHA-256: `5af9060020a341244f4bbe0151dbd9ab164c978b92c4a86e7a54ec0ba5f385f7`. The original title and URL identify the source, not the destination CRM.
+
+This is an original Pipedrive implementation plan, not copied source prose or code. No live Pipedrive or provider execution has occurred. Source licensing is unestablished; no redistribution rights are assumed.
+
+## Deepline-specific behaviour versus Pipedrive adaptation
+
+The source's resolve, map, propose, write and verify discipline is useful independently of its CRM examples. Deepline's documented integration catalogue does not establish that an integration is installed, authorised or supports every underlying endpoint. This adaptation uses Pipedrive [persons](https://developers.pipedrive.com/docs/api/v1/Persons) and [organizations](https://developers.pipedrive.com/docs/api/v1/Organizations), with an external field-level evidence ledger. See the [Pipedrive API reference](/docs/reference/pipedrive-api) for the site's implementation boundary.
+
+A person is a customer contact, not a Pipedrive user. A person's `org_id` links its organization; a company-name string is not that relationship. Keep any related lead or deal identity separate from the person.
+
+## Prerequisites and licensing
+
+Choose a narrow use case, such as a reviewed organization-industry fill. Name the data owner, approve provider rights and retention, inventory competing writers and obtain only the required [OAuth scopes](https://pipedrive.readme.io/docs/marketplace-scopes-and-permissions-explanations). Confirm record visibility, field capacity and endpoint versions in the target account. This design uses an external worker or manual review queue; it assumes no native enrichment entitlement, custom-code workflow action or Pipedrive CLI.
+
+## Specify the field and identity map
+
+Identify each destination by company account, entity type and record ID. Use a saved person ID before search; an email or domain match is a candidate, not permission to merge identities or subsidiaries. For v2 person and organization updates, map permitted business labels to the account's actual 40-character hashes inside `custom_fields`. The [custom-fields guide](https://pipedrive.readme.io/docs/core-api-concepts-custom-fields) explains that identical labels in different accounts have different keys. Record field type, valid option IDs, evidence age, precedence and overwrite rule.
+
+Labels such as “Enrichment state”, “Provider reference” and “Receipt URL” are proposed custom fields, not literal API keys. Preserve `owner_id` (a Pipedrive user ID), person `org_id`, deal `stage_id`, `pipeline_id`, `value`, `currency` and `status` unless separately approved. Do not assume `job_title` exists: the Persons reference makes it conditional on contact sync; otherwise use an approved custom field.
+
+## Implementation steps
+
+1. **Read before enriching.** Resolve the existing record and request only required fields. Skip fresh, accepted observations. An unresolved person must not become a new record merely to complete a batch.
+2. **Validate each candidate.** Check identity, employment, source date and semantics. Map industry options explicitly. A missing candidate means no update, not a request to clear a field.
+3. **Create a reviewable diff.** Store prior value, proposed value, field hash, source, evidence reference, rule version and approval against a stable input revision. Approve fields individually, not the provider payload wholesale.
+4. **Check relationships.** Read the person's `org_id` and the intended organization's ID. If the use case also involves a deal, verify its `person_id` and `org_id`. Do not translate directional association types or labels from another CRM.
+5. **Apply the minimal approved update.** Re-read relevant values and withdraw stale proposals. Coordinate and serialise writers; read-before-write is not an atomic conflict check. Do not send `null` unless clearing is expressly approved.
+6. **Verify by known ID.** Retrieve each affected record and compare fields and relationship IDs with the approved diff. Metadata success with an incorrect organization link is a partial result.
+
+## Approval boundary
+
+Administrators approve the entity, field allowlist, cohort and precedence policy. Identity merges, primary-email changes, employer links, ownership, lead conversion, deal state and outreach need their own authority. Provider confidence cannot authorise a business change.
+
+## Failure handling
+
+Keep missing, invalid, conflicting, provider-error, permission-error and uncertain-write outcomes distinct. Reconcile a timeout by destination ID before another write. Repair only the failed effect instead of rerunning successful paid lookups. Pipedrive has a shared daily company API token budget and per-token burst limits; on `429`, pause according to the [rate-limit guidance](https://pipedrive.readme.io/docs/core-api-concepts-rate-limiting), rather than cycling credentials or retrying indefinitely.
+
+## Validation and acceptance
+
+Test an existing person, no match, ambiguous organization, incompatible option, stale seller edit, duplicate event and lost write response. Require unchanged protected fields, verified relationships and one receipt per accepted field. These are offline acceptance criteria; no live account behaviour has been tested.

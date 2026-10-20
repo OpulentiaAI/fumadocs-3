@@ -1,0 +1,43 @@
+---
+title: 'Build a governed target-organization universe in Pipedrive'
+description: 'Turn a market definition into evidence-backed organization proposals without confusing missing data, poor fit and duplicates.'
+---
+
+Original source: [TAM enrichment: build an addressable market you can trust](https://deepline.com/docs/guides/tam-enrichment) — Deepline. Source retrieved: **2026-10-18**; source SHA-256: `f22a2395073a3866cc52638d15225eec07466ece4af8b84caf410b4c2f4bf1e3`. Pipedrive documentation checked: **2026-10-20**.
+
+An addressable market is a defined population, not every company a provider returns. Choose whether a row represents a legal entity, brand, office or group before matching domains and subsidiaries. This original offline plan includes no live Pipedrive execution or enrichment. Source rights are unestablished and source prose/code are not reproduced.
+
+## Deepline-specific context versus Pipedrive adaptation
+
+Deepline's provider and CLI references describe possible routes, not installed Pipedrive integrations, a Pipedrive CLI or guaranteed match rates. Organizations are the CRM destination; candidates and rejected evidence remain in a controlled external table. Segmentation states are proposed policies, not native TAM features. Presence in Pipedrive does not imply fit or outreach eligibility.
+
+## Prerequisites and licensing
+
+Approve the cohort, provider sources, purposes, retention and spend. Export a small existing-organization set with known IDs and owners. Confirm [endpoint scopes](https://pipedrive.readme.io/docs/marketplace-scopes-and-permissions-explanations) and record permissions before any later pilot. An external review process avoids dependence on native workflows or custom objects; API access does not include provider data rights or credits.
+
+## Organization model and evidence contract
+
+Use [Organizations](https://developers.pipedrive.com/docs/api/v1/Organizations) `id`, `name` and `owner_id`, plus only fields confirmed in target-account definitions. Do not assume a built-in unique company-domain field or domain-based duplicate prevention. Map website/domain and firmographic evidence to approved actual fields and retain source-to-Pipedrive IDs externally.
+
+Suggested labels `tam_cohort_id`, `tam_fit_state`, `tam_evidence_date` and `tam_review_reason` are [custom-field proposals](https://pipedrive.readme.io/docs/core-api-concepts-custom-fields). Resolve 40-character hashes, valid option IDs and types, then use v2 `custom_fields`. Keep accepted, rejected and unknown as a team convention; record field-level sources and observation dates externally.
+
+## Practical implementation steps
+
+1. **Freeze market scope.** Version geography, business model, size, exclusions and effective date. Define whether parents and subsidiaries count separately. Preserve the original candidate population.
+2. **Resolve identity first.** Compare legal name, site and location. Shared group domains are review cases for subsidiary-level cohorts. Similar names are not merge authority.
+3. **Accept observations field by field.** Retain provider, retrieval time, original value, mapped value and decision. Map size bands explicitly; missing employee count is unknown, not zero.
+4. **Apply versioned fit rules.** Keep identity confidence separate from fit. An established identity with insufficient size evidence remains unknown rather than rejected.
+5. **Prepare organization diffs.** Resolve existing IDs before proposing creation. Show old/candidate values, evidence date and cohort version. Person `org_id` and deal `org_id`/`person_id` links need independent evidence and review; an email domain proves neither employment nor an opportunity.
+6. **Release an approved subset later.** Re-read current state, update only the authorised allowlist and read each organization back by ID. Record outcomes externally and preserve owner, commercial values and historical deal context. No creation or update is authorised by this guide.
+
+## Approval boundary
+
+RevOps can approve deterministic normalisation and designated enrichment fields. Creation, merges, ownership, employer-link changes, lead conversion and commercial state need explicit policy and approvers. Marketing activation is separate; TAM membership is not consent. See the [Pipedrive API reference](/docs/reference/pipedrive-api).
+
+## Failure handling
+
+Quarantine conflicting legal identities with research owners. Distinguish outages from genuine misses so coverage does not shrink during an incident. Reuse completed receipts and cap fallbacks. Reconcile timed-out updates by known organization ID; never create a replacement to hide uncertainty. Pause API `429` responses under the documented [company budget and burst model](https://pipedrive.readme.io/docs/core-api-concepts-rate-limiting).
+
+## Validation and release criteria
+
+Use fictional cases for a single entity, shared-domain subsidiaries, excluded customer, stale size and unresolved identity. Give every input one disposition and reconcile accepted/rejected/unknown counts. Review a stratified geography/size sample. A later authorised release must prove read-back and no duplicate organizations on replay. Measure usable coverage against the original cohort, accepted-account cost and exception age; no live result or universal coverage claim is made.

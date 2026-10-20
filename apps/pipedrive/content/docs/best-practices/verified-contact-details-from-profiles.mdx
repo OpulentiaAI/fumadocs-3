@@ -1,0 +1,43 @@
+---
+title: 'Move profile-based contact evidence into Pipedrive safely'
+description: 'Separate identity, employment context, email verification and phone evidence before proposing person updates.'
+---
+
+A professional profile is an identity clue, not proof that an address is current or a number belongs to that person. Keep identity, employment, channel evidence and permission to update separate.
+
+Source: [Deepline — Get Verified Contact Details from Professional Profiles](https://deepline.com/docs/guides/verified-contact-details-from-profiles). Original source read: **2026-10-18**. Source SHA-256: `7cd14f4593131288fbb33244ff145ecf710558e7709baea649ce04f99e14fa06`. Pipedrive documentation checked: **2026-10-20**. This original offline adaptation reproduces no source prose or code and assumes no redistribution licence. No live contact lookup, provider execution or Pipedrive write occurred.
+
+## Deepline-specific context versus Pipedrive adaptation
+
+The source distinguishes provider search, employment context and verification from permission to contact. Its provider catalogue does not prove installed access, phone coverage or usage rights. This adaptation uses persons, organizations and deals with an external evidence register; Pipedrive stores accepted data but does not automatically verify it.
+
+## Prerequisites and licensing
+
+Confirm purpose, authorised profile sources, territory restrictions and retention before obtaining personal data. Restrict access using the relevant [OAuth scopes](https://pipedrive.readme.io/docs/marketplace-scopes-and-permissions-explanations) and account permissions. Provider rights and charges are separate from CRM access. This design assumes neither paid automation nor a Pipedrive CLI. Never use real private contact details in public examples.
+
+## Person model and evidence states
+
+The [Persons API](https://developers.pipedrive.com/docs/api/v1/Persons) documents v2 `name`, `emails`, `phones`, `org_id` and `owner_id`. Email and phone entries include values, primary flags and labels. Preserve confirmed entries rather than replacing an entire array with one candidate. `job_title` depends on contact sync; otherwise map role evidence to an approved custom field, not an invented built-in property.
+
+Proposed labels such as profile identity state, employment evidence date, email evidence state and phone evidence state are not API keys. Resolve [custom-field hash keys](https://pipedrive.readme.io/docs/core-api-concepts-custom-fields), types and options from the target account; v2 person updates use `custom_fields`. Keep raw provider observations and separate evidence states externally. Email acceptance must not promote phone ownership to verified.
+
+## Implementation steps
+
+1. Preserve the profile URL, source person ID and observation time. Remove tracking only when identity remains intact; reject organization pages presented as person profiles.
+2. Compare permitted name, role and employer evidence. Search candidate persons, corroborate matches and retain the selected person ID. A search miss does not authorise a new person or merge.
+3. Choose whether the task concerns current employment or a historical event. A job change can invalidate an old work email without invalidating identity. A person's `org_id` represents its organization link, not a history of every employment relationship; preserve historical deal participation separately.
+4. Assess email against the intended employer, verifier status and observation time. Keep catch-all and unknown states explicit. A valid old-employer mailbox is not proof of current-role suitability.
+5. Assess phone with country, category and provider evidence. Formatting does not prove ownership, reachability or mobile status. Do not copy an organization switchboard into every person.
+6. Prepare field-level old-versus-proposed differences. Re-read `org_id`, email and phone entries before any reviewed update. Organization changes and primary channel replacement need explicit approval; retain historical evidence outside the mutable person record.
+
+## Approval boundary
+
+Research and deterministic normalisation can follow an approved policy. Primary email replacement, employer-link changes, merges and release of phone data for calling need the designated reviewer. Contactability is not consent. Accepted evidence must not enrol a sequence, dial or send a message.
+
+## Failure handling
+
+Hold ambiguous people and conflicting employers with reasons and repair owners. Distinguish no result from provider faults and preserve completed lookup receipts. Reconcile an uncertain write by the known person ID before retrying; never discard a duplicate for convenience. Apply the [daily company token budget and per-token burst controls](https://pipedrive.readme.io/docs/core-api-concepts-rate-limiting), pausing on `429` rather than cycling credentials.
+
+## Validation and release criteria
+
+Use fictional fixtures for exact and common-name matches, recent job changes, an accepted old-employer address and an unowned phone. Confirm uncertainty blocks publication, each changed array preserves approved existing entries and phone/email states remain independent. Report channel coverage and overlap against the original population. A later approved pilot must read back exact fields and links and prove reruns do not create duplicates. No live validation is claimed. See the [Pipedrive API reference](/docs/reference/pipedrive-api).

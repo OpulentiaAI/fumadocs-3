@@ -1,6 +1,0 @@
-{
-  "title": "Reference",
-  "icon": "Library",
-  "pages": ["hubspot-cli", "local-development", "sources"],
-  "defaultOpen": false
-}

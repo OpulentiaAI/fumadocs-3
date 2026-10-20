@@ -1,0 +1,40 @@
+---
+title: 'Build evidence-linked account briefs for Pipedrive sellers'
+description: 'Design bounded account research with company identity, dated evidence, explicit hypotheses and reviewed CRM summaries.'
+---
+
+Research automation is useful when a seller can inspect the evidence and decide what to ask next. A polished paragraph without sources is a liability: it can attach a parent company's announcement to a subsidiary, turn an old hiring post into a current initiative or present a guess as a fact. Make the deliverable a brief with traceable claims rather than an automatically completed company description.
+
+Source: [Deepline account research automation guide](https://deepline.com/docs/guides/account-research-automation). Source read date: **2026-10-18**. This is an original offline implementation plan with **no live Pipedrive execution**. Public research collection and CRM changes are not activated by this document.
+
+## Deepline-specific guidance versus this Pipedrive adaptation
+
+The source recommends a bounded research question, permitted sources, dated evidence and a useful owner action. Its named research providers, Plays and orchestration are Deepline-specific. This Pipedrive adaptation proposes an external evidence packet linked from a organisation record. Pipedrive is the place to locate the account and surface the approved brief, not evidence that a public-web research engine is built into every subscription.
+
+Pipedrive’s [Organizations API](https://developers.pipedrive.com/docs/api/v1/Organizations) documents organisation IDs, `name`, `website`, `owner_id` and updates. People are [persons](https://developers.pipedrive.com/docs/api/v1/Persons) linked by `org_id`; [deals](https://developers.pipedrive.com/docs/api/v1/Deals) carry their own `person_id`, `org_id`, `owner_id`, `pipeline_id` and `stage_id`. These record links do not prove legal-entity identity or authorise reassignment.
+
+All `ops_` names in this guide are proposed display labels or external-ledger columns, not literal Pipedrive API keys. Resolve each approved field against the account’s [custom-field metadata](https://pipedrive.readme.io/docs/core-api-concepts-custom-fields), validate its type and option IDs, and map it to its account-specific 40-character hash. For the v2 person, organisation and deal endpoints, send mapped values inside `custom_fields`; never send an `ops_` label as a top-level payload key. Deepline integrations mentioned by the source are documented upstream, not installed or executed here. Pipedrive references were reviewed on **2026-10-20**.
+
+## Prerequisites and licensing
+
+Choose the account, intended business entity, permitted research sources and three or fewer decision questions. Obtain permission to process any contact information used in the brief and define a retention/access policy for collected material. A source being public does not remove contractual or privacy obligations.
+
+Use an authorised export and review-first proposals as the baseline. Before a later integration, verify the actual Pipedrive permissions, field capacity and selected API contracts; API access, automation access, Campaigns access and provider rights are separate. This design requires no native scoring engine, custom-code workflow action or Pipedrive CLI. It does not assume that an account has any paid automation or enrichment feature.
+
+## Implementation steps
+
+1. **Anchor the brief to the right record.** Carry the organisation object type, organisation ID, `name` and `website` from the approved snapshot. Record the intended entity scope. Inspect associated persons and deals only where relevant and authorised. A similar company name cannot substitute for a confirmed domain/entity relationship.
+2. **Create an evidence register.** For each research question, retain the source URL, publication date where supplied, retrieval time, entity mentioned and a short original factual summary. Distinguish source facts from the publisher's own claims. Mark inaccessible sources and absent dates explicitly. Do not ask a model to fill a missing financial or employee figure from intuition.
+3. **Write the brief in layers.** First state confirmed observations; then list uncertainties; finally propose one seller question or research action. For example, a dated expansion announcement can support a question about implementation coverage, but cannot establish an approved budget. Each material sentence should resolve to an evidence row, while each hypothesis should visibly remain a hypothesis.
+4. **Choose a CRM-safe summary.** Propose `ops_research_status`, `ops_research_brief_url`, `ops_research_checked_at` and `ops_research_next_question` as organisation display labels. Store full evidence in an approved access-controlled location. Do not overwrite seller-maintained text or notes merely because a generated brief exists.
+5. **Review before surfacing.** The account owner checks identity, source freshness, factual summaries and the suggested next action. A future update publishes the link and short approved question to that exact organisation ID. Recheck the record and relevant evidence revision immediately before updating, then read back the published values. The review mechanism is an application design, not a built-in Pipedrive approval guarantee.
+
+## Approval boundary and failure handling
+
+This plan does not authorise crawling restricted sources, purchasing research, writing CRM records or contacting anyone. A later implementation needs approval for its sample, source access, budget and publication fields. Drafting a seller question does not authorise sending it.
+
+Treat identity mismatch, unavailable source, stale observation and unsupported inference as separate failures. Keep a brief in review if one important claim cannot be substantiated; do not silently remove the uncertainty while retaining its recommendation. If a brief URL cannot be accessed by its intended seller, publication is incomplete. Assign the repair to a research owner rather than repeatedly generating new prose.
+
+## Validation and acceptance
+
+Prepare examples covering an acquired company, undated page, contradictory announcement, inaccessible source and two organisations sharing a trading name. Ask a reviewer to trace every material fact to evidence and reproduce the entity decision. Verify that unapproved briefs cannot be marked ready and that reruns update an existing evidence packet rather than creating duplicate CRM work. Measure research minutes per accepted brief and the proportion of briefs sellers actually use. Those measures should exclude unsupported drafts; no live acceptance rate or time saving has been measured here.

@@ -1,0 +1,23 @@
+---
+title: Explore a safe Pipedrive sandbox
+description: Inspect synthetic organisations, filter their review states and see why an action can or cannot proceed.
+icon: FlaskConical
+full: true
+---
+
+This is an offline demonstration of sponsor evidence and review boundaries using Pipedrive-shaped organisations, persons and deals. It is not a Pipedrive export or a live account connection. No action in this explorer sends a message, creates a record or grants permission.
+
+<SeedExplorer />
+
+## What to try
+
+1. Search for **hydration** to narrow the organisation list.
+2. Select **Needs a decision** and inspect Camp Current Power.
+3. Notice that unknown activation evidence and unresolved exclusions remain visible even where research can proceed.
+4. Search for a nonexistent organisation to exercise the empty state, then clear the search.
+
+## From fixture to a real account
+
+A live connection requires separate implementation and authorisation. First inspect the account schema, resolve identities and review a tenant-bound plan. Fixture identifiers and local associations are join keys only; they must never be submitted as Pipedrive record IDs or relationship writes.
+
+Read [seed mapping](/docs/guides/seed-data), [safe writes](/docs/guides/safe-writes), the [API reference](/docs/reference/pipedrive-api) and [source register](/docs/reference/sources) before adapting this demonstration. The optional Deepline adapter is documented, not live-verified.

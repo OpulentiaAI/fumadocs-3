@@ -1,0 +1,68 @@
+---
+title: The best-practice library
+description: Original Pipedrive adaptations of all 39 publicly discovered Deepline guides, with source attribution, review boundaries and validation plans.
+icon: BookOpen
+---
+
+Start with the outcome you need. Each page separates Deepline's documented approach from a proposed Pipedrive implementation, with review boundaries, failure recovery and validation plans. These are original adaptations, not verbatim mirrors, installed integrations or claims of live provider or CRM execution.
+
+## Coverage and provenance
+
+All **39** guide pages discovered through the entry page, linked guide pages, advertised sitemap and LLM index were retrieved on **18 October 2026**. The requested guide entry now redirects to Deepline’s workflow catalogue. Coverage includes all publicly discoverable linked guide pages on that date; it does not assert coverage of private or unlinked material.
+
+The machine-readable coverage register is stored at `apps/pipedrive/data/deepline-guides.json`. It preserves the original source title, URL, read date and source hash; a source title or URL can legitimately name HubSpot even when the destination guide now targets Pipedrive. Deepline Plays, Monitors and provider-specific features are distinct from the proposed CRM design. The content is newly authored; no broad redistribution licence for source material is assumed. Keep private customer information, credentials and restricted provider payloads out of public examples.
+
+## Enrichment & research
+
+- [Account enrichment: improve coverage without bad CRM data](/docs/best-practices/account-enrichment)
+- [Account research automation: produce useful briefs with evidence](/docs/best-practices/account-research-automation)
+- [Apollo + Claude Code Integration - Company and Contact Match Guide](/docs/best-practices/apollo-claude-code)
+- [Automated Email Verification Before Outbound](/docs/best-practices/automated-email-verification)
+- [Buying committee mapping: turn contacts into a decision process](/docs/best-practices/buying-committee-mapping)
+- [Enrich a Company Domain into a Checked Account Record](/docs/best-practices/company-domain-enrichment)
+- [DataForSEO via Deepline. SEO data from the CLI.](/docs/best-practices/dataforseo-via-deepline)
+- [Enrich Free Trial Signups Without Blocking Onboarding](/docs/best-practices/free-trial-signup-enrichment)
+- [Phone enrichment workflows: validate before you route or call](/docs/best-practices/phone-enrichment-workflows)
+- [TAM enrichment: build an addressable market you can trust](/docs/best-practices/tam-enrichment)
+- [Get Verified Contact Details from Professional Profiles](/docs/best-practices/verified-contact-details-from-profiles)
+- [How to Run Waterfall Enrichment in Claude Code (2026)](/docs/best-practices/waterfall-enrichment-claude-code)
+
+## CRM operations
+
+- [Account prioritization: choose where your team should spend time](/docs/best-practices/account-prioritization)
+- [Account scoring workflows: make prioritization explainable](/docs/best-practices/account-scoring-workflows)
+- [CRM data governance: assign owners, sources, and write rules](/docs/best-practices/crm-data-governance)
+- [CRM data quality automation: validation and safe writes](/docs/best-practices/crm-data-quality-automation)
+- [CRM workflow automation: define safe writes before you automate](/docs/best-practices/crm-workflow-automation)
+- [Pipedrive enrichment workflows: reviewed CRM write-back](/docs/best-practices/pipedrive-enrichment-workflows)
+- [Pipedrive lead routing with explicit ownership rules](/docs/best-practices/pipedrive-lead-routing)
+- [Inbound lead routing: a practical control design](/docs/best-practices/inbound-lead-routing)
+- [Pipeline hygiene: controls for deals that keep moving](/docs/best-practices/pipeline-hygiene)
+- [Post-call CRM automation](/docs/best-practices/post-call-crm-automation)
+- [Revenue data quality](/docs/best-practices/revenue-data-quality)
+- [RevOps data operations: manage quality, cost, and accountability](/docs/best-practices/revops-data-operations)
+- [RevOps workflow automation: build reliable workflows](/docs/best-practices/revops-workflow-automation)
+- [Validate Incoming CSV Files Before CRM Enrichment](/docs/best-practices/validate-incoming-csv-files)
+
+## Sales & governance
+
+- [Bring-your-own-key data enrichment: governance and economics](/docs/best-practices/bring-your-own-key-data-enrichment)
+- [Data provenance in CRM](/docs/best-practices/data-provenance-in-crm)
+- [Enrichment API: how to build a safe production integration](/docs/best-practices/enrichment-api)
+- [Enrichment cost optimization](/docs/best-practices/enrichment-cost-optimization)
+- [GTM provider consolidation: reduce redundant data spend safely](/docs/best-practices/gtm-provider-consolidation)
+- [Outbound personalization workflow](/docs/best-practices/outbound-personalization-workflow)
+- [Provider access management: control data keys, rights, and usage](/docs/best-practices/provider-access-management)
+- [Sales Account Planning Template for Excel (Free CSV)](/docs/best-practices/sales-account-planning-template)
+- [Sales follow-up automation: drafts, controls, and timing](/docs/best-practices/sales-follow-up-automation)
+- [Sales operations automation](/docs/best-practices/sales-operations-automation)
+
+## Further workflows
+
+- [B2B data enrichment tools: build a reliable waterfall](/docs/best-practices/b2b-data-enrichment-waterfall)
+- [Competitive Advertising Intelligence: Build a Cited Brief](/docs/best-practices/competitive-advertising-intelligence)
+- [Workflow observability for RevOps](/docs/best-practices/workflow-observability-for-revops)
+
+## Before using a recipe
+
+Inspect Pipedrive permissions, [endpoint scopes](https://pipedrive.readme.io/docs/marketplace-scopes-and-permissions-explanations), account-specific [custom-field keys](https://pipedrive.readme.io/docs/core-api-concepts-custom-fields) and the chosen API version before implementation. Persons and organizations are distinct from users; deals use stage and pipeline IDs, and follow-up work uses activities. Check the [Pipedrive API reference](/docs/reference/pipedrive-api), validate a small cohort and approve each proposed change before publishing it. Native automation availability and provider rights require their own checks; this site installs no integration, purchases no data and never writes to a CRM.

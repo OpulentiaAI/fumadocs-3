@@ -1,0 +1,154 @@
+---
+title: Pipedrive API and safe runner
+description: Run an offline title-update plan, approve its exact digest, and optionally apply it through Pipedrive REST or a pinned Deepline HTTP contract.
+---
+
+The repository includes an executable server-only workflow, not a connected CRM. It changes **only the title of one existing deal**. It never creates deals, changes stages or values, enriches contacts, sends emails, or imports the synthetic explorer. Planning and approval are offline; only `apply --live` can access a provider. The runner requires Node 22 or newer and uses built-in modules only.
+
+## Try the offline workflow
+
+From `apps/pipedrive`:
+
+```bash
+node scripts/workflow.mjs demo
+node --test test/workflow.test.mjs
+```
+
+The demo uses `integration/example-input.json`, a synthetic tenant and record, a fixed clock and an intentionally expired example approval. Its output is deterministic and reports `networkCalls: 0`. It does not read credentials, write a journal, invoke Deepline, or call Pipedrive. The explorer remains an independent synthetic handbook, not a CRM synchronisation interface.
+
+To review a real proposal later, put the following input in a private file **outside the repository**. The snapshot must come from the authorised tenant and include the exact current title and `update_time` returned by its deal API. The example values below are synthetic; they are not a live snapshot.
+
+```json
+{
+  "domain": "sandbox-example.pipedrive.com",
+  "record": {
+    "id": 101,
+    "title": "Synthetic sponsor enquiry",
+    "update_time": "2026-01-01T00:00:00Z"
+  },
+  "fields": {
+    "title": "Synthetic sponsor enquiry — reviewed"
+  },
+  "adapter": { "kind": "pipedrive" }
+}
+```
+
+Only `fields.title` is allowed: a non-empty string of at most 255 characters without control characters. IDs must be positive safe integers. The tenant is a lower-case single-label company domain ending exactly in `.pipedrive.com`, with no URL scheme, path, port or query. The runner rejects unexpected plan properties and no-op changes.
+
+```bash
+node scripts/workflow.mjs plan \
+  --input /private/pipedrive-input.json \
+  --out /private/pipedrive-plan.json
+```
+
+Read the plan file and compare the intended tenant, deal ID, new title, snapshot and adapter against the request. Copy its exact `digest` into the approval command. Do not automatically approve an unreviewed plan by piping its digest into the next command.
+
+```bash
+node scripts/workflow.mjs approve \
+  --plan /private/pipedrive-plan.json \
+  --confirm REVIEWED_SHA256_DIGEST \
+  --approved-domain sandbox-example.pipedrive.com \
+  --ttl-seconds 600 \
+  --out /private/pipedrive-approval.json
+
+node scripts/workflow.mjs dry-run \
+  --plan /private/pipedrive-plan.json \
+  --approval /private/pipedrive-approval.json \
+  --approved-domain sandbox-example.pipedrive.com
+```
+
+These commands make zero network calls. They create new files with mode `0600` and refuse to overwrite existing output. Approval defaults to ten minutes and cannot exceed thirty minutes. Its digest binds the tenant, record ID, allowlisted fields, prior-title hash, exact update timestamp and adapter configuration. Editing any of those invalidates the plan. The approval is a local operator checkpoint, **not a cryptographic signature or a separate approver identity**: anyone who can edit the files or run the command has the same local authority. Protect these files and the host accordingly.
+
+## Optional direct Pipedrive apply
+
+Live use needs separate authorisation and an existing deal. Provision `PIPEDRIVE_API_TOKEN` through the server's secret manager; this is the runner's environment-variable name, not a claim that a credential is installed. Never put a token in a CLI argument, input JSON, browser, `NEXT_PUBLIC_*` variable or committed file. An API token is tied to a Pipedrive user and company and carries that user's access, so use an appropriately restricted user.
+
+After approval, the following command is **capable of changing the approved deal**; it has not been run against a live tenant as part of this implementation:
+
+```bash
+node scripts/workflow.mjs apply \
+  --plan /private/pipedrive-plan.json \
+  --approval /private/pipedrive-approval.json \
+  --approved-domain sandbox-example.pipedrive.com \
+  --state-dir /private/persistent-pipedrive-journal \
+  --live
+```
+
+Direct REST uses `GET https://{company}.pipedrive.com/api/v2/deals/{id}`, then `PATCH` to that same URL with only `{"title":"…"}`, then another `GET` for readback. Authentication is the documented `x-api-token` header, not an `api_token` query parameter. Requests reject redirects, time out after fifteen seconds, limit response bodies to 1 MiB and accept only HTTP 200 plus a valid provider `success: true` envelope and matching record ID/title/update timestamp fields.
+
+The initial read must match both the approved prior-title hash and exact `update_time`; a stale record stops before the write. Approval is rechecked before dispatch. A successful write response alone is not completion: readback must return the intended title. This is optimistic stale detection, **not an atomic compare-and-swap**; the documented endpoint supplies no verified conditional-write or universal idempotency-header guarantee. A different writer can race between the read and PATCH. Coordinate writers or require a maintenance window for sensitive records.
+
+## Optional Deepline HTTP adapter
+
+This is an executable alternative to direct REST, using the same approval, journal and readback controls. No Deepline package or CLI is required or installed by the runner. The only allowed host is `https://code.deepline.com`, and the only tools are `pipedrive_get_deal` and `pipedrive_update_deal`.
+
+Before using it, an operator must verify the selected Deepline workspace and its dashboard-connected Pipedrive company. The Pipedrive token is connected in Deepline's dashboard; there is no verified per-call tenant selector. `workspaceRef` is an operator's reviewed configuration reference, **not a remote routing parameter or independently verified workspace identity**. Use an isolated workspace/key connected to just the approved tenant. `connectedDomain` records that reviewed binding; a digest does not prove the remote connection. The runner cannot detect a workspace key being rebound to another company with matching deal IDs. Stop if that binding cannot be independently confirmed.
+
+Replace the input's `adapter` with this object, then regenerate the plan and approval:
+
+```json
+{
+  "kind": "deepline",
+  "host": "https://code.deepline.com",
+  "workspaceRef": "dedicated-workspace-review-ref",
+  "connectedDomain": "sandbox-example.pipedrive.com",
+  "responseContract": "toolResponse.raw.data"
+}
+```
+
+Provision only `DEEPLINE_API_KEY` in the server environment, then use the same apply command with these additional confirmations:
+
+```bash
+--approved-host https://code.deepline.com \
+--approved-workspace dedicated-workspace-review-ref
+```
+
+The adapter sends `POST /api/v2/integrations/pipedrive_get_deal/execute` with `{"payload":{"id":101}}` and the update tool with `{"payload":{"id":101,"title":"…"}}`, using `Authorization: Bearer <DEEPLINE_API_KEY>`. The HTTP `payload` wrapper is **not** the SDK/CLI input: documented SDK `tools.execute` takes the flat `{id, title}` object, and documented CLI syntax is `deepline tools execute pipedrive_update_deal --input '{"id":101,"title":"…"}' --json`. Those raw CLI commands bypass this runner's safety controls; they are contract references, not the recommended apply path.
+
+The supported response is pinned to the provider examples:
+
+```json
+{
+  "toolResponse": {
+    "raw": {
+      "data": {
+        "success": true,
+        "data": {
+          "id": 101,
+          "title": "Synthetic sponsor enquiry — reviewed",
+          "update_time": "2026-01-01T00:00:01Z"
+        }
+      }
+    }
+  }
+}
+```
+
+Top-level, tool-level and nested provider failures are rejected. Generated newer SDK references also mention `rawV2`; this adapter **does not guess a translation**. A `rawV2` response, missing `raw`, missing required fields or schema drift fails closed. Before production use, confirm the current workspace's machine-readable tool schema and read-response fixture through an authorised read-only preflight. Mock fixtures prove this documented contract only; no live response, credential, connected company, installed tool inventory, pricing or spend has been verified here. The public catalogue is not installed-tool evidence. Deepline calls may incur credits or provider charges; obtain that authority separately.
+
+Deepline documents per-tool execution recovery with `idempotencyKey`, `executions.getByKey`, a 24-hour replay window, 409 for differing input and 422 where support is unavailable. These selected tools' recovery support has not been verified. This runner does not send invented idempotency headers or keys and never automatically rekeys or retries a provider write.
+
+## Durable journal and recovery
+
+Use **one stable private state directory for all operations**, on a filesystem that supports exclusive creation and fsync, with all workers sharing the same directory. It must have mode `0700`; an existing broadly accessible directory is rejected. The runner exclusively creates `workflow.lock`, fsyncs it, appends and fsyncs `journal.jsonl` before dispatch, then records completion only after readback. Journals use mode `0600`; receipts contain the operation digest, a tenant/record target hash, adapter name, `['title']` and status, never credentials, titles, raw provider errors or record bodies. Hashes are pseudonymous identifiers, not guaranteed anonymisation.
+
+A completed digest returns `already-complete` without network access. An in-flight, stopped or unknown operation blocks replay; any unresolved operation for the same tenant/deal also blocks a new digest. Reusing a different state directory or deleting the journal defeats replay protection. This is local durable at-most-once dispatch control, **not distributed exactly-once delivery**, and does not defend against a malicious local owner or an administrator rewriting the journal.
+
+HTTP 401/403 stops for credential/access review. HTTP 429 pauses without sleeping or retrying; Pipedrive may be exhausted until its daily budget resets, not merely a short burst window. A rejected write remains stopped in the journal even when the server says it was not accepted. Timeouts, network failures, 5xx, malformed responses, a changed Deepline envelope and failed readback after dispatch become `OUTCOME_UNKNOWN_RECONCILE_NO_RETRY`. A process crash may leave a lock and/or in-flight entry. A damaged journal also stops the runner. There is deliberately no force flag or automatic unlock/retry command.
+
+After an unknown outcome, **do not delete the journal, change the key, move the state directory, or submit a new plan to force a retry**. An authorised operator must verify that no worker remains active, inspect the provider record and its audit history read-only, and retain the journal as evidence. Removing an abandoned lock does not clear an in-flight journal marker. Reconciliation and any later corrective operation require an independently reviewed recovery decision; the runner cannot manufacture certainty about a lost response.
+
+## Verification and source boundaries
+
+The focused integration tests inject mock fetch responses: no real network or credentials are used. They cover deterministic planning, zero-network dry-run, approval/payload/tenant/adapter mismatches and expiry, stale snapshots, read-before-write/readback, durable replay and lock refusal, 401/429/5xx, malformed and nested failure responses, and the pinned Deepline contract. Application builds, live authentication, rate budgets and remote tenant binding are separate checks.
+
+Primary sources reviewed on 20 October 2026:
+
+- [Pipedrive Deals API](https://developers.pipedrive.com/docs/api/v1/Deals) documents the v2 single-deal GET and PATCH and allowed API fields.
+- [Pipedrive authentication](https://pipedrive.readme.io/docs/core-api-concepts-authentication) documents company-scoped `x-api-token` authentication.
+- [Pipedrive rate limiting](https://pipedrive.readme.io/docs/core-api-concepts-rate-limiting) explains daily budgets, burst limits and 429 responses.
+- [Deepline Runtime API reference](https://deepline.com/docs/sdk-v2/api-reference) documents the HTTP execute route, bearer auth and `payload` wrapper.
+- [Deepline Get Deal](https://deepline.com/docs/providers/pipedrive/pipedrive-get-deal) and [Update Deal](https://deepline.com/docs/providers/pipedrive/pipedrive-update-deal) document exact tool IDs, inputs and provider envelopes.
+- [Deepline SDK reference](https://deepline.com/docs/sdk-v2/sdk-reference) and [execution recovery](https://deepline.com/docs/sdk-v2/tool-execution-recovery) describe the newer envelope and per-tool recovery boundaries.
+
+Mintlify Index was attempted first but is discontinued; the contracts above come from current primary documentation, not an unverified SDK assumption.

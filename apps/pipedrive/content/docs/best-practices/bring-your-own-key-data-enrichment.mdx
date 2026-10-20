@@ -1,0 +1,40 @@
+---
+title: 'Govern bring-your-own-key enrichment around Pipedrive'
+description: 'Separate provider credentials, Pipedrive authorisation, data rights and accepted-output costs in an auditable enrichment design.'
+---
+
+Bringing an existing provider key into an enrichment workflow changes who pays and who controls access; it does not remove operational or legal responsibility. The safest design keeps credentials outside Pipedrive, assigns a provider owner and publishes only approved data. Treat Pipedrive authorisation and provider authorisation as independent capabilities with different scopes and failure modes.
+
+Source: [Deepline bring-your-own-key enrichment guide](https://deepline.com/docs/guides/bring-your-own-key-data-enrichment). Source read date: **2026-10-18**. This is an original offline implementation plan with **no live Pipedrive execution**, credential changes or provider calls. No real keys are required to review it.
+
+## Deepline-specific guidance versus this Pipedrive adaptation
+
+The source explains central credential ownership, provider-specific routing, contract rights and complete workflow economics. Its managed/BYOK execution and commercial arrangements are Deepline-specific. Do not generalise a source pricing statement to Pipedrive or assume every provider permits the same onward use.
+
+This Pipedrive adaptation recommends an external credential-owning worker and a separate CRM publication identity. [Persons](https://developers.pipedrive.com/docs/api/v1/Persons) and [organisations](https://developers.pipedrive.com/docs/api/v1/Organizations) remain the destination records; the governance register is not a CRM secret vault.
+
+All `ops_` names in this guide are proposed display labels or external-ledger columns, not literal Pipedrive API keys. Resolve each approved field against the account’s [custom-field metadata](https://pipedrive.readme.io/docs/core-api-concepts-custom-fields), validate its type and option IDs, and map it to its account-specific 40-character hash. For the v2 person, organisation and deal endpoints, send mapped values inside `custom_fields`; never send an `ops_` label as a top-level payload key. Deepline integrations mentioned by the source are documented upstream, not installed or executed here. Pipedrive references were reviewed on **2026-10-20**.
+
+## Prerequisites and licensing
+
+Prepare a provider registry containing contract owner, approved use, fields, geography, retention obligations, billing unit, quota, renewal and revocation contact. Legal or procurement review must determine permitted storage and sharing; successful API access cannot settle those rights. Identify the person authorised to approve spend beyond an agreed pilot ceiling.
+
+Use an authorised export and review-first proposals as the baseline. Before a later integration, verify the actual Pipedrive permissions, field capacity and selected API contracts; API access, automation access, Campaigns access and provider rights are separate. This design requires no native scoring engine, custom-code workflow action or Pipedrive CLI. It does not assume that an account has any paid automation or enrichment feature. Provider contracts and charges remain independent of Pipedrive subscriptions.
+
+## Implementation steps
+
+1. **Draw the credential boundary.** The worker requests a provider capability from an approved secret manager; operators see a reference and owner, never a raw key. Maintain separate development and production authorisations where supported. Keep credentials out of prompts, request examples, exception messages, organisation fields and exported CSV files.
+2. **Define the CRM data boundary.** Resolve persons and organisations using object type and Pipedrive record ID. Read only fields needed for the approved enrichment purpose. Proposed operational fields may include `ops_enrichment_provider`, `ops_enrichment_state`, `ops_enrichment_checked_at` and `ops_enrichment_receipt_url`. Store a contract reference and non-sensitive receipt ID, not the key, billing credential or entire provider agreement.
+3. **Route by field and rights.** Choose a provider only when the registry permits the requested field, territory and destination use. An available key is insufficient if a contract prohibits that storage or use. Preserve associated organisation IDs for contact employer checks, but do not alter relationships merely because a different provider names another organisation.
+4. **Meter the complete attempt.** Attribute provider charges, retries, orchestration and reviewer effort to an input revision. Keep accepted fields separate from returned fields. When a provider charges per request and another per successful lookup, normalise the comparison to total cost per accepted business output rather than comparing unlike invoice line items.
+5. **Prepare a controlled write boundary.** The CRM writer accepts only reviewed field proposals with source receipt, original destination value and policy version. Recheck the record before any later update and verify the observed values afterwards. Provider credential rotation must not silently expand the destination field list or change approved data sources. The single-writer arrangement is a recommendation, not a Pipedrive-enforced field ownership feature.
+
+## Approval boundary and failure handling
+
+This plan authorises no credential creation, key rotation, provider spend or CRM writes. A later pilot needs approval for provider contract use, budget, sample, fields and overwrite rules. Merges, owner reassignment, qualification changes, association changes and communication remain excluded.
+
+When a key is revoked or quota is exhausted, mark an operational hold and notify the provider owner. Do not fall back to an operator's personal key or an unapproved managed route. Rotation should preserve receipt attribution to the old non-secret credential reference while future requests use the replacement. If sensitive data appears in a log, stop distribution and follow the organisation's incident process; do not copy the leaked value into the CRM repair ticket.
+
+## Validation and acceptance
+
+Test with dummy credential references, denied provider rights, an exhausted budget, revoked access and a provider outage. Confirm that error outputs contain no secrets and that a failure on one provider cannot expand CRM privileges. Reconcile usage receipts to the approved sample and accepted field counts. Review whether retained data can be located for contract termination or deletion obligations. These are proposed tests, not verification of any provider, Pipedrive account or secret-management system. The economic decision should use complete accepted-output cost, and may favour a managed route when direct-key operations cost more.

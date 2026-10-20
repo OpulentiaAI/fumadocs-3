@@ -1,0 +1,40 @@
+---
+title: 'Map a buying committee around each Pipedrive deal'
+description: 'Build an evidence-backed stakeholder map with deal-specific roles, association checks and explicit gaps in decision authority.'
+---
+
+A contact list does not explain how a purchase will be approved. A useful buying-committee map identifies who is helping the evaluation, who controls the budget, who assesses risk and what the seller still needs to learn. In Pipedrive, anchor that map to the deal rather than assuming that a person's job title describes their authority in every opportunity.
+
+Source: [Deepline buying committee mapping guide](https://deepline.com/docs/guides/buying-committee-mapping). Source read date: **2026-10-18**. This is an original offline implementation plan; **no live Pipedrive execution** has occurred. No source prose or code is reproduced.
+
+## Deepline-specific guidance versus this Pipedrive adaptation
+
+The source asks for stakeholder roles supported by interaction evidence, with confidence, an owner and a next action. Its suggested discovery and orchestration tools belong to the Deepline environment. This adaptation recommends a Pipedrive deal-centred model and a separate evidence ledger. It does not assert that Pipedrive automatically discovers economic buyers or verifies purchasing authority.
+
+The [Deals API](https://developers.pipedrive.com/docs/api/v1/Deals) documents the primary `person_id`, `org_id` and deal participants. A participant link says who is involved; it does not establish role or purchasing authority. Keep deal/person/role evidence in a reviewed external register rather than importing unsupported relationship labels.
+
+All `ops_` names in this guide are proposed display labels or external-ledger columns, not literal Pipedrive API keys. Resolve each approved field against the account’s [custom-field metadata](https://pipedrive.readme.io/docs/core-api-concepts-custom-fields), validate its type and option IDs, and map it to its account-specific 40-character hash. For the v2 person, organisation and deal endpoints, send mapped values inside `custom_fields`; never send an `ops_` label as a top-level payload key. Deepline integrations mentioned by the source are documented upstream, not installed or executed here. Pipedrive references were reviewed on **2026-10-20**.
+
+## Prerequisites and licensing
+
+Obtain an authorised deal export, associated contact and organisation IDs, permitted meeting evidence and the seller's required-role checklist. Decide whether the opportunity concerns one operating company or several related organisations. Limit access to confidential procurement and legal discussions to the people who need them.
+
+Start with deal IDs, existing person and organisation IDs, permissions for the evidence, and an approved role register. Pipedrive deal participants are not a labelled association system. An optional, separately approved follow-up [activity](https://developers.pipedrive.com/docs/api/v1/Activities) can have its own user `owner_id`, due date and deal link; do not equate task creation with a required native workflow feature.
+
+## Implementation steps
+
+1. **Define required roles for the sales motion.** Start with champion, economic buyer, technical approver and procurement contact, then adjust to the actual buying process. Do not require a signer before the team has evidence that contracting has begun. Distinguish a confirmed role from a suspected one and a genuinely vacant role.
+2. **Resolve existing records.** Match each stakeholder to a person ID and deal ID. Inspect person `org_id`, deal `org_id` and the primary deal `person_id` separately. Additional participants do not replace the primary person or change employer linkage. Use saved IDs, not names, as relationship keys.
+3. **Collect role evidence.** Keep the meeting date, permitted source reference, concise observation, confidence and confirming seller for each deal/contact/role combination. A finance title supports a research hypothesis, not a confirmed budget-holder designation. Avoid storing full transcripts in broadly visible CRM text fields.
+4. **Choose the CRM representation.** Keep roles keyed by deal ID and person ID in the secured register, with evidence and reviewer. Use existing deal participants to surface involvement only after approval; participants do not carry the proposed role semantics. Proposed deal labels `ops_committee_review_state`, `ops_committee_missing_roles` and `ops_committee_checked_at` summarise readiness through mapped custom-field hashes.
+5. **Turn gaps into next actions.** An unconfirmed economic buyer should produce a seller-owned question for the next conversation, not a fabricated contact. Set a review date and record what would confirm authority. Keep competitor, partner and customer participants distinct so an external adviser is not counted as an internal approver.
+
+## Approval boundary and failure handling
+
+The deal owner approves confirmed-role changes, contact creation and any proposed association change. This plan does not authorise meeting invitations, outreach, deal-stage changes or reassignment. A complete map must never advance a deal automatically unless a separately approved sales process explicitly requires that action.
+
+Conflicting stakeholder statements create a review item with both dated observations. Do not replace a departed employee with the nearest title match. After an uncertain participant update, inspect the actual deal participant list before retrying. A summary-field update does not prove that every intended participant link exists. Preserve the reviewed evidence revision.
+
+## Validation and operating measures
+
+Prepare fixtures for one person holding two roles, the same contact on two deals with different authority, an external consultant, a departed champion and a deal without a budget owner. Confirm that role evidence remains deal-specific, missing roles stay visible and no ownership or stage changes are proposed. Review the map with the seller against the underlying interactions before any future pilot. Measure time to confirm required roles and the age of unresolved authority questions, not the number of persons associated with a deal. These are planned acceptance checks, not live Pipedrive results.

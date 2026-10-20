@@ -1,0 +1,40 @@
+---
+title: 'Prioritise Pipedrive accounts against evidence and team capacity'
+description: 'Translate company fit and engagement evidence into explainable priority tiers, review queues and realistic seller actions.'
+---
+
+A priority tier should tell an account team what to do next and why. Ranking every Pipedrive organisation from most to least interesting is not enough: a team with capacity for twenty research briefs needs a queue that respects that limit and exposes uncertain inputs. Separate the commercial attractiveness of an account from confidence in the evidence supporting it.
+
+Source: [Deepline account prioritisation guide](https://deepline.com/docs/guides/account-prioritization). Source read date: **2026-10-18**. This original offline implementation plan involves **no live Pipedrive execution**. Its suggested thresholds and custom properties are recommendations, not observed portal behaviour.
+
+## Deepline-specific guidance versus this Pipedrive adaptation
+
+Deepline's guide combines fit, engagement, intent, source freshness and accountable next actions. Its research integrations and execution environment are Deepline-specific. The Pipedrive adaptation below stores an explainable decision on a organisation record while preserving detailed evidence outside the CRM. It does not claim that Pipedrive provides the source's external research signals automatically.
+
+Pipedrive’s [Organizations API](https://developers.pipedrive.com/docs/api/v1/Organizations) documents organisation IDs, `name`, `website`, `owner_id` and updates. People are [persons](https://developers.pipedrive.com/docs/api/v1/Persons) linked by `org_id`; [deals](https://developers.pipedrive.com/docs/api/v1/Deals) carry their own `person_id`, `org_id`, `owner_id`, `pipeline_id` and `stage_id`. These record links do not prove legal-entity identity or authorise reassignment.
+
+All `ops_` names in this guide are proposed display labels or external-ledger columns, not literal Pipedrive API keys. Resolve each approved field against the account’s [custom-field metadata](https://pipedrive.readme.io/docs/core-api-concepts-custom-fields), validate its type and option IDs, and map it to its account-specific 40-character hash. For the v2 person, organisation and deal endpoints, send mapped values inside `custom_fields`; never send an `ops_` label as a top-level payload key. Deepline integrations mentioned by the source are documented upstream, not installed or executed here. Pipedrive references were reviewed on **2026-10-20**.
+
+## Prerequisites and licensing
+
+Agree an ideal customer profile, exclusions, seller capacity and one accountable queue owner. Obtain an authorised organisation snapshot with relevant person/deal IDs and current owners. Inspect custom-field keys, types and option IDs rather than assuming the label is an API name.
+
+Use an authorised export and review-first proposals as the baseline. Before a later integration, verify the actual Pipedrive permissions, field capacity and selected API contracts; API access, automation access, Campaigns access and provider rights are separate. This design requires no native scoring engine, custom-code workflow action or Pipedrive CLI. It does not assume that an account has any paid automation or enrichment feature.
+
+## Implementation steps
+
+1. **Define eligibility before ranking.** Key each row by account, organisation object type and record ID. Exclude disallowed territories and unresolved identities. Make active-customer and open-deal rules explicit. Keep `owner_id`, deal `pipeline_id`/`stage_id` and lead conversion outside the priority calculation.
+2. **Separate evidence dimensions.** Propose organisation fields `ops_fit_band`, `ops_engagement_band`, `ops_priority_tier`, `ops_priority_reason` and `ops_priority_reviewed_at`. Keep evidence URLs, observation dates and rule version in a linked decision receipt. Missing employee data means unknown fit on that dimension, not poor fit. An advertising observation is not proof of purchase intent.
+3. **Make tiers actionable.** An illustrative policy might send strong-fit organisations with recent first-party engagement to research review, strong-fit organisations without current engagement to monitoring, and uncertain identities to repair. Define freshness windows and exceptions before evaluating the dataset. Do not publish arbitrary numeric thresholds as externally validated conversion predictors.
+4. **Apply capacity after eligibility.** Sort a review queue using an approved tie-breaker, such as evidence recency followed by organisation ID. Allocate only the number of briefs the team can deliver. Preserve an eligible-but-deferred state so capacity constraints do not become negative fit signals. Associated persons provide evidence context, while the existing organisation owner remains unchanged.
+5. **Prepare controlled publication.** A reviewer approves tier, reason and next action together. A future writer should reread the company, confirm the source fields have not changed, update only the reviewed operational fields and read them back. Compare-before-write reduces conflicts but does not create a transactional guarantee. Assignments and outreach require their own authorisation. A separately approved follow-up activity must resolve its user owner ID and existing record links under the [Activities API](https://developers.pipedrive.com/docs/api/v1/Activities), rather than create a native workflow task by assumption.
+
+## Approval boundary and failure handling
+
+This document permits neither score activation nor CRM writes. Before implementation, approve the cohort, rules, queue capacity and named operator. Changes to owner, qualification state, deal stage, subscription status or outbound enrolment are outside the tiering decision.
+
+Send stale signals, contradictory employee definitions and missing action owners to distinct queues. If research collection fails, keep the last accepted evidence with an expired marker rather than interpreting the outage as low interest. Hold a company whose range crosses two customer segments. Route disagreements to the queue owner with both sources, not a model-generated compromise.
+
+## Validation and outcome review
+
+Test a capacity overflow, identical scores, a customer with an open deal, an uncertain subsidiary and an account with no engagement data. Verify that every selected company has a reason, current evidence and a feasible next step; every deferred account remains visible; and no contact or deal association changes. Back-test tier outcomes on an untouched historical cohort with a fixed observation window. Compare accepted opportunities and pipeline contribution by tier, but do not infer causal lift from a ranking that was already influenced by seller effort. These are planned tests; no live outcomes are claimed.

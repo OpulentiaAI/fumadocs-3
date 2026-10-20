@@ -1,0 +1,39 @@
+---
+title: Orchestrate bounded Pipedrive work
+description: Separate research, planning, approval and execution across independently checkable tasks.
+---
+
+Orchestration helps when independent research tasks can produce evidence in parallel and one owner integrates the result. It does not grant a worker account access or turn a local plan into authority for a Pipedrive write. Installation, connection readiness, read permission and execution approval remain separate outcomes.
+
+## Give every task a bounded contract
+
+Name the Pipedrive tenant, permitted records, purpose, allowed reads, output, prohibited effects and acceptance check. Use one accountable owner for each proposed change. Workers may research separate organisations concurrently, but must not edit the same record or approve each other's work by implication.
+
+A useful prospect handoff contains the relationship path, accountable owner, dated source evidence, current status and next action. Unknown identities stay parked. A source naming a person is evidence to assess, not permission to approach them. Use business channels only and publicly name participation only when it is confirmed and publication is authorised.
+
+These are generic operating safeguards, not copied private prospect data. Their source and reuse boundary are recorded in [provenance](/docs/reference/sources).
+
+## Order work by dependency
+
+1. **Establish read access.** Verify the correct Pipedrive company account, connection identity and effective permissions before retrieving records. Use the least access required for the task; project separation does not automatically isolate a shared credential.
+2. **Resolve identities and schema.** Read the target's actual IDs, field definitions and relevant existing values. Preserve the difference between Pipedrive IDs and local fixture keys. Read [seed mapping](/docs/guides/seed-data) before adapting a fixture.
+3. **Gather evidence.** Give each researcher a separate evidence output. Keep quotation, URL and observation date beside the claim, and mark uncertainty rather than filling gaps. Use free sources first; paid retrieval requires existing cost authority.
+4. **Prepare the plan.** Integrate evidence into the deterministic local plan described in the [API reference](/docs/reference/pipedrive-api). Planning performs no live write. Review the exact fields and tenant, not only a persuasive summary.
+5. **Obtain scoped approval.** Bind the approver's decision to the tenant and plan digest. A changed plan or material record change requires renewed review. A worker completing research cannot approve sending or remove a compliance hold.
+6. **Execute only through a separately authorised executor.** A production executor needs a durable operation ledger and read-back reconciliation. The handbook's offline checks and optional, not-live-verified Deepline adapter do not establish those production guarantees.
+
+Do not let a later project, scheduled run or delegated worker inherit a previous task's authority. Name the permitted trigger, recipients, tenant, storage and stop mechanism before recurring activation. A namespace is an organisational boundary, not proof of enforced access control.
+
+## Treat webhook events as inputs
+
+Pipedrive [webhooks v2](https://pipedrive.readme.io/docs/webhooks-v2-migration-guide) use `meta`, `data` and `previous`; `previous` contains changed fields only. Missing payload fields may require an API read. Validate the tenant and event before joining it to a record, and make downstream effects replay-safe across retries and restarts. A webhook is a state-change signal, not approval for an unrelated write or send.
+
+Control concurrency and respect [Pipedrive's token budget and burst limits](https://pipedrive.readme.io/docs/core-api-concepts-rate-limiting). Repeated polling can consume the same shared account budget needed by other integrations. A daily-budget exhaustion requires a different recovery from a brief burst limit.
+
+## Accept completion with evidence
+
+The integrating owner checks exact source records, output, checks performed and remaining limitations. “Not found within the authorised query” is different from “does not exist”; a successful request differs from verified final state; a completed draft differs from a sent message.
+
+Keep private contact routes and raw receipts out of public dashboards. A public packet may show verification state and unknowns without exposing a usable address. Follow [safe writes](/docs/guides/safe-writes) for any subsequent change and [review-ready outreach](/docs/recipes/review-ready-outreach) for a separate draft-only task.
+
+The historical installation repository informed the distinction between setup instructions and demonstrated runtime enforcement. It does not implement this Pipedrive operating model, and its public availability is not a distribution grant. See [sources and reuse](/docs/reference/sources).

@@ -1,0 +1,44 @@
+---
+title: 'Validate CSV inputs before a Pipedrive import'
+description: 'Check file structure, item identity and field policy before proposing updates to persons, organizations and deals.'
+---
+
+A valid CSV can still update the wrong person or erase seller-owned information. Validate structure, identity and destination policy before enrichment or import, and retain every rejected row in the reconciliation.
+
+Source: [Deepline — Validate Incoming CSV Files Before CRM Enrichment](https://deepline.com/docs/guides/validate-incoming-csv-files). Original source read: **2026-10-18**. Source SHA-256: `9973cd223bef1380cefb68748a6de8e9c13325392419068e02a1f8053cf27243`. Pipedrive documentation checked: **2026-10-20**. This is original offline guidance, not copied source prose or code. Source redistribution rights are not assumed. No live import, provider execution or CRM write occurred.
+
+## Deepline-specific context versus Pipedrive adaptation
+
+The source separates file faults from row dispositions and detects duplicate identities across the complete file. Deepline's integration references are documented possibilities, not installed connections or permission to purchase enrichment. The validator proposed here produces an import proposal, not a native Pipedrive validation status.
+
+## Prerequisites and licensing
+
+Agree the item types, create/update mode, field allowlist, blank semantics and permission for partial processing. Verify the user's import permissions and data-use rights. Pipedrive's [spreadsheet import guide](https://support.pipedrive.com/en/article/importing-data-into-pipedrive-with-spreadsheets) explains mapping and preview; [updating by System ID](https://support.pipedrive.com/en/article/updating-pipedrive-data-with-a-spreadsheet) identifies existing items. Check current limits rather than embedding a universal row ceiling. Local validation needs no native workflow or invented Pipedrive CLI.
+
+## Record and field mapping
+
+Keep person, organization and deal System IDs in distinct columns. An email or shared domain is matching evidence, not a universal update key. Resolve updates to existing item IDs; unresolved rows must not silently become creates. For API preparation, [Persons](https://developers.pipedrive.com/docs/api/v1/Persons) uses `name`, `emails`, `phones`, `owner_id` and `org_id`; deals use `person_id` and `org_id`. Spreadsheet display labels are not API keys.
+
+[Custom fields](https://pipedrive.readme.io/docs/core-api-concepts-custom-fields) have account-specific hash keys and typed options. Retrieve the correct schema instead of guessing a key from a label. Keep `source_record_id`, file revision, disposition and reason as local metadata unless separate CRM fields are approved. Retain a secured source-to-item mapping.
+
+## Implementation steps
+
+1. Preserve the original file, checksum, encoding, export time and accountable owner. Parse with a CSV-aware library that handles quoted commas and embedded newlines; physical line numbers are not stable record identities.
+2. Reject duplicate headers, missing identity columns and ambiguous item mappings at file level. Define handling for byte-order marks and empty lines.
+3. Group duplicate source identities across the entire file before releasing any rows. Hold conflicting duplicates together rather than letting the first escape.
+4. Resolve update-only rows to known item IDs and compare corroborating evidence. Keep persons and organizations separate even when they share a name.
+5. Check malformed values, stale evidence, option IDs and protected fields. Distinguish no change from intentional clearing; inspect import preview and the selected API version's clearing semantics.
+6. Validate links independently. Confirm the intended person's organization and the deal's person and organization IDs. Never invent association labels or carry identifiers between accounts.
+7. Produce accepted rows, exceptions and a receipt with one disposition per input. Create a spreadsheet-safe display derivative for formula-like untrusted cells without altering canonical identity values.
+
+## Approval boundary
+
+Read-only checks may follow approved handling policy. A reviewer approves the final mapping, create/update mode, blank handling and accepted subset before import. Merges, owner changes, deal stage/status changes and communication require separate authority. Email syntax does not establish permission to contact someone.
+
+## Failure handling
+
+Fail the file for ambiguous structure; quarantine isolated faults only when partial processing is authorised. Distinguish an inaccessible lookup from an absent item. After an uncertain import, inspect import history, skipped rows and known IDs before replaying a create-capable file. Do not treat rollback as a substitute for review.
+
+## Validation and release criteria
+
+Use fixtures for quoted names, multiline notes, duplicate headers, conflicting source IDs, swapped person/organization IDs and optional blank phones. Reconcile all input dispositions and confirm rejected rows never enter the proposal. A separately authorised pilot must inspect the preview and read back fields and links, then repeat an update-only subset to check stable item counts. These are planned checks, not live results. See the [Pipedrive API reference](/docs/reference/pipedrive-api).

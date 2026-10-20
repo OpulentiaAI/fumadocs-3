@@ -1,0 +1,36 @@
+---
+title: 'Post-call Pipedrive automation without invented commitments'
+description: 'Turn authorised transcripts into reviewed notes and accountable activities while protecting commercial state.'
+---
+
+Original source: [Post-call CRM automation](https://deepline.com/docs/guides/post-call-crm-automation) — Deepline. Source retrieved: **2026-10-18**; source SHA-256: `d6ad257a454ec96cdac639f05d369d877cc0c1702a98c377019eff77240e39bf`. Pipedrive documentation checked: **2026-10-20**.
+
+The process starts when an authorised transcript is ready, not when an appointment ends. Its output is a reviewed receipt and exact effect plan. This original offline adaptation includes no live Pipedrive execution or provider lookup; source prose/code are not reproduced and redistribution rights are not assumed.
+
+## Deepline-specific context versus Pipedrive adaptation
+
+Deepline's integration references do not prove an installed connector or a provider's event support. The recommended orchestration layer handles transcript revisions, idempotency and approvals. Pipedrive's [Notes](https://developers.pipedrive.com/docs/api/v1/Notes) and [Activities](https://developers.pipedrive.com/docs/api/v1/Activities) APIs store reviewed outcomes; they do not guarantee extraction accuracy or cross-system transactions.
+
+## Prerequisites and licensing
+
+Obtain permission to process recordings, restrict transcript access and define retention. Identify the target company account and select only necessary [OAuth scopes](https://pipedrive.readme.io/docs/marketplace-scopes-and-permissions-explanations) and record permissions. An external review queue suffices for this design. No native workflow custom code, transcript extraction, paid integration or feature entitlement is presumed installed.
+
+## Record model and implementation steps
+
+1. **Identify conversation and revision.** Keep the meeting ID, transcript revision, readiness time and restricted source reference externally. Resolve participants to person IDs and choose the intended organization and deal. Several open deals require a deliberate choice; a shared domain is insufficient.
+2. **Extract evidence before edits.** Separate decisions, objections, requests and actions, each with speaker and transcript location. Unstated dates remain unknown. Label a proposed internal deadline as the team's deadline, not a customer's promise.
+3. **Separate context from commercial state.** Read [deal](https://developers.pipedrive.com/docs/api/v1/Deals) `pipeline_id`, `stage_id`, `status`, `value`, `currency`, `expected_close_date`, `owner_id`, `person_id` and `org_id`. Resolve numeric stages in the target account. A positive summary must not advance a deal.
+4. **Prepare a reviewed note.** Pipedrive notes use `content` and explicit destination fields such as `deal_id`, `person_id` and `org_id`; there is no association-type ID to invent. Escape or sanitise untrusted transcript material before formatting HTML. Store concise findings, source reference and reviewer decision, not an unrestricted transcript copy. Persist the returned note ID and read it back.
+5. **Plan accountable activities.** A v2 activity uses `subject`, `note`, `owner_id`, `due_date`, `due_time` and optional `deal_id`/`org_id`. Set the person through a `participants` entry containing `person_id` and `primary: true`. Validate user eligibility and the deadline timezone; keep the intended UTC instant externally and verify the displayed due date/time in a later pilot. A missing customer date must not become an invented commitment.
+
+## Approval boundary
+
+Automatic extraction and comparison can prepare proposals. A rep approves note content, assignees, dates and destination links; commercial owners separately approve changes to value, status, stage, dates or ownership. Customer follow-ups remain drafts. Bind approval to the exact revision and invalidate it when the transcript changes. See the [Pipedrive API reference](/docs/reference/pipedrive-api).
+
+## Failure handling
+
+Missing transcripts are waiting, not empty conversations. Hold unknown speakers and competing deals for review. Track extraction failure, rejected review, write failure and verification unknown separately. A duplicate readiness event must not create another note or activity. Reconcile destination IDs and observed state after timeouts, and repair only the missing effect. Read-before-write is not atomic conflict protection.
+
+## Validation and acceptance
+
+Use fictional transcripts covering no stated deadline, unknown speaker, revised evidence, two deals, duplicate notification and lost response. Every proposed claim must trace to evidence and each action must identify one accountable owner and intended destination. A later authorised pilot must verify note placement, activity dates, user and relationships and safe replay. Count reviewed next steps separately from missing evidence and rejected proposals. No live acceptance test or measured sales outcome is claimed.

@@ -1,0 +1,48 @@
+---
+title: 'Designing safe CRM workflow automation in Pipedrive'
+description: 'Plan controlled Pipedrive field updates with field ownership, conflict checks, replay protection and verifiable outcomes.'
+---
+
+Source: [Deepline CRM workflow automation](https://deepline.com/docs/guides/crm-workflow-automation). Source read date: 2026-10-18.
+
+This is an offline implementation plan. No live Pipedrive execution has taken place, and no records, workflows or permissions have been changed. The aim is to make a proposed update explainable before making it automatic: which record, which field, whose authority and what evidence would justify the change?
+
+## Deepline-specific behaviour versus Pipedrive adaptation
+
+The Deepline guide describes an orchestration discipline: assign field ownership, prepare a change proposal, identify repeated work and verify the destination. It points to Deepline integrations and agent tooling, but their availability is not a Pipedrive guarantee. This adaptation uses Pipedrive persons and organisations as destinations and an external change ledger as the control plane. The ledger, conflict policy and approval states below are recommendations, not built-in Pipedrive transaction features.
+
+Pipedrive’s [Persons API](https://developers.pipedrive.com/docs/api/v1/Persons) documents person IDs, `owner_id`, `org_id`, and `emails`/`phones` arrays. A person is a contact, not a Pipedrive user. Treat employer linkage, primary-address selection and field updates as separately reviewed decisions; retain the existing organisation unless a linkage change is explicitly approved. Pipedrive’s [Organizations API](https://developers.pipedrive.com/docs/api/v1/Organizations) documents organisation IDs, `name`, `website`, `owner_id` and updates. People are [persons](https://developers.pipedrive.com/docs/api/v1/Persons) linked by `org_id`; [deals](https://developers.pipedrive.com/docs/api/v1/Deals) carry their own `person_id`, `org_id`, `owner_id`, `pipeline_id` and `stage_id`. These record links do not prove legal-entity identity or authorise reassignment.
+
+All `ops_` names in this guide are proposed display labels or external-ledger columns, not literal Pipedrive API keys. Resolve each approved field against the account’s [custom-field metadata](https://pipedrive.readme.io/docs/core-api-concepts-custom-fields), validate its type and option IDs, and map it to its account-specific 40-character hash. For the v2 person, organisation and deal endpoints, send mapped values inside `custom_fields`; never send an `ops_` label as a top-level payload key. Deepline integrations mentioned by the source are documented upstream, not installed or executed here. Pipedrive references were reviewed on **2026-10-20**.
+
+## Prerequisites and licensing
+
+Obtain an administrator-approved integration with only the required object read and write scopes, a named RevOps operator and a non-production test destination where available. Inventory existing imports, integrations and workflows that touch the same fields. Keep credentials outside CRM fields and receipts.
+
+Use an authorised export and review-first proposals as the baseline. Before a later integration, verify the actual Pipedrive permissions, field capacity and selected API contracts; API access, automation access, Campaigns access and provider rights are separate. This design requires no native scoring engine, custom-code workflow action or Pipedrive CLI. It does not assume that an account has any paid automation or enrichment feature.
+
+## Model the change contract
+
+Use a destination identity comprising Pipedrive organisation/account ID, object type and record ID. Person, organisation and deal IDs are not interchangeable; lead IDs are UUIDs. Store old value, candidate, field key/hash, evidence time, input revision, rule version, approver and final observed value.
+
+For an initial organisation refresh, allow only a small approved set of mapped custom fields. Keep `owner_id`, person `org_id`, deal `person_id`/`org_id`, `pipeline_id`, `stage_id`, commercial values and customer corrections outside that set. `ops_update_state` and `ops_update_receipt` are proposed labels, not default fields. A company-name text value does not establish a person’s organisation link.
+
+## Implementation steps
+
+1. **Define the trigger and stop conditions.** Snapshot a bounded cohort and exclude unresolved or policy-ineligible records. If v2 webhooks trigger later work, durably deduplicate `meta.company_id` plus `meta.id`, authenticate the receiver with configured HTTP Basic authentication over HTTPS, and validate the payload. Pipedrive documents these controls in its [v2 webhook guide](https://pipedrive.readme.io/docs/guide-for-webhooks-v2); do not invent a signature header. Reconcile current records because events are not a complete changelog.
+2. **Prepare a field-level proposal.** Validate type, range, option IDs and null semantics against the selected endpoint. Missing enrichment means no proposed write. The v2 record APIs document `null` for clearing custom-field values; never map missing data to `null` or assume an empty string is a portable clearing operation.
+3. **Evaluate precedence.** Preserve values supplied by an authorised account owner unless a documented rule permits replacement. Obtain a fresh record read immediately before applying an approved proposal. If the relevant value changed, withdraw the proposal and review the new state.
+4. **Serialise competing work.** Use an external per-record or per-field lock for your own workers and nominate one writer across integrations. A read followed by an update is not an atomic compare-and-swap. If other writers cannot be controlled, use review instead of claiming conflict-free automation.
+5. **Apply and reconcile separately.** Update only approved fields on the resolved ID, then retrieve those same fields directly. Read associations separately when they form part of the intended outcome; a successful field update does not demonstrate that the company relationship exists.
+
+## Approval boundary
+
+An administrator should approve the field allowlist, precedence policy, cohort and rollback plan before enabling any writes. Within that policy, a deterministic blank-field fill may be automated. Identity merges, owner changes, qualification changes and external communications require their own approval, even when enrichment suggests them. Changing a proposed receipt into an approved receipt must be attributable to an authorised person or previously approved deterministic rule.
+
+## Failure handling
+
+Separate invalid input, denied access, stale proposal, provider failure and ambiguous write outcome. Pipedrive has a shared daily company API token budget plus per-token burst limits under its [rate-limit policy](https://pipedrive.readme.io/docs/core-api-concepts-rate-limiting). Pause on HTTP 429, respect the reset information, and wait for the daily reset when the company budget is exhausted; do not hot-loop or rotate tokens to evade it. After a submission timeout, read and reconcile before retrying. Rollback is a newly approved compensating update after checking later human edits.
+
+## Validation and acceptance
+
+Plan tests for an unchanged value, valid blank fill, protected field, conflicting human edit, repeated event, association failure and timeout after submission. A repeated event must reuse its receipt and avoid a second side effect. Accept only when read-back values match the approved proposal and protected fields remain unchanged. Report verified changes divided by proposed changes, with unresolved outcomes separately counted. These are acceptance criteria for a future pilot, not results from this authoring exercise.

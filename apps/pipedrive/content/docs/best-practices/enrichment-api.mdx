@@ -1,0 +1,50 @@
+---
+title: 'Planning a production enrichment API around Pipedrive records'
+description: 'Define identity contracts, validation states, replay controls and a separate Pipedrive write-back boundary for enrichment services.'
+---
+
+Source: [Deepline enrichment API guide](https://deepline.com/docs/guides/enrichment-api). Source read date: 2026-10-18.
+
+This offline implementation plan includes no live Pipedrive execution. The service described here should return a validated enrichment proposal and a traceable receipt before it is allowed to modify a CRM record. A provider response and a successful CRM handoff are different outcomes.
+
+## Deepline-specific behaviour versus Pipedrive adaptation
+
+The Deepline source recommends stable request identity, provider fallbacks and explicit acceptance rules. Its orchestration and provider access are Deepline-specific. This adaptation proposes an external enrichment service connected to Pipedrive persons and organisations. Its request envelope, state machine, locks and cost ledger are design recommendations, not documented Pipedrive APIs.
+
+Use the endpoint-specific [Persons](https://developers.pipedrive.com/docs/api/v1/Persons) and [Organizations](https://developers.pipedrive.com/docs/api/v1/Organizations) contracts for reading and updating records. Both provide v2 record operations, but not every Pipedrive resource uses the same version or payload shape. Pin each selected contract rather than inventing a universal upsert.
+
+All `ops_` names in this guide are proposed display labels or external-ledger columns, not literal Pipedrive API keys. Resolve each approved field against the account’s [custom-field metadata](https://pipedrive.readme.io/docs/core-api-concepts-custom-fields), validate its type and option IDs, and map it to its account-specific 40-character hash. For the v2 person, organisation and deal endpoints, send mapped values inside `custom_fields`; never send an `ops_` label as a top-level payload key. Deepline integrations mentioned by the source are documented upstream, not installed or executed here. Pipedrive references were reviewed on **2026-10-20**.
+
+## Prerequisites and licensing
+
+Require an approved provider agreement, restricted service authorisation, durable queue, secret storage and an exception owner. Inspect Pipedrive field metadata before mapping and request only the objects and fields needed. Start read-only while the service produces proposals.
+
+Use an authorised export and review-first proposals as the baseline. Before a later integration, verify the actual Pipedrive permissions, field capacity and selected API contracts; API access, automation access, Campaigns access and provider rights are separate. This design requires no native scoring engine, custom-code workflow action or Pipedrive CLI. It does not assume that an account has any paid automation or enrichment feature.
+
+## Define the request and result contracts
+
+Each request should carry tenant identity, object type, Pipedrive record ID when known, business request ID, input revision, required fields and policy version. Keep a person's submitted email separate from a company's normalised domain. A free-mail domain is not an employer identifier. Retain the raw submitted value alongside the normalised lookup value without exposing it in operational logs.
+
+Return field-level candidates with source, observation time, match evidence and one of accepted, missing, invalid, conflicting or provider-error. These proposed statuses must not collapse into a single Boolean. An accepted company industry can coexist with an unresolved contact phone. Keep the write-back status independent so a good enrichment result remains usable when CRM permissions fail.
+
+Recommended labels `ops_enrichment_state`, `ops_enrichment_checked_at` and `ops_enrichment_receipt` must be mapped to the selected object’s custom-field hashes and types. Keep `owner_id`, employer links, lead conversion, deal `pipeline_id`/`stage_id` and commercial values outside the enrichment payload.
+
+## Implementation steps
+
+1. **Resolve identity before spending.** Read a saved CRM ID directly. When matching is necessary, search supported person or organisation fields and require decisive evidence. Email is not an assumed unique upsert key; preserve an external product/customer-to-person mapping and hold ambiguous matches. An empty or inaccessible search is not conclusive absence.
+2. **Deduplicate work externally.** Persist a request record before calling a provider. Key it by tenant, target, input revision, field set and policy version. The same business request should return or reconcile the existing result rather than restarting a billable waterfall.
+3. **Validate each provider response.** Check required fields, expected types, country context and contradictory identity evidence. Continue to another approved provider only for a defined unresolved need, and stop once that need is satisfied. A non-empty response is not sufficient acceptance.
+4. **Stage the Pipedrive proposal.** Map accepted fields to default keys or account-specific custom-field hashes and valid option IDs. For v2 custom values use `custom_fields`. Missing provider data must not clear an existing field. Inspect person `org_id` and deal links separately: a company-name string does not establish them.
+5. **Apply only an approved field set.** Re-read current values and reject stale proposals. Serialise your own workers rather than claiming that read-before-write provides atomic conflict protection. Retrieve the target after the update and persist observed values in the receipt.
+
+## Approval boundary
+
+Approve provider routes, costs, retention and deterministic field-fill policies before any automated execution. Require review for ambiguous identities, changed organisation links and overwrites of human-maintained values. Owner assignment, qualification changes, merges and outbound communication must remain separate operations. The enrichment API should not silently become a general-purpose CRM administrator.
+
+## Failure handling
+
+Distinguish rate limiting, bad input, denied access and unknown outcomes. Under [Pipedrive’s rate limits](https://pipedrive.readme.io/docs/core-api-concepts-rate-limiting), account for the shared daily company token budget and per-token burst limits. Pause on HTTP 429 and respect reset information; daily exhaustion waits for budget reset rather than immediate repeated calls. After a submission timeout, read and reconcile before retrying. Preserve record-level outcomes and send unresolved items to a repair queue.
+
+## Validation and acceptance
+
+Plan contract tests for missing identifiers, duplicate requests, provider schema drift, conflicting candidates, an invalid Pipedrive enumeration, permission loss and a timeout after submission. Verify that duplicate delivery cannot create a second record or repeat an accepted provider request unnecessarily. Accept a handoff only after destination read-back, with association checks when required. Evaluate accepted useful fields per total provider, platform and repair cost, keeping retries visible. These are future pilot requirements, not measured production performance.
