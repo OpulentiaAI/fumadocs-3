@@ -1,0 +1,19 @@
+---
+title: Recipes with an explicit stopping point
+description: Practical Pipedrive and sponsor workflows with inputs, evidence, approvals and outcome checks.
+icon: Workflow
+---
+
+Choose one outcome before choosing a tool. These recipes keep sponsor research, Pipedrive reads, an outreach draft and a live send as separate actions. The local app works offline; the optional provider adapter is not live-verified.
+
+| Recipe                                                       | Input                                              | Result                                     | Stops before                          |
+| ------------------------------------------------------------ | -------------------------------------------------- | ------------------------------------------ | ------------------------------------- |
+| [Pipedrive brief](/docs/recipes/crm-brief)                   | An authorised person or organisation identity      | A cited brief with coverage limits         | Any CRM mutation or outreach          |
+| [Sponsor qualification](/docs/recipes/sponsor-qualification) | Historical campaign context and candidate evidence | A qualification decision and review packet | Claiming budget or sponsor commitment |
+| [Review-ready outreach](/docs/recipes/review-ready-outreach) | An approved account and grounded context           | A draft for human review                   | Sending or enrolling anyone           |
+
+## Before a live connection
+
+Resolve tenant-specific record IDs, inspect field definitions, verify the Pipedrive connection's permissions and define the approver. Use a test account and synthetic records for any separately authorised integration test. A documented HTTP shape or passing offline test does not prove live account access.
+
+Read the [Pipedrive API and local automation reference](/docs/reference/pipedrive-api), [seed mapping](/docs/guides/seed-data) and [safe-write guide](/docs/guides/safe-writes) before adapting a fixture into a plan. A deterministic dry run and tenant-bound approval do not replace the durable replay ledger and read-back verification a production executor needs.

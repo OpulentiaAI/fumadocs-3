@@ -1,0 +1,49 @@
+---
+title: 'Turning DataForSEO research into reviewable Pipedrive organisation context'
+description: 'Plan a controlled handoff from Deepline SEO research to Pipedrive organisation records without treating rankings or traffic estimates as buyer intent.'
+---
+
+Source: [Deepline DataForSEO guide](https://deepline.com/docs/guides/dataforseo-via-deepline). Source read date: 2026-10-18.
+
+This is an offline implementation plan with no live Pipedrive execution and no DataForSEO requests or purchases. Its useful output is a dated company research summary, not an automatic lead score or a list of people to contact.
+
+## Deepline-specific behaviour versus Pipedrive adaptation
+
+The source describes DataForSEO discovery and execution through Deepline CLI and MCP tooling, including keyword research, search-result analysis, backlinks and domain metrics. It also describes managed credentials, bring-your-own-key arrangements, operation receipts and workspace database access. Those are Deepline-side claims, not Pipedrive capabilities. Verify current operation contracts, provider terms and prices independently before use; this adaptation does not repeat the source's billing promises as established facts.
+
+This Pipedrive adaptation resolves an organisation, links a research brief and exposes a small set of reviewed metrics. The [Organizations API](https://developers.pipedrive.com/docs/api/v1/Organizations) documents the destination; it does not make DataForSEO native or establish a Deepline database connection. Source commands and code are not reproduced.
+
+All `ops_` names in this guide are proposed display labels or external-ledger columns, not literal Pipedrive API keys. Resolve each approved field against the account’s [custom-field metadata](https://pipedrive.readme.io/docs/core-api-concepts-custom-fields), validate its type and option IDs, and map it to its account-specific 40-character hash. For the v2 person, organisation and deal endpoints, send mapped values inside `custom_fields`; never send an `ops_` label as a top-level payload key. Deepline integrations mentioned by the source are documented upstream, not installed or executed here. Pipedrive references were reviewed on **2026-10-20**.
+
+## Prerequisites and licensing
+
+Obtain authority to run the selected provider operations and retain their results. Agree a query budget, geography, language, search engine, device context and collection date before commissioning research. An administrator must approve the Pipedrive organisation mapping and integration scopes. Keep third-party credentials outside CRM fields.
+
+Use an authorised export and review-first proposals as the baseline. Before a later integration, verify the actual Pipedrive permissions, field capacity and selected API contracts; API access, automation access, Campaigns access and provider rights are separate. This design requires no native scoring engine, custom-code workflow action or Pipedrive CLI. It does not assume that an account has any paid automation or enrichment feature. A separately hosted research worker still needs approved provider contracts, budget and CRM access.
+
+## Choose a research contract
+
+Separate four different questions. Keyword metrics support content prioritisation; a search-result snapshot identifies visible pages; backlink data describes links under a provider's measurement model; domain estimates describe a site, not necessarily the legal entity or its spending power. Decide which question is actually useful for the account team before collecting all four datasets.
+
+Use organisation `website` and saved ID as matching inputs, with manual exceptions for parents, regional sites, agencies and product microsites. Proposed labels `ops_seo_research_state`, `ops_seo_observed_at`, `ops_seo_market` and `ops_seo_brief_url` map to approved organisation custom-field hashes. Keep detailed research outside Pipedrive with original units and query dimensions.
+
+## Implementation steps
+
+1. **Resolve the account.** Start from a saved organisation ID. Otherwise compare website and domain evidence against an authorised snapshot or reviewed search candidates. Standard organisation search does not document a domain filter. Hold multiple plausible records rather than creating one merely because a subdomain differs.
+2. **Specify collection dimensions.** Record the exact domain or page target and the intended market. Two rankings collected for different countries are not a trend. Store query time and any provider observation time separately, and retain the original metric definitions.
+3. **Collect a bounded research sample.** Run only authorised operations after checking their current contract. Preserve receipts and request identities. Reuse a permitted recent dataset only when its dimensions and freshness match the new question; do not assume Deepline automatically caches or deduplicates requests.
+4. **Write a restrained brief.** Summarise relevant observations, their limitations and a possible account conversation. Describe traffic as an estimate where applicable. A competitor appearing above the account for one query does not establish that the account is losing customers or actively shopping.
+5. **Propose the CRM handoff.** Present the organisation ID, brief reference, observation date and candidate fields for review. Preserve `owner_id`, qualification state and deal values. A person-to-organisation association is a separate CRM relationship; a person found on a ranking site must not be attached to an account automatically.
+6. **Verify an approved update.** Retrieve the organisation directly by saved ID and compare the written fields, hashes and brief reference. A search result is candidate discovery, not sufficient evidence that the intended update persisted.
+
+## Approval boundary
+
+Research collection needs an approved budget and data-use purpose. CRM writes need an approved field mapping. Any new audience, personal-data enrichment, contact association, outbound message or sales-outreach activation is a separate approval boundary. This plan does not authorise the source guide's broader prospecting chain merely because it is technically imaginable.
+
+## Failure handling
+
+Treat missing metrics as unknown, not zero. Keep provider errors distinct from a real absence of backlinks or rankings. On an ambiguous result after submission, reconcile the provider receipt before buying the same query again. If a CRM handoff fails, retain the completed research and retry only the handoff after diagnosis. Version briefs rather than replacing a newer market snapshot with a late-arriving older one.
+
+## Validation and acceptance
+
+Use fixtures for one company with several domains, two markets, a missing metric, a changed domain and a duplicate collection event. Confirm that every published number has a unit, dimension, time and source reference, and that no metric silently alters ownership or qualification. Accept only a readable, correctly associated company brief whose uncertainty survives the CRM summary. The intended success measure is useful reviewed account context per research cost, not the number of provider calls.

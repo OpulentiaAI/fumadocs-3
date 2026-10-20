@@ -1,0 +1,49 @@
+---
+title: 'Reducing enrichment cost without degrading Pipedrive data'
+description: 'Compare provider routes using accepted fields, freshness, duplicate avoidance and full operational cost rather than response counts.'
+---
+
+Source: [Deepline enrichment cost optimisation](https://deepline.com/docs/guides/enrichment-cost-optimization). Source read date: 2026-10-18.
+
+This is an offline implementation plan with no live Pipedrive execution or paid provider activity. The objective is lower cost for useful, trustworthy CRM fields, not a cheaper stream of answers that sales operations must repair.
+
+## Deepline-specific behaviour versus Pipedrive adaptation
+
+The source discusses provider waterfalls, field-level validation and total cost. Deepline may provide the orchestration and receipts described there, but connecting a provider does not establish its accuracy or economics for your account. This adaptation uses a fixed sample of Pipedrive persons and organisations, an external experiment ledger and staged field proposals. Provider selection, caching and acceptance rules are recommendations, not native Pipedrive optimisation features.
+
+Pipedrive’s [organisation](https://developers.pipedrive.com/docs/api/v1/Organizations) and [person](https://developers.pipedrive.com/docs/api/v1/Persons) APIs provide the baseline records. They do not provide provider invoices or determine whether a phone belongs to the intended person.
+
+All `ops_` names in this guide are proposed display labels or external-ledger columns, not literal Pipedrive API keys. Resolve each approved field against the account’s [custom-field metadata](https://pipedrive.readme.io/docs/core-api-concepts-custom-fields), validate its type and option IDs, and map it to its account-specific 40-character hash. For the v2 person, organisation and deal endpoints, send mapped values inside `custom_fields`; never send an `ops_` label as a top-level payload key. Deepline integrations mentioned by the source are documented upstream, not installed or executed here. Pipedrive references were reviewed on **2026-10-20**.
+
+## Prerequisites and licensing
+
+Agree an experiment budget, provider data-use rights and a representative, dated sample. Include countries, company sizes and record quality levels that matter to the business. Collect invoices, retry receipts and operator repair time under consistent units. Secure read-only Pipedrive access for analysis; write authority is unnecessary until a separate pilot is approved.
+
+Use an authorised export and review-first proposals as the baseline. Before a later integration, verify the actual Pipedrive permissions, field capacity and selected API contracts; API access, automation access, Campaigns access and provider rights are separate. This design requires no native scoring engine, custom-code workflow action or Pipedrive CLI. It does not assume that an account has any paid automation or enrichment feature. Size future sampling against the shared daily company token budget and per-token burst limits in the [rate-limit guide](https://pipedrive.readme.io/docs/core-api-concepts-rate-limiting); include bounded 429 pauses in latency, not fabricated provider cost.
+
+## Define what an accepted field means
+
+Make acceptance field-specific. A company industry must match your permitted taxonomy and identity evidence. A phone needs person and country context, not merely valid punctuation. An employee estimate must preserve its source age. Do not count a response that repeats a known-good current value as newly gained coverage.
+
+Inspect actual default fields and account-specific custom-field metadata first. Suggested labels `ops_enrichment_route`, `ops_enrichment_checked_at` and `ops_enrichment_state` expose a compact reviewed status through mapped hashes. Keep detailed request costs and rejected candidates in the experiment ledger rather than dozens of permanent CRM fields.
+
+## Implementation steps
+
+1. **Freeze the comparison cohort.** Save the Pipedrive object IDs, required missing fields and current provenance at the start. Resolve person–organisation associations when company context affects validation. An unresolved association should not be counted as a provider failure or a successful company match.
+2. **Avoid unnecessary calls.** Reuse a recent accepted result only when provider rights, field freshness and input identity permit it. A changed employer invalidates some person-context results. Record each avoided call with its reuse reason so savings can be distinguished from skipped work.
+3. **Compare routes fairly.** Run approved candidates against the same holdout inputs and acceptance policy. Keep experimental results separate from production fields. For a multi-provider route, record the marginal valid coverage delivered by each fallback, not just its response rate.
+4. **Stop at the useful result.** Once all required fields satisfy the acceptance rule, end that request's waterfall. Missing, invalid, conflicting and provider-error states need different fallback decisions. Do not pay a second provider for unrelated fields merely because the first returned one missing value.
+5. **Compute full cost.** Add provider charges, platform charges, retries, validation and measured repair effort. Divide by newly accepted usable fields, reporting a separate cost per usable contact when several fields are required together. A contact with three valid fields and a wrong identity is not usable.
+6. **Propose the winning route.** Show coverage by segment, latency, error rate and rights limitations alongside cost. Re-read current Pipedrive values before a later approved write, then read back the destination. The experiment itself must not overwrite sales-owned data.
+
+## Approval boundary
+
+Procurement and data owners should approve spend caps, retention and any change to the production provider route. An analyst may recommend a route but should not cancel contracts or broaden data use. Protect user ownership, qualification decisions, primary organisation linkage and commercial fields. CRM writes and customer communications remain separate approvals, regardless of an apparent cost saving.
+
+## Failure handling
+
+A budget exhaustion should pause the experiment visibly, not silently label the remaining records missing. Keep rate-limit waiting time and paid retries in the cost calculation. When a billable provider outcome is unknown, reconcile the request receipt before repeating it. When CRM delivery fails, retry the approved handoff rather than buying enrichment again. Retain the old production route until the replacement has met agreed quality thresholds.
+
+## Validation and acceptance
+
+Test duplicate input events, a still-fresh cached field, expired evidence, a changed company, a cheap wrong match and a fallback with unique geographic coverage. Reconcile sampled request charges with billing records and confirm that the denominator excludes neither failures nor manual repair. Accept a proposed saving only when the required coverage and quality thresholds hold for every critical segment. No cost, coverage or savings figure in this plan is a measured result.

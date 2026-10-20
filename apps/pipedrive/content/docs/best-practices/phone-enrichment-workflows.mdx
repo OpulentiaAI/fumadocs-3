@@ -1,0 +1,43 @@
+---
+title: 'Validate phone enrichment before updating Pipedrive'
+description: 'Separate person matching, phone evidence, approved array updates and permission to call.'
+---
+
+Original source: [Phone enrichment workflows: validate before you route or call](https://deepline.com/docs/guides/phone-enrichment-workflows) — Deepline. Source retrieved: **2026-10-18**; source SHA-256: `9e169f634e407f19ae8008504f9fa380f5da309334b8df04740580590e768867`. Pipedrive documentation checked: **2026-10-20**.
+
+This is an offline plan: no live Pipedrive execution, provider purchase or call has occurred. The output is a defensible phone proposal for an identified person. Parsing, ownership, reachability and permission to call are four separate questions. This original adaptation assumes no licence to redistribute Deepline prose or code.
+
+## Deepline-specific versus Pipedrive adaptation
+
+The source's provider routing and provenance ideas inform this design; integration listings do not prove installation or phone-data availability. Pipedrive stores accepted person data but is not a phone-verification service. Provider thresholds, cost limits and jurisdiction checks must be supplied separately.
+
+## Prerequisites and feature licensing
+
+Approve providers, territories, data rights, retention, spend and a disputed-data reviewer. Check the actual account's read/write permissions and custom-field capacity. This design uses an external review process and assumes no native workflow custom code, calling entitlement or provider licence. Calling availability and legal eligibility need their own assessment.
+
+## Proposed Pipedrive data model
+
+The [v2 Persons API](https://developers.pipedrive.com/docs/api/v1/Persons) uses a `phones` array with entries containing `value`, `label` and `primary`. Represent a mobile classification through the approved phone entry and label; do not treat an organization switchboard as a person's direct number. Resolve employment context using the person's `org_id` and the intended organization record.
+
+Read the complete current array before proposing an update. Preserve unrelated numbers, labels and the existing primary choice unless their change is approved; do not assume a one-entry update will append safely. Optional labels such as `phone_evidence_status`, `phone_observed_at` and `phone_provider_ref` require approved [custom fields](https://pipedrive.readme.io/docs/core-api-concepts-custom-fields). Map display labels to real hashes and type/option definitions; put v2 values under `custom_fields`. Keep full UTC observation instants and sensitive provider receipts in a restricted ledger rather than assuming a native datetime custom field exists.
+
+## Practical implementation steps
+
+1. Resolve a Pipedrive person ID using corroborating identity and employment evidence. A common name alone is insufficient; headquarters location is not proof of the person's phone country.
+2. Check current numbers and provenance. Preserve recent human-confirmed information and known-invalid or do-not-contact decisions. Buy only the missing category of evidence.
+3. Send the minimum approved identifiers to an authorised provider and record purpose, time, cost and input revision. Reuse still-valid receipts within the agreed policy.
+4. Check country, structure, extension, number category and person match independently. Keep the original value beside its normalised representation. Stop the waterfall only when all acceptance requirements pass.
+5. Show a field-level diff, including the proposed entire phone array and primary designation. A mobile candidate must not displace a confirmed office line merely because both parse. Re-read immediately before an approved write and hold changed records for review.
+6. Read the person back by ID and compare the exact array and approved metadata. Record the verified result. Do not initiate a call or mark calling eligibility as a consequence of enrichment.
+
+## Approval boundary
+
+Data governance approves provider use and geography; the data owner approves destination changes. Uncertain identity, conflicting confirmed numbers and switchboard-to-person changes require review. Finding a number does not establish consent or permit clearing suppression. See the [Pipedrive API reference](/docs/reference/pipedrive-api).
+
+## Failure handling
+
+Keep no match, malformed number, unsupported territory, provider failure and disputed identity distinct. Missing results mean no update, not an empty array or clearing request. The documented person search can search phone fields, but a shared-number hit does not establish identity or uniqueness. Reconcile uncertain writes by known person ID rather than creating another person. Bound paid retries; pause Pipedrive `429` responses under its [daily budget and burst rules](https://pipedrive.readme.io/docs/core-api-concepts-rate-limiting).
+
+## Validation and operating measures
+
+Use fictional fixtures for a confirmed line, shared switchboard, international mobile, extension error, unsupported country, changed employer and repeated event. Confirm unrelated numbers and primary selections survive, unknown identity blocks publication and no calls occur. A later authorised pilot must compare read-back arrays, organization links and receipts. Measure accepted correctly categorised numbers and cost per accepted field, not every returned number. No live ownership or compliance outcome has been verified.

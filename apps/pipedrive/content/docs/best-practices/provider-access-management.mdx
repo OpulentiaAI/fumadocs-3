@@ -1,0 +1,40 @@
+---
+title: 'Govern enrichment-provider access around Pipedrive'
+description: 'Control credential custody, data rights, budgets and revocation without storing secrets in CRM records.'
+---
+
+Original source: [Provider access management: control data keys, rights, and usage](https://deepline.com/docs/guides/provider-access-management) — Deepline. Source retrieved: **2026-10-18**; source SHA-256: `b96f7b930a1eede59e9a5913d5b17f7ef369940a765c99c3873170b6afe9f50a`. Pipedrive documentation checked: **2026-10-20**.
+
+Provider access is a business dependency, not merely an API key. Query permission does not establish retention or redistribution rights. This original offline adaptation includes no live Pipedrive execution or provider-access change; source licensing is unestablished and source prose/code are not reused.
+
+## Deepline-specific context versus Pipedrive adaptation
+
+Deepline's catalogue describes possible connections, not installed integrations or approved data rights. This Pipedrive design keeps contracts, secrets, field-level rights and enforcement in external controlled systems. CRM metadata makes dependencies visible but is not a secrets manager or legal register.
+
+## Prerequisites and licensing
+
+Name procurement, security, data and operational owners. Review permitted purposes, territories, retention, redistribution and subprocessors. Inventory every consumer and writer. Select only necessary [OAuth scopes](https://pipedrive.readme.io/docs/marketplace-scopes-and-permissions-explanations) and record access; read assessment and later writes need separate authority. No Provider custom object, native custom-code workflow or particular subscription is assumed.
+
+## Recommended record model
+
+Keep the provider register external. If useful, link an approved supplier organization record without confusing it with prospect organizations. Optional display labels `ops_provider_key`, `ops_contract_owner`, `ops_rights_reviewed_at`, `ops_approved_purposes`, `ops_usage_cap` and `ops_register_url` are custom-field proposals. Resolve their real hashes and types through [custom-field metadata](https://pipedrive.readme.io/docs/core-api-concepts-custom-fields); v2 organization writes use `custom_fields`. A label is not an API field key.
+
+Never put tokens, authentication headers or secret values in fields, notes, activities or logs. A credential reference identifies a restricted secrets entry, not its contents. Keep detailed usage and rights decisions outside Pipedrive; linking a register must not broaden its audience.
+
+## Implementation steps
+
+1. **Map dependencies first.** For each provider, record consumer version, business purpose, destination entity and ID, allowed fields, refresh interval and recipients. Work-email and company-size data can have different retention rights even from one supplier.
+2. **Separate access from publication.** An evidence worker need not write deals or ownership. A later approved writer accepts a narrow person or organization field allowlist and preserves the source-to-destination identity mapping.
+3. **Enforce spend externally.** Use actual billing units and concurrent reservations, including billable misses and retries. A numeric Pipedrive field is reporting context, not a concurrency-safe budget lock. Also plan for Pipedrive's separate [company API budget and per-token burst limits](https://pipedrive.readme.io/docs/core-api-concepts-rate-limiting); pause on `429` rather than rotating credentials.
+4. **Assign review work.** An approved [activity](https://developers.pipedrive.com/docs/api/v1/Activities) can use `owner_id`, `subject`, `note`, `due_date`, `due_time` and supplier `org_id`. Include the decision and restricted register reference, never the key. Persist its ID and verify assignee, date and destination.
+5. **Rehearse revocation.** Pause consumers, revoke or rotate through the credential owner, inspect scheduled work and restore only after a minimal authorised test. A fallback needs independent rights, budget and quality approval; an outage grants none of these.
+
+## Approval boundary
+
+Security owns scopes and custody; procurement owns spend and rights; the CRM data owner owns destination fields. New providers, broader distribution, fallback changes and cap increases need the appropriate owner's decision. Usage summaries must not renew contracts or expand permitted purposes. See the [Pipedrive API reference](/docs/reference/pipedrive-api).
+
+## Failure handling and validation
+
+Separate expired access, missing permissions, unclear rights, exhausted budget and provider outage. Stop dependent writes on rights failure, not only lookups. Retain denied effect identities and name repair owners. Do not repeatedly rotate keys to disguise permission faults.
+
+Test revoked access, concurrent reservations, replacement suppliers and expiry mid-batch. Verify every maintained field has a permitted source, every provider has a revocation path and sample receipts contain no secrets. A later pilot must prove that pausing prevents new effects and restoration resumes only eligible work. Measure cost per accepted output, not successful HTTP requests. No live revocation or recovery has been tested here.

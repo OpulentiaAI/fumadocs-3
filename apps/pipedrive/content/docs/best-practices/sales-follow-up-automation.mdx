@@ -1,0 +1,40 @@
+---
+title: 'Prepare Pipedrive follow-ups with evidence and review'
+description: 'Keep recipient decisions, draft approval, internal activities and observed delivery separate.'
+---
+
+Original source: [Sales follow-up automation: drafts, controls, and timing](https://deepline.com/docs/guides/sales-follow-up-automation) — Deepline. Source retrieved: **2026-10-18**; source SHA-256: `31ac2774f17137604b58917f484e99470f37232ad3adfd65c122baf2b0cf5694`. Pipedrive documentation checked: **2026-10-20**.
+
+A useful follow-up reaches the intended person and promises only what the team can deliver. Separate evidence extraction, drafting, CRM activities and sending. This original offline guide includes no live Pipedrive execution, provider lookup or sending. No source prose/code are reproduced and redistribution rights are not assumed.
+
+## Deepline-specific context versus Pipedrive adaptation
+
+Deepline integration listings do not prove a mail-draft action or installed connector. This design uses person and deal context, an external controlled draft store, [notes](https://developers.pipedrive.com/docs/api/v1/Notes) and [activities](https://developers.pipedrive.com/docs/api/v1/Activities). A note or completed activity does not prove an inbox draft or message delivery.
+
+## Prerequisites and licensing
+
+Require authorised evidence, confirmed participants, responsible rep and channel policy. Check recording permissions, sensitive data handling and reference access. A mailbox-verification result is not permission to communicate. Confirm any future mail provider's action and the actual Pipedrive account's entitlements separately; no sequence enrolment, sending API or native custom-code workflow is assumed or required here.
+
+## Data and relationship model
+
+Resolve recipients to existing [person IDs](https://developers.pipedrive.com/docs/api/v1/Persons), inspect `name`, relevant `emails` and `org_id`, and select the intended deal. Deal `person_id` and `org_id` are not a licence to copy every related person. A mentioned name is not an approved recipient.
+
+Optional deal labels `followup_review_state`, `followup_due_at` and `followup_receipt_url` are [custom-field proposals](https://pipedrive.readme.io/docs/core-api-concepts-custom-fields). Resolve their hashes/types and use v2 `custom_fields`. Keep exact UTC deadlines, approved draft revision, reviewer, recipients and any future delivery receipt externally. None is a native delivery indicator.
+
+## Implementation steps
+
+1. **Extract a promise ledger.** Record requested assets, agreed actions, owners and explicitly stated deadlines with source locations. Keep a recommended internal response date separate from a customer's agreement; missing timing remains unknown.
+2. **Confirm recipients.** Ask the rep to resolve shared mailboxes, changed employers and additional copied colleagues. Attendance or a transcript mention alone does not establish recipient authority.
+3. **Draft conservatively.** Use a factual recap, assets that exist and one clear action. Do not invent attachments, discounts, implementation dates or security assurances. Put speculative suggestions in reviewer notes, not customer text.
+4. **Plan internal handoff.** An approved v2 review activity uses `subject`, `note`, `owner_id`, `due_date`, `due_time` and optional `deal_id`/`org_id`. Use primary `participants` with `person_id` for the person. A reviewed recap note uses HTML `content` and explicit destination IDs, with sanitised untrusted text. Persist and verify each resulting ID separately.
+5. **Keep review distinct from delivery.** Bind approval to the exact text, recipients, sender and channel. A later independently authorised channel action needs its own contract and receipt. Distinguish draft accepted, send requested, delivery observed and delivery unknown.
+
+## Approval boundary
+
+The rep approves content, recipients, assets and timing before sending; commercial owners approve new commitments. A deadline does not permit automatic sending, stage movement or owner changes. A revised draft loses the old approval. See the [Pipedrive API reference](/docs/reference/pipedrive-api).
+
+## Failure handling and validation
+
+Missing evidence or assets produces a held draft and named repair owner. Do not blindly resend after unknown delivery or a bounce. Reconcile conversation ID, draft revision and channel receipt; reuse the existing review activity for duplicate notifications. Changed CRM state requires a refreshed proposal before writing.
+
+Test unstated deadlines, contradictory notes, missing files, unauthorised copied recipients and post-approval edits. Check every commitment and recipient. A later authorised pilot must verify activity dates, owner and destination and independently verify any channel delivery. Measure time to approved draft and overdue handoffs; keep unsent drafts and unknown deliveries outside completed-follow-up totals. No live outcome is claimed.

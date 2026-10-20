@@ -1,0 +1,61 @@
+---
+title: Map seed data without inventing CRM facts
+description: Separate source fixtures, proposed CRM mappings and live record identity.
+---
+
+A seed is a teaching fixture, not a live CRM import. The sponsor repository contains real company names and client-supplied campaign claims, but none of those rows proves a current relationship, a verified contact or a sponsor commitment.
+
+Use an explicit Pipedrive mapping layer. Preserve the upstream source path and commit for each fixture, and keep proposed CRM fields separate until the target account's field definitions and the owner's intent have been checked.
+
+## Model the campaign and company separately
+
+The campaign packet describes Nocturnal Valley, an inaugural electronic-music and camping event at Astral Valley Art Park near St. Louis. Its listed dates are 24–26 September 2026. These are historical source values, not a recommendation to launch current outreach.
+
+Source company rows map to candidate Pipedrive organisations, with the supplied canonical domain retained as research identity evidence. A domain is not an assumed universal Pipedrive field or unique key: inspect the account's standard and custom fields before searching or mapping it. Category and region fit can remain source attributes. Do not manufacture a Pipedrive record ID or treat a target-list row as an existing account.
+
+| Source field      | Suggested application meaning     | CRM treatment                                        |
+| ----------------- | --------------------------------- | ---------------------------------------------------- |
+| `company`         | Display label from the source row | Candidate company name; resolve before write         |
+| `domain`          | Identity input when present       | Exact lookup candidate, never a guessed domain       |
+| `category`        | Client-list category              | Keep source provenance; map only to a verified field |
+| `region_fit`      | Supplied market rationale         | Research context, not proof of a business address    |
+| `activation_lead` | Candidate research lead           | Read and date the cited page before promoting it     |
+| `note`            | Restrictions or context           | Do not turn free text into a contact or commitment   |
+
+[Source: target fixture](https://github.com/Git-Godssoldier/opulent-sponsor-context-showcase/blob/662ddba58c42f28ae71d0aca1a9cbb7794ec3d26/campaigns/nocturnal-valley/targets.csv#L1-L33).
+
+## Useful public seed entities
+
+BeatBox Beverages, Electrolit and Sun Cruiser have supplied canonical domains and comparable-event leads in the source. Use them to demonstrate the distinction between a lead and a newly verified activation. Liquid Death supplies a category-level research example without the same explicit activation citation in its row.
+
+Anheuser-Busch has no resolved domain in the fixture because the client had not chosen between the parent and a distributor. NUTRL has a domain but is held for that same entry-point decision. Head Change is ambiguous; several cannabis rows are compliance-gated. Volcan X.A and Ciroc are explicitly lead-only because their exact domains were not supplied.
+
+These variations are valuable empty and blocked states. Do not “clean” them into runnable targets to make the demo look complete.
+
+## Preserve uncertainty in the data shape
+
+The dossier's required fields use `value`, `state`, `confidence`, `source`, `source_url` and `observed_at`. This envelope keeps the claim next to its evidence. The source distinguishes a company attribute from dated activity and allows unknowns to carry a reason.
+
+Attendance is disputed because the source holds conflicting total-attendee and daily-admission claims. Store the conflict, not an average. Package prices are a rate card; availability is unsupplied. Missing sponsor-exclusion names must not become `clear`.
+
+[Source: evidence envelope and gates](https://github.com/Git-Godssoldier/opulent-sponsor-context-showcase/blob/662ddba58c42f28ae71d0aca1a9cbb7794ec3d26/skills/opulent-sponsor-context-showcase/references/sponsor-dossier-contract.md#L5-L65).
+
+## Offline synthetic fixture
+
+The companion file `fixtures/sponsor-crm.json` contains invented organisations, persons, illustrative deals and local associations. Domains and email examples are beneath `example.com`; identities and amounts are synthetic. Local `fixture_id` values are stable join keys, not Pipedrive record IDs. The associations describe the offline demonstration only; they are not Pipedrive relationship payloads.
+
+It borrows only category archetypes and package names from the cited showcase files. Company names, domains, contact identities and deal amounts are invented. It preserves unknown activity, unavailable inventory and unresolved exclusions. One company is held for a client decision so a demo can exercise a blocked state. No record contains a verified sponsorship claim or permission to send.
+
+Read it directly into an offline demo. Do not submit the whole file to Pipedrive: it is an application fixture, not an API response or import payload. Pipedrive person data uses fields such as `name`, `owner_id`, `org_id`, `emails` and `phones`, not a generic `properties` wrapper. The [official Persons reference](https://developers.pipedrive.com/docs/api/v1/Persons) documents the endpoint-specific shape; custom-field keys and options require account-specific discovery.
+
+A later, separately authorised sandbox import must select valid fields, resolve real organisation/person IDs and discover actual pipeline, stage and owner IDs. Deal links use the relevant Pipedrive fields, not the fixture association array. Preserve fixture keys in a private mapping beside returned IDs. Never substitute a fixture key for a live ID.
+
+## Define a CRM promotion gate
+
+Before mapping a row into Pipedrive, verify the tenant and permitted read scope, inspect field definitions and resolve identity using supported search fields. Keep proposed custom fields separate until the administrator confirms their keys, options and purpose. Pipeline, stage and owner IDs are account-specific. A research timestamp and citation are not substitutes for consent, contact verification or sending authority.
+
+Retain an accountable owner, relationship path, dated evidence, status and next action for each prospect. Park uncertain identities, use business channels only and publicly name participants only when confirmed and authorised for publication. These generic controls do not import private source records into the fixture.
+
+Use the [local plan/approval module](/docs/reference/pipedrive-api) to prepare a deterministic dry run, with approval bound to tenant and digest. It enables no live writes by default. A production executor still needs a durable replay ledger and read-back reconciliation; the optional Deepline adapter is not live-verified.
+
+Public pages should omit personal contact values, private sender details and raw receipts. Link the research source, show whether the record is supplied, retrieved, unknown or blocked, and explain the next action. Continue with [sponsor qualification](/docs/recipes/sponsor-qualification) and [safe writes](/docs/guides/safe-writes).

@@ -1,0 +1,40 @@
+---
+title: 'Define who may change each Pipedrive field'
+description: 'Create a field governance contract covering ownership, sources, allowed writers, exceptions and controlled changes across CRM objects.'
+---
+
+CRM governance starts with a business decision and the field that supports it. A company segment determines routing; a deal close date affects forecasting; a contact subscription state affects communication. Giving every integration permission to improve these fields creates competing definitions and unexplained changes. Define responsibility and evidence before implementing enforcement.
+
+Source: [Deepline CRM data governance guide](https://deepline.com/docs/guides/crm-data-governance). Source read date: **2026-10-18**. This is original offline guidance; **no live Pipedrive execution**, permission change or account audit has taken place. Source prose and code are omitted.
+
+## Deepline-specific guidance versus this Pipedrive adaptation
+
+The source treats governance as a field policy with an accountable owner, a trusted source and a permitted writer, supported by reviewable changes. Its integration examples and execution surfaces are Deepline-specific. The proposed Pipedrive model below is a control design, not a claim that the CRM automatically enforces one writer per field.
+
+Pipedrive documents account-specific custom-field keys and types in its [custom-field guide](https://pipedrive.readme.io/docs/core-api-concepts-custom-fields). The [person](https://developers.pipedrive.com/docs/api/v1/Persons), [organisation](https://developers.pipedrive.com/docs/api/v1/Organizations) and [deal](https://developers.pipedrive.com/docs/api/v1/Deals) references document current records and field-value changelogs. A changelog is not a complete approval ledger or guaranteed rollback mechanism.
+
+All `ops_` names in this guide are proposed display labels or external-ledger columns, not literal Pipedrive API keys. Resolve each approved field against the account’s [custom-field metadata](https://pipedrive.readme.io/docs/core-api-concepts-custom-fields), validate its type and option IDs, and map it to its account-specific 40-character hash. For the v2 person, organisation and deal endpoints, send mapped values inside `custom_fields`; never send an `ops_` label as a top-level payload key. Deepline integrations mentioned by the source are documented upstream, not installed or executed here. Pipedrive references were reviewed on **2026-10-20**.
+
+## Prerequisites and licensing
+
+Obtain authorised company, contact and deal field inventories, integration ownership details and the current operating procedures. Identify a business owner for each critical field and an administrator who can inspect settings. Review provider retention rights and privacy requirements before storing source evidence or previous personal values.
+
+A field-label convention is not an access control. Inspect actual user permissions, integration authorisation and visibility before relying on them. Keep the policy register and approvals external; this plan assumes no advanced permission feature or native review workflow. A later integration may write only the approved object/field set.
+
+## Implementation steps
+
+1. **Inventory by object and actual key.** Separate person `emails`, organisation `website` and deal forecasting fields. Capture default API keys or custom-field hash, display label, type, option IDs, business use and dependent reports. Labels can change, and identically named custom fields in different accounts have different keys.
+2. **Write a field policy.** Record business owner, source precedence, allowed writer, freshness, evidence standard and requiredness by qualification context. For example, enrichment may propose company industry while the seller owns deal amount and next step. Missing information at an early qualification state should not automatically become a defect.
+3. **Map relationships as well as values.** Name who may change person `org_id`, deal `person_id`/`org_id`, deal participants and activity links. Name who may change user `owner_id` separately. A person ID is not a user ID, and a text company name or custom organisation reference is not a substitute for the documented relationship fields.
+4. **Create a proposal register.** Store object type, record ID, field, old and proposed values, evidence, policy version, requester, reviewer and permitted action. Proposed summary fields `ops_governance_policy_version`, `ops_governance_review_state` and `ops_governance_receipt_url` are suggested custom fields, not Pipedrive defaults. Avoid placing sensitive before-values in a broadly accessible summary.
+5. **Control future changes.** Start with dry-run comparison and an approved sample. Reread the relevant record before applying a later authorised proposal and reject stale snapshots. Submit only allowed fields, then inspect the record again and reconcile observed values. This is an application-level conflict check, not a claim that ordinary Pipedrive updates provide an atomic compare-and-set lock.
+
+## Approval boundary and failure handling
+
+The business owner approves semantic changes, overwrite policy and new writers. The administrator implements separately authorised permission or integration changes. Merges, ownership, qualification state, deal stage, commercial terms and consent require their own decision rules; a data-cleaning job is not general authority to change them.
+
+Where two systems disagree, retain both observations and apply the approved precedence policy rather than choosing the newest write automatically. Quarantine unknown field names and invalid option values before a future update. Treat permission errors as configuration exceptions with an owner, not reasons to request broader access automatically. On uncertain write outcomes, read current state before replaying. Recovery must preserve intervening legitimate changes rather than blindly restoring the recorded old value.
+
+## Validation and operating measures
+
+Review one critical field from each object with the people who use it. Test a seller edit during processing, competing integration updates, a stale source, an invalid enumeration and an attempted association change outside scope. Confirm that the proposal identifies its authority, protected fields remain unchanged and exceptions have repair owners and due dates. Measure governance exceptions by business impact and age, plus recurrence caused by each upstream process. The policy is ready for a pilot when a reviewer can explain why every proposed change is permitted; the checks described here have not been run against a live Pipedrive account.

@@ -1,0 +1,40 @@
+---
+title: 'Design a controlled Pipedrive data-quality repair queue'
+description: 'Detect missing, invalid, stale and conflicting CRM values, then repair only authorised fields with reviewable evidence and reconciliation.'
+---
+
+A useful data-quality process reduces the chance that a seller, report or customer communication relies on an untrustworthy value. It should not pursue a universal completeness score by filling every blank. Start with a few fields that drive important decisions and build a repair queue that explains the problem, the evidence and the permitted correction.
+
+Source: [Deepline CRM data quality automation guide](https://deepline.com/docs/guides/crm-data-quality-automation). Source read date: **2026-10-18**. This original offline implementation plan involves **no live Pipedrive execution** and no customer-record changes. It contains no copied source prose or code.
+
+## Deepline-specific guidance versus this Pipedrive adaptation
+
+The source describes field-level rules, import validation, before-and-after evidence and safe write-back boundaries. Its illustrative integration actions belong to Deepline and must not be interpreted as enabled Pipedrive safeguards. This adaptation recommends a Pipedrive-specific detection and proposal model while preserving approval as a separate decision from successful enrichment.
+
+Use the [custom-field documentation](https://pipedrive.readme.io/docs/core-api-concepts-custom-fields) for account-specific hashes, types and option semantics, and the [Persons](https://developers.pipedrive.com/docs/api/v1/Persons) and [Organizations](https://developers.pipedrive.com/docs/api/v1/Organizations) references for current values and updates. A schema-valid candidate is not necessarily commercially correct.
+
+All `ops_` names in this guide are proposed display labels or external-ledger columns, not literal Pipedrive API keys. Resolve each approved field against the account’s [custom-field metadata](https://pipedrive.readme.io/docs/core-api-concepts-custom-fields), validate its type and option IDs, and map it to its account-specific 40-character hash. For the v2 person, organisation and deal endpoints, send mapped values inside `custom_fields`; never send an `ops_` label as a top-level payload key. Deepline integrations mentioned by the source are documented upstream, not installed or executed here. Pipedrive references were reviewed on **2026-10-20**.
+
+## Prerequisites and licensing
+
+Obtain a field ownership policy, authorised CRM snapshot, permitted source evidence and a responsible reviewer. Before accepting an incoming file, check headers, stable row identifiers, duplicate keys and required columns. Reconcile rejected rows to explicit reasons rather than dropping them from the downstream denominator.
+
+Use an authorised export and review-first proposals as the baseline. Before a later integration, verify the actual Pipedrive permissions, field capacity and selected API contracts; API access, automation access, Campaigns access and provider rights are separate. This design requires no native scoring engine, custom-code workflow action or Pipedrive CLI. It does not assume that an account has any paid automation or enrichment feature. Proposed `ops_quality_state`, `ops_quality_checked_at` and `ops_quality_receipt_url` remain display-label proposals.
+
+## Implementation steps
+
+1. **Select consequential rules.** Begin with company routing attributes, contact identity and the deal fields used in forecasting or next-step planning. Define requiredness in qualification context. A missing close date on an unqualified inquiry is different from a missing close date on a committed forecast opportunity.
+2. **Classify the defect.** Separate absent, invalid, stale and conflicting values. A syntactically valid email with an employer conflict is not merely complete. A provider timeout supplies no conclusion about data validity. Record the object type and Pipedrive record ID with every exception so identical IDs on different objects cannot collide.
+3. **Build a complete scan.** For v2 [person](https://developers.pipedrive.com/docs/api/v1/Persons), [organisation](https://developers.pipedrive.com/docs/api/v1/Organizations) and [deal](https://developers.pipedrive.com/docs/api/v1/Deals) lists, persist opaque next cursors and follow pagination to exhaustion. Normal list limits are at most 500; person search is at most 100. Request required custom-field hashes explicitly where supported, respecting the documented key limit. Checkpoint coverage and access failures; one successful page does not prove whole-account coverage.
+4. **Prepare a correction proposal.** Retain old value, candidate, source date, rule version, permitted writer and evidence. Deterministic formatting repairs may be eligible under a preapproved policy. Identity merges, inferred ownership and guessed close dates are not formatting repairs. Preserve organisation–person and deal associations unless a separately reviewed association defect is in scope.
+5. **Reconcile a later approved change.** Reread the record immediately before updating, skip unchanged fields and hold proposals whose snapshot changed. After the update, read current values and classify each intended field as verified, rejected or uncertain. The comparison reduces conflicts but is not an atomic transaction or a guarantee against concurrent edits.
+
+## Approval boundary and failure handling
+
+The offline queue grants no write authority. A future pilot needs an approved object sample, exact field allowlist, overwrite rules and reviewer. Customer communication, consent, deal stage, commercial terms, ownership and merges require separate approval. A positive enrichment result must not imply approval for any of these actions.
+
+Give every unresolved defect a repair owner, due date and reason. A partial batch success is not a fully repaired batch; preserve record-level results and retry only the failed or unresolved portion after inspection. Never turn a permission error into an empty successful output. Recovery should generate a new reviewed proposal based on current data, not overwrite a subsequent valid edit with an old snapshot.
+
+## Validation and operating measures
+
+Use fixtures containing missing routing data, an invalid enumeration, a stale source, a duplicate import row, two plausible identities, a concurrent seller edit and an uncertain update response. Confirm input reconciliation, no changes to protected fields, separate handling of failed writes and read-back evidence for any future successful update. Track exception age, repair time, recurrence and business decisions affected. Investigate the upstream source that repeatedly creates defects rather than repeatedly cleaning the same symptom. These are planned acceptance checks; no live Pipedrive scan, repair or behaviour test has been performed.

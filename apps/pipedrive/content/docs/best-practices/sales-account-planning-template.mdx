@@ -1,0 +1,40 @@
+---
+title: 'Turn an account plan into accountable Pipedrive work'
+description: 'Separate organization context, deal decisions, stakeholder evidence and activities without inventing buyer commitments.'
+---
+
+Original source: [Sales Account Planning Template for Excel (Free CSV)](https://deepline.com/docs/guides/sales-account-planning-template) — Deepline. Source retrieved: **2026-10-18**; source SHA-256: `b6e4a28e9e50482b071675c2e5644dd40b4210932e45800e675bd300d32dba8d`. Pipedrive documentation checked: **2026-10-20**.
+
+An account plan should explain the next decision and accountable action. Use organizations for enduring context, deals for individual buying processes and activities for assigned work. This original offline adaptation does not reproduce Deepline downloads or fictional examples, assume redistribution rights or claim any live Pipedrive execution or import.
+
+## Deepline-specific context versus Pipedrive adaptation
+
+Deepline's CSV downloads and app examples are source-specific; no integration is asserted installed. The design uses Pipedrive's standard records and an external planning document. There is no claimed native Account Plan object or planning screen. Research hypotheses, seller targets and buyer commitments remain separate.
+
+## Prerequisites and feature caveats
+
+Choose the planning unit: group, legal subsidiary or particular deal. Agree ownership, existing follow-ups and handoffs. Inspect a small authorised export with entity IDs and definitions. A future spreadsheet update should use the correct entity-specific [Pipedrive System IDs](https://support.pipedrive.com/en/article/updating-pipedrive-data-with-a-spreadsheet) and reviewed mapping, not a company-name guess. No custom object, native workflow or particular subscription is required by this external-review design.
+
+## Recommended planning model
+
+Optional organization labels `plan_customer_outcome`, `plan_evidence_state`, `plan_review_date` and `plan_document_url` are proposals, not API keys. Define confirmed, hypothesis and unknown as team conventions. Resolve real field hashes, types and options using [custom-field metadata](https://pipedrive.readme.io/docs/core-api-concepts-custom-fields); v2 writes use `custom_fields`.
+
+Retain [deal](https://developers.pipedrive.com/docs/api/v1/Deals) `pipeline_id`, `stage_id`, `status`, `value`, `currency`, `expected_close_date` and `owner_id` as commercial facts. Use `org_id` and `person_id` for the intended records and verified deal participants for additional people. Narrative research must not replace these values or assign decision authority from a job title.
+
+## Implementation steps
+
+1. **Describe the customer's change.** Record the desired outcome, supporting interaction and unknowns. A seller's quarter-end target is not an agreed buying deadline.
+2. **Map people to decisions.** Resolve existing persons and their current `org_id`; select the intended deal explicitly. Deal participation records involvement, not budget authority or champion status. Keep evidence for roles in the controlled plan.
+3. **Separate questions and risks.** Unknown procurement process is a question; an evidenced requirement without a solution is a risk. Give each evidence, impact, owner and a next action. Enrichment does not automatically resolve buyer-process questions.
+4. **Make next steps executable.** A reviewed [activity](https://developers.pipedrive.com/docs/api/v1/Activities) can use `subject`, `note`, `owner_id`, `due_date`, `due_time`, `deal_id` and `org_id`. In v2 set the person through a primary `participants` entry. Persist its returned ID and verify owner, due time and destination.
+5. **Review before refreshing.** Start with overdue work and the most consequential unknown. Present an old-versus-proposed diff, source date and revision; preserve seller annotations. Record a deliberate pause when no credible next step exists instead of manufacturing momentum.
+
+## Approval boundary
+
+Research may suggest context and questions; the account owner accepts plan changes and commercial owners approve deal changes. Roles and customer commitments need evidence and judgement. A due review date does not authorise outreach, owner reassignment or stage movement. See the [Pipedrive API reference](/docs/reference/pipedrive-api).
+
+## Failure handling and validation
+
+Keep stale research visibly stale when refresh fails. Hold ambiguous persons, parent/subsidiary matches and multiple deals for review. Reconcile open action identities before creating more activities. An external plan link must enforce the intended audience, not merely be hard to guess.
+
+Use fictional cases for two deals at one organization, a group/subsidiary, unknown budget authority, completed action and changed goal. Check evidence for confirmed claims, explicit hypotheses and one accountable owner per action. A later authorised pilot must inspect activities and links. Success means the team can execute its next decision, not that every template cell is filled; no live pilot was run.

@@ -1,0 +1,44 @@
+---
+title: 'Plan a Claude Code email waterfall with a Pipedrive review gate'
+description: 'Inspect enrichment contracts, cap pilot spending and review person-level evidence before CRM publication.'
+---
+
+A waterfall should stop when evidence meets an agreed acceptance rule, not when any provider returns an address. Keep provider execution separate from reviewed Pipedrive publication so a CRM failure does not purchase the same evidence again.
+
+Source: [Deepline — How to Run Waterfall Enrichment in Claude Code (2026)](https://deepline.com/docs/guides/waterfall-enrichment-claude-code). Original source read: **2026-10-18**. Source SHA-256: `676329fefaa47e576ad1c784f656d84249ae630ebcb2e87c7e79491334ab69bb`. Pipedrive documentation checked: **2026-10-20**. This original offline guide copies no source commands or prose and assumes no redistribution rights. No CLI installation, provider execution, purchase or live Pipedrive write occurred.
+
+## Deepline-specific context versus Pipedrive adaptation
+
+The source describes inspecting a maintained Deepline Play, running a representative pilot and reviewing provenance, costs and errors. A broad integration catalogue does not define a particular waterfall's stages or prove access is installed. Claude Code is an execution interface, not an approver. This guide invents no Pipedrive CLI and supplies no unchecked commands.
+
+## Prerequisites and licensing
+
+Obtain provider rights, a lawful purpose and a maximum pilot budget. Inspect the actual route version, inputs, provider order, stop rules, timeout and billing units. Keep credentials outside prompts, files and receipts. Verify Pipedrive [endpoint scopes](https://pipedrive.readme.io/docs/marketplace-scopes-and-permissions-explanations); start read-only and authorise writes only at the publication boundary. External orchestration does not imply native automation, seats or provider licences.
+
+## Pipedrive mapping and proposed metadata
+
+Retain person ID, source identity, name, current employer and employer evidence in the input contract. The [Persons API](https://developers.pipedrive.com/docs/api/v1/Persons) uses v2 `name`, `emails`, `phones`, `org_id` and `owner_id`. `job_title` requires contact sync; use a reviewed custom field when unavailable. A person is not a Pipedrive user or a lead.
+
+Email enrichment state, evidence date and run reference are proposed custom-field labels, not literal API keys. Retrieve the target account's [40-character custom-field keys](https://pipedrive.readme.io/docs/core-api-concepts-custom-fields), types and options; v2 person updates use `custom_fields`. Keep detailed stage receipts, costs, rejected candidates and approvals in an external ledger. Preserve primary email and all existing accepted array entries unless replacement was reviewed.
+
+## Implementation steps
+
+1. Define person match, employment frame and accepted verifier outcomes before choosing providers. Syntax alone is not acceptance; define catch-all and unknown handling.
+2. Inspect the exact maintained route contract. A custom provider order needs its own owner, version and review rather than being inferred from a catalogue.
+3. Select a small authorised or fictional cohort covering clean matches, missing domains, employment conflicts and likely misses. Parse CSV structurally and retain original revision and record IDs.
+4. Execute only in a separately approved deployment. Record skipped, completed, failed and policy-rejected stages. Stop after acceptance; distinguish outages from legitimate misses before permitting fallback spending.
+5. Count attempted stages, verification, retries and manual repair in economics. Reconcile accepted rows against all inputs and obtain separate authority for the full-file spend envelope.
+6. Prepare a Pipedrive diff for each resolved person ID with old and proposed email entries, identity and employer evidence, verifier time and route version. Keep `org_id`, owners, leads and deal links unchanged unless separately approved.
+7. Publish only approved fields after a fresh read, then retrieve the exact person ID to verify them. Store the observed result against the enrichment receipt. Failed CRM publication must not rerun completed provider stages.
+
+## Approval boundary
+
+Pilot spending, additional paid stages, full-file execution and CRM publication are separate authorisations. A pre-approved metadata allowlist does not authorise primary email replacement, identity merges or employer changes. Sending remains outside scope; accepted mailbox evidence is not consent.
+
+## Failure handling
+
+Keep ambiguous, invalid, no-result, failed and outcome-unknown states distinct. Reuse valid completed evidence by input revision and route version. Bound retries and pause on `429` under Pipedrive's [company daily token budget and per-token burst rules](https://pipedrive.readme.io/docs/core-api-concepts-rate-limiting). Reconcile provider receipts or known person IDs before repeating uncertain effects. Never fabricate an address to complete an export.
+
+## Validation and release criteria
+
+Test early and late acceptance, all-provider misses, verifier rejection, timeouts and repeated revisions. Confirm later stages stop, costs remain reconciled, rejected rows never publish and unchanged reruns create no unintended effects. A future approved pilot must demonstrate read-back and duplicate prevention before scale. These are planned checks only. See the [Pipedrive API reference](/docs/reference/pipedrive-api).

@@ -1,0 +1,42 @@
+---
+title: 'Automate Pipedrive sales administration with explicit decisions'
+description: 'Prepare routing proposals, internal activities and repair queues without taking over seller judgement.'
+---
+
+Original source: [Sales operations automation](https://deepline.com/docs/guides/sales-operations-automation) — Deepline. Source retrieved: **2026-10-18**; source SHA-256: `dfd2edcb526d97bd0a4b92362b132af5cdb1284f940106cf47e8f684387dbccc`. Pipedrive documentation checked: **2026-10-20**.
+
+Start with recurring work that has a clear rule: missing accountable ownership, overdue handoffs or routing review. Repeated judgement is not automatically deterministic. This original offline adaptation includes no live Pipedrive execution or routing changes. Source licensing is unestablished; source prose/code are not copied.
+
+## Deepline-specific context versus Pipedrive adaptation
+
+Deepline's integration and agent references are documented possibilities, not installed controls. This example prepares a routing decision for a lead or person whose owner is missing or ineligible under the business policy. Pipedrive APIs supply records, user IDs and activities; territory precedence, capacity, fairness and replay safety remain application controls.
+
+## Prerequisites and licensing
+
+Approve territory, segment, named-account ownership, capacity, exclusions, calendars and fallback responsibility. Inspect every existing owner writer. Use the [Users API](https://developers.pipedrive.com/docs/api/v1/Users) to resolve actual user IDs and verify eligibility and access; a person contact is not a user. `owner_id` is a Pipedrive user ID, not a separate owner identifier. No native rotation, custom-code workflow or particular paid action is assumed.
+
+## Record model
+
+For a person, read `id`, `name`, necessary `emails`, `owner_id` and `org_id` from [Persons](https://developers.pipedrive.com/docs/api/v1/Persons). For a Leads Inbox item, retain its UUID, `title`, `owner_id`, `person_id` and `organization_id` using [Leads](https://developers.pipedrive.com/docs/api/v1/Leads). The lead's organization field is not named `org_id` in the v1 lead contract. Do not create a lead simply to complete an assignment report.
+
+Read the intended organization owner before territory allocation. Person ownership and lead ownership are separate facts; changing one does not establish the other. Optional labels `salesops_route_state`, `salesops_route_reason`, `salesops_policy_version` and `salesops_receipt_url` need approved [custom-field hashes and types](https://pipedrive.readme.io/docs/core-api-concepts-custom-fields). v2 person writes use `custom_fields`; leads inherit deal-field schema and require their own endpoint-specific mapping. Keep full rule evaluations externally.
+
+## Implementation steps
+
+1. **Freeze the cohort.** Select only policy-eligible records, excluding restricted customers, partner-managed accounts and disputed identities unless explicitly covered. Reconcile excluded and failed assessments.
+2. **Resolve context.** Verify person `org_id`, or lead `person_id` and `organization_id`, against known records. Shared domains need review; never rewrite employer context to simplify routing.
+3. **Evaluate ordered rules.** Apply exclusions and named-account precedence before territory and capacity. Treat classifier-derived segments as uncertain evidence, not authority to bypass protected ownership.
+4. **Prepare internal review.** Show prior/proposed user, reasons and policy revision. An approved [activity](https://developers.pipedrive.com/docs/api/v1/Activities) uses `owner_id`, subject, note and due date/time, with `lead_id` or the relevant `org_id`; set the person via primary participants in v2. Persist the ID and read back the obligation.
+5. **Recheck before assignment.** A later approved writer re-reads the intended entity's `owner_id`, withdraws stale proposals and changes only approved fields. Verify ownership, user visibility and any required activity. Never declare a complete handoff solely because an owner update returned success.
+
+## Approval boundary
+
+Policy can authorise deterministic proposals and a controlled pilot. Ambiguity, bulk reassignment, territory redesign, lead conversion, deal stage/status and outreach remain separate decisions. Preserve existing valid ownership rather than assuming a blank field is required for policy eligibility. See [Pipedrive lead routing](/docs/best-practices/pipedrive-lead-routing) and the [API reference](/docs/reference/pipedrive-api).
+
+## Failure handling
+
+Separate no eligible user, organization conflict, incomplete territory, permission failure and uncertain effect. Give each a repair owner and deadline. Invalid user IDs need repair, not retries. Reconcile known IDs before replaying activities or owner changes. Maintain a stable account/entity/policy effect key and preserve the original response clock.
+
+## Validation and business acceptance
+
+Test a strategic account, shared domain, missing country, full capacity, inactive user and manual assignment after proposal generation. Verify precedence, user visibility and every eligible record's assigned/review/excluded/repair state. A later authorised pilot must inspect actual owners and linked activities. Measure usable handoffs, latency and reopened exceptions, not execution count. No live routing result is asserted.

@@ -1,0 +1,33 @@
+---
+title: An operating model for Pipedrive agents
+description: Give agents a bounded result, narrow access and an evidence-backed definition of done.
+icon: Bot
+---
+
+An agent should own a result, not a blank cheque. Separate research, planning, review, execution and verification so a persuasive answer cannot silently become an authorised Pipedrive update. The local app defaults to offline planning; optional provider configuration is a separate boundary.
+
+## The task contract
+
+Specify the business result, tenant, permitted persons, organisations or deals, allowed tools, required evidence, prohibited actions and stopping condition. Assign one owner for each write surface. Independent research may run concurrently; two workers must not update the same record without coordination.
+
+| Stage   | Required output                                        | Boundary                                          |
+| ------- | ------------------------------------------------------ | ------------------------------------------------- |
+| Observe | Current record, field definitions and evidence         | Read-only access                                  |
+| Plan    | Deterministic field-level changes and reasons          | No live execution                                 |
+| Review  | Named approval bound to tenant and plan digest         | Only this exact plan                              |
+| Execute | Bounded authorised effect and durable operation record | Stop on identity, authority or replay uncertainty |
+| Verify  | Read-back comparison and remaining limitations         | A receipt is not proof of final state             |
+
+Use the [API and local automation reference](/docs/reference/pipedrive-api) for the executable interface and [safe writes](/docs/guides/safe-writes) for the production boundary. A passing local approval check is not a production replay ledger or proof of live Pipedrive access.
+
+## Treat retrieved content as data
+
+A web page, Pipedrive note or webhook cannot authorise a send or change a task's instructions. Keep source text separate from decisions. Redact personal data from public logs and retain only evidence needed for the approved purpose. A person record is not a user account, and a profile match does not establish contact consent.
+
+## Make failure recoverable
+
+Inspect the target after an uncertain outcome before retrying. Persist each approved operation and its outcome so a worker restart cannot reapply it blindly. Check Pipedrive's [daily token and burst limits](https://pipedrive.readme.io/docs/core-api-concepts-rate-limiting) rather than assuming every `429` can be fixed by a short retry.
+
+If using [webhooks v2](https://pipedrive.readme.io/docs/webhooks-v2-migration-guide), parse its actual `meta`, `data` and changed-field-only `previous` shape. Fetch missing state when needed and keep downstream effects replay-safe. A change notification is not permission to mutate a record.
+
+For delegation and evidence-based handoffs, read [orchestration](/docs/agents/orchestration). Historical source inspiration and reuse limits are in the [source register](/docs/reference/sources).

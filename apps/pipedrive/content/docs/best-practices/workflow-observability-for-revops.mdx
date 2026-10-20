@@ -1,0 +1,46 @@
+---
+title: 'Observe Pipedrive RevOps workflows through business outcomes'
+description: 'Join external run receipts and verified CRM effects to actionable alerts and repair ownership.'
+---
+
+A green run does not prove the correct seller received one usable activity or that approved fields reached the intended organization. A receipt must connect input, expected effect, observed state and repair responsibility.
+
+Source: [Deepline — Workflow observability for RevOps](https://deepline.com/docs/guides/workflow-observability-for-revops). Original source read: **2026-10-18**. Source SHA-256: `f1d626a7cee4a23747136f15e9117042aa67a2f0bd4a87d7d60b8529e325b8b9`. Pipedrive documentation checked: **2026-10-20**. This original offline adaptation copies no source prose/code and assumes no redistribution licence. No monitoring configuration, provider execution or live CRM write occurred.
+
+## Deepline-specific context versus Pipedrive adaptation
+
+The source links workflow contracts, provider receipts, retry costs and repair ownership. Its integration references are documented possibilities, not installed routes or proof that logs capture Pipedrive's final state. This design uses an external access-controlled run ledger and direct CRM read-back; it does not claim native workflow-history retention or automatic cross-system guarantees.
+
+## Prerequisites and licensing
+
+Name the business owner, operator, authorised writer and escalation route. Define record types, allowed fields and prohibited side effects. Use [least-privilege scopes](https://pipedrive.readme.io/docs/marketplace-scopes-and-permissions-explanations) and check visibility independently. Native automation features and account permissions must be verified before selecting them; the baseline external ledger requires no invented CLI or custom object. Retention and provider rights remain explicit policies.
+
+## Receipt and CRM model
+
+Key a run by company account, workflow version, input revision and intended operation. Record source readiness, proposal, approval, write attempt and verification separately. Retain record type and destination ID rather than just a mutable email. Persons, organizations, deals and activities have separate identities; leads use UUIDs.
+
+The [v2 Activities API](https://developers.pipedrive.com/docs/api/v1/Activities) provides `subject`, `type`, `owner_id`, `due_date`, `due_time` and `done`, with `deal_id`, `lead_id` and `org_id` links. Set a person using `participants` with `person_id` and `primary: true`, then verify the resulting `person_id`. Check the intended time zone explicitly; an internal completed activity is not proof of customer progress or message delivery.
+
+Optional health-state and last-verified labels are proposed summaries. Map [account-specific custom-field hashes](https://pipedrive.readme.io/docs/core-api-concepts-custom-fields), types and options on a supported record; v2 entity writes use `custom_fields`. Do not invent arbitrary activity custom fields or make one latest-run field the audit record for concurrent work.
+
+## Implementation steps
+
+1. Define observable acceptance before dashboards. A reminder needs exactly one intended open activity, eligible owner, deadline and correct links; enrichment needs approved values observed after writing.
+2. Persist phase transitions such as waiting, awaiting approval, writing, verified, held and repair required. Retain the last confirmed phase when a worker disappears.
+3. Join provider request receipts and charges to destination IDs and read-back results. Keep transcripts, personal data and secrets out of general logs; dashboard access must not broaden access to customer evidence.
+4. If using [general webhooks v2](https://pipedrive.readme.io/docs/guide-for-webhooks-v2), deduplicate with `meta.company_id` and event `meta.id`, not entity ID or delivery attempt. Persist receipt before acknowledgement and re-read current state when needed. Configure HTTPS and the documented HTTP Basic authentication parameters; this design assumes no undocumented HMAC signature contract. Webhook permission coverage is not all-company visibility by default.
+5. Verify by known record or activity ID. An absent search hit is not sufficient evidence to replay creation. Retain separate receipts for field updates, note creation and activities.
+6. Route alerts with run ID, affected item, last confirmed phase, repair owner and next safe action. Deduplicate alerts by incident identity without hiding ongoing unresolved work.
+7. Close with the reconciled outcome and root cause. A successful repair does not retroactively make the original attempt successful.
+
+## Approval boundary
+
+Observation and deterministic alerts may follow approved policy. Retrying a read differs from replaying a write or communication. Repairs changing ownership, stages, commercial terms or customer messages need their own authority; a dashboard control must not expand scope silently.
+
+## Failure handling
+
+Missing receipts mean unknown outcomes. Reconcile stored IDs before side effects, bound retries and separate validation, permission and rate-limit faults. Pipedrive has a shared [daily company token budget plus per-token burst limits](https://pipedrive.readme.io/docs/core-api-concepts-rate-limiting): pause on `429` using the reported reset condition rather than immediately retrying or rotating credentials. If the monitoring sink fails, retain durable queue-backed evidence and raise a monitoring-health alert without losing a completed mutation receipt.
+
+## Validation and release criteria
+
+Use fixtures for duplicate webhook delivery, distinct events on one entity, lost write responses, provider outages, revoked access, wrong activity links and missing approval. Reconcile every run into verified, held, failed or still-active states and check alerts remain actionable. A separately authorised pilot must inspect exact values, activity deadlines, visibility and retention. No live tests or business improvement results are claimed. See the [Pipedrive API reference](/docs/reference/pipedrive-api).

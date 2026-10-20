@@ -1,0 +1,6 @@
+{
+  "title": "Automation recipes",
+  "icon": "Workflow",
+  "pages": ["index", "crm-brief", "sponsor-qualification", "review-ready-outreach"],
+  "defaultOpen": true
+}

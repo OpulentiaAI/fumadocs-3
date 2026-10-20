@@ -1,0 +1,45 @@
+---
+title: 'Routing Pipedrive leads with explicit ownership and SLA rules'
+description: 'Plan lead routing with ordered decisions, eligible Pipedrive user IDs, response deadlines and verified follow-up activities.'
+---
+
+Original source: [Automate HubSpot lead routing with clear rules](https://deepline.com/docs/guides/hubspot-lead-routing) — Deepline. Retrieved **2026-10-18**; source SHA-256: `13b6c58fdd3ae39a82e4e5204a58a4c7f91e77707125f19c85ec9b62134f1a44`. The source's original CRM name is retained for attribution.
+
+This original offline Pipedrive plan includes no live CRM or provider execution. Source licensing is unestablished and source prose/code are not reproduced. A completed handoff needs an accountable owner, an explanation, a deadline and the correct linked activity.
+
+## Deepline-specific behaviour versus Pipedrive adaptation
+
+The source's routing policy and response targets are examples, not Pipedrive defaults. Deepline documents possible integration surfaces; none is assumed installed or validated. The rule table, allocator, SLA calendar and replay ledger below are external application controls.
+
+Pipedrive [leads](https://developers.pipedrive.com/docs/api/v1/Leads) are potential deals in Leads Inbox. A lead has a UUID, a `title` and a linked person or organization. Its `owner_id` is a Pipedrive [user ID](https://developers.pipedrive.com/docs/api/v1/Users), not a separate CRM owner-directory identifier. Lead, person and organization ownership are distinct; changing one does not imply changing the others.
+
+## Prerequisites and licensing
+
+Approve territory, account precedence, eligibility, capacity, working hours and escalation rules. Verify the selected user's active status, permissions and ability to see the assigned records. Inventory integrations already writing ownership. Confirm the account's actual plan and automation capabilities before choosing a native route; this plan uses an external allocator or manual queue and claims no native rotation or custom-code workflow entitlement.
+
+## Model the routing state
+
+Retain company account ID, lead UUID, current `owner_id`, `person_id` and `organization_id`. The v1 Leads API spells the organization link `organization_id`; person and v2 deal records use `org_id`. Do not copy one entity's payload shape into another.
+
+Leads inherit the deal custom-field schema, as documented in [custom fields](https://pipedrive.readme.io/docs/core-api-concepts-custom-fields). Suggested labels such as “Routing state”, “Rule version” and “Response due” require approved account-specific field hashes and types; they are not built-in SLA fields. Validate the chosen endpoint's custom-field encoding rather than assuming a v2 `custom_fields` envelope applies to v1 leads. Keep the exact UTC deadline and complete history in the external ledger.
+
+## Implementation steps
+
+1. **Resolve identity.** Match the person and organization before selecting or proposing a lead. A repeated delivery is not a new lead, but two legitimate requests may be separate intake events.
+2. **Evaluate rules in order.** Check protected account ownership, then territory and segment, then an explicit exception route. Store the winning rule and evidence. Do not delay a critical response indefinitely for optional enrichment.
+3. **Resolve an eligible user.** Check the actual Pipedrive user ID, active status, capacity and visibility. An empty pool creates a named repair obligation, not a successful unassigned handoff.
+4. **Apply only authorised ownership changes.** Re-read the lead and protected person/organization ownership. Withdraw stale proposals and coordinate competing allocators. Do not silently change all three owners.
+5. **Create a follow-up activity.** The v2 [Activities API](https://developers.pipedrive.com/docs/api/v1/Activities) uses `subject`, `type`, `owner_id`, `due_date`, `due_time`, `lead_id` and `org_id`. To set the person on a v2 activity, use `participants` with the intended `person_id` marked `primary: true`. Validate the timezone interpretation and retain the returned activity ID.
+6. **Verify the full handoff.** Read back the lead owner and routing state, then the activity's assignee, deadline, primary person and lead/organization links. Ownership alone is not an SLA-ready result.
+
+## Approval boundary
+
+Approve the policy, pool and deadline calendar before activation. Protected-account reassignment, merges, lead conversion, deal movement and notifications require separate authority. An internal activity does not authorise outreach. See [inbound intake](/docs/best-practices/inbound-lead-routing) and the [Pipedrive API reference](/docs/reference/pipedrive-api).
+
+## Failure handling
+
+Distinguish unknown territory, identity conflict, ineligible owner, missing access and uncertain activity creation. Repair only the missing component after reconciling known IDs. Never reset the original response clock during retries. Pause on `429` under the [daily company budget and per-token burst rules](https://pipedrive.readme.io/docs/core-api-concepts-rate-limiting).
+
+## Validation and acceptance
+
+Use fixtures for a protected owner, valid unassigned lead, ambiguous organization, inactive user, empty pool, duplicate delivery and lost activity response. Compare decisions with the approved truth table and inspect every destination component. Measure verified handoffs by deadline and exception age, not just allocator runs. No live routing results are claimed.

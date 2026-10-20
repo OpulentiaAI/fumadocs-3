@@ -1,0 +1,235 @@
+{
+  "schema_version": 2,
+  "mode": "offline_synthetic_fixture_not_import_payload",
+  "disclaimer": "All organisations and people in records are invented. IDs are local fixture keys, not Pipedrive IDs. No outreach permission, legal clearance, verified activity or real sponsorship is implied.",
+  "source_mapping": {
+    "repository": "https://github.com/Git-Godssoldier/opulent-sponsor-context-showcase",
+    "commit": "662ddba58c42f28ae71d0aca1a9cbb7794ec3d26",
+    "basis": [
+      "campaigns/nocturnal-valley/targets.csv:3-18 supplies category archetypes including beer, hydration and portable power; names, domains and people below are invented.",
+      "campaigns/nocturnal-valley/festival-packet.json:77-128 supplies tier names; deal amounts below are invented examples, not quoted availability or offers.",
+      "skills/opulent-sponsor-context-showcase/references/sponsor-dossier-contract.md:5-43 supplies evidence envelopes and unknown states."
+    ],
+    "freshness": "The upstream September 2026 campaign is historical; fixture deal dates are omitted intentionally."
+  },
+  "deals": [
+    {
+      "fixture_id": "deal-river",
+      "mapping": {
+        "package_named": "Sampling Partner",
+        "pipeline_id": null,
+        "stage_id": null,
+        "availability": "unsupplied",
+        "send_state": "draft_only_not_sent"
+      },
+      "title": "River Lantern — Sampling Partner (Synthetic)",
+      "value": 15000,
+      "currency": "USD"
+    },
+    {
+      "fixture_id": "deal-clear",
+      "mapping": {
+        "package_named": "Content Partner",
+        "pipeline_id": null,
+        "stage_id": null,
+        "availability": "unsupplied",
+        "send_state": "draft_only_not_sent"
+      },
+      "title": "Clear Spring — Content Partner (Synthetic)",
+      "value": 20000,
+      "currency": "USD"
+    },
+    {
+      "fixture_id": "deal-camp",
+      "mapping": {
+        "package_named": "Stage Sponsor",
+        "pipeline_id": null,
+        "stage_id": null,
+        "availability": "unsupplied",
+        "send_state": "draft_only_not_sent"
+      },
+      "title": "Camp Current — Stage Sponsor (Synthetic)",
+      "value": 40000,
+      "currency": "USD"
+    }
+  ],
+  "associations": [
+    {
+      "from": "persons:contact-alex",
+      "to": "organizations:company-river"
+    },
+    {
+      "from": "persons:contact-sam",
+      "to": "organizations:company-clear"
+    },
+    {
+      "from": "persons:contact-robin",
+      "to": "organizations:company-camp"
+    },
+    {
+      "from": "deals:deal-river",
+      "to": "organizations:company-river"
+    },
+    {
+      "from": "deals:deal-clear",
+      "to": "organizations:company-clear"
+    },
+    {
+      "from": "deals:deal-camp",
+      "to": "organizations:company-camp"
+    },
+    {
+      "from": "persons:contact-alex",
+      "to": "deals:deal-river"
+    },
+    {
+      "from": "persons:contact-sam",
+      "to": "deals:deal-clear"
+    },
+    {
+      "from": "persons:contact-robin",
+      "to": "deals:deal-camp"
+    }
+  ],
+  "import_policy": {
+    "live_import_authorised": false,
+    "required_before_import": [
+      "Owner authorises the exact sandbox company and record set",
+      "Discover live field codes, owner, pipeline and stage IDs",
+      "Keep evidence metadata outside API payloads unless mapped to approved custom_fields",
+      "Resolve org_id and person_id from tenant-specific returned IDs",
+      "Preview mutations, approve their digest and retain minimal receipts",
+      "No outreach, public naming, spending or live import is authorised by this fixture"
+    ]
+  },
+  "organizations": [
+    {
+      "fixture_id": "company-river",
+      "research": {
+        "category": "beer",
+        "region_fit": "synthetic_midwest",
+        "identity_state": "synthetic",
+        "activation_history": {
+          "value": null,
+          "state": "unknown",
+          "confidence": "Unknown",
+          "source": "synthetic_fixture",
+          "source_url": null,
+          "observed_at": null
+        },
+        "draft_gate": "open",
+        "exclusion_check": "unverified_against_rule",
+        "domain": "river-lantern.example.com",
+        "relationship_path": null,
+        "owner_state": "unassigned",
+        "participation_confirmed": false,
+        "next_action": "Verify identity and obtain an owned relationship path; no contact authorised",
+        "accountable_owner": null,
+        "source_evidence": []
+      },
+      "name": "River Lantern Brewing (Synthetic)"
+    },
+    {
+      "fixture_id": "company-clear",
+      "research": {
+        "category": "hydration",
+        "region_fit": "synthetic_national",
+        "identity_state": "synthetic",
+        "activation_history": {
+          "value": null,
+          "state": "unknown",
+          "confidence": "Unknown",
+          "source": "synthetic_fixture",
+          "source_url": null,
+          "observed_at": null
+        },
+        "draft_gate": "open",
+        "exclusion_check": "unverified_against_rule",
+        "domain": "clear-spring.example.com",
+        "relationship_path": null,
+        "owner_state": "unassigned",
+        "participation_confirmed": false,
+        "next_action": "Verify identity and obtain an owned relationship path; no contact authorised",
+        "accountable_owner": null,
+        "source_evidence": []
+      },
+      "name": "Clear Spring Hydration (Synthetic)"
+    },
+    {
+      "fixture_id": "company-camp",
+      "research": {
+        "category": "portable_power",
+        "region_fit": "synthetic_national",
+        "identity_state": "synthetic",
+        "activation_history": {
+          "value": null,
+          "state": "unknown",
+          "confidence": "Unknown",
+          "source": "synthetic_fixture",
+          "source_url": null,
+          "observed_at": null
+        },
+        "draft_gate": "blocked_client_decision",
+        "exclusion_check": "unverified_against_rule",
+        "domain": "camp-current.example.com",
+        "relationship_path": null,
+        "owner_state": "unassigned",
+        "participation_confirmed": false,
+        "next_action": "Verify identity and obtain an owned relationship path; no contact authorised",
+        "accountable_owner": null,
+        "source_evidence": []
+      },
+      "name": "Camp Current Power (Synthetic)"
+    }
+  ],
+  "persons": [
+    {
+      "fixture_id": "contact-alex",
+      "identity_state": "synthetic_not_verified",
+      "name": "Alex Example",
+      "emails": [
+        {
+          "value": "alex@river-lantern.example.com",
+          "primary": true,
+          "label": "work"
+        }
+      ],
+      "research": {
+        "job_title": "Partnerships Manager",
+        "contact_authorised": false
+      }
+    },
+    {
+      "fixture_id": "contact-sam",
+      "identity_state": "synthetic_not_verified",
+      "name": "Sam Sample",
+      "emails": [
+        {
+          "value": "sam@clear-spring.example.com",
+          "primary": true,
+          "label": "work"
+        }
+      ],
+      "research": {
+        "job_title": "Experiential Marketing Director",
+        "contact_authorised": false
+      }
+    },
+    {
+      "fixture_id": "contact-robin",
+      "identity_state": "synthetic_not_verified",
+      "name": "Robin Demo",
+      "emails": [
+        {
+          "value": "robin@camp-current.example.com",
+          "primary": true,
+          "label": "work"
+        }
+      ],
+      "research": {
+        "job_title": "Field Marketing Lead",
+        "contact_authorised": false
+      }
+    }
+  ]
+}

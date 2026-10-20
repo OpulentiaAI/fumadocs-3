@@ -1,0 +1,40 @@
+---
+title: 'Review Apollo matches before preparing Pipedrive person updates'
+description: 'Use an agent-assisted matching proposal to resolve people and employers, map fields and protect existing Pipedrive relationships.'
+---
+
+Treat Apollo matching as a source of candidate evidence, not permission for an agent to rewrite Pipedrive. A person can have a correct name and an outdated employer; a returned company can be the global parent rather than the account your sales team manages. The useful output is a reviewed identity decision plus a narrow set of proposed fields.
+
+Source: [Deepline Apollo and Claude Code guide](https://deepline.com/docs/guides/apollo-claude-code). Source read date: **2026-10-18**. This original offline implementation plan includes **no live Pipedrive execution**, Apollo requests or agent installation. Source commands and code are intentionally omitted because their licence has not been established.
+
+## Deepline-specific guidance versus this Pipedrive adaptation
+
+The source describes Deepline's CLI/MCP surfaces, checked Plays, Apollo People Match access and declared fallback stages. Those are Deepline execution arrangements, not Pipedrive-native functions. Provider access, returned fields and billing remain dependent on the current Apollo and Deepline contracts; this guide does not independently verify those commercial claims.
+
+Pipedrive’s [Persons API](https://developers.pipedrive.com/docs/api/v1/Persons) documents person IDs, `owner_id`, `org_id`, and `emails`/`phones` arrays. A person is a contact, not a Pipedrive user. Treat employer linkage, primary-address selection and field updates as separately reviewed decisions; retain the existing organisation unless a linkage change is explicitly approved.
+
+All `ops_` names in this guide are proposed display labels or external-ledger columns, not literal Pipedrive API keys. Resolve each approved field against the account’s [custom-field metadata](https://pipedrive.readme.io/docs/core-api-concepts-custom-fields), validate its type and option IDs, and map it to its account-specific 40-character hash. For the v2 person, organisation and deal endpoints, send mapped values inside `custom_fields`; never send an `ops_` label as a top-level payload key. Deepline integrations mentioned by the source are documented upstream, not installed or executed here. Pipedrive references were reviewed on **2026-10-20**.
+
+## Prerequisites and licensing
+
+Obtain an authorised input sample containing Pipedrive person IDs where available, original names, employer evidence and any approved email input. Agree provider rights for lookup, storage and downstream use. Keep provider credentials in an approved secret store; neither prompts nor CRM fields should contain raw keys. A coding assistant's ability to call a tool is not business approval to spend provider credits or write CRM data.
+
+Use an authorised export and review-first proposals as the baseline. Before a later integration, verify the actual Pipedrive permissions, field capacity and selected API contracts; API access, automation access, Campaigns access and provider rights are separate. This design requires no native scoring engine, custom-code workflow action or Pipedrive CLI. It does not assume that an account has any paid automation or enrichment feature.
+
+## Implementation steps
+
+1. **Create an input identity contract.** Carry person object type and record ID alongside the raw submitted values. Separate names from company identifiers. For persons without a known CRM ID, collect candidate matches in a review file instead of immediately creating records. Deduplicate the input before provider calls so one person does not incur repeated lookup cost.
+2. **Review person and organisation separately.** Compare the candidate’s person evidence, current role and employer with the intended record. A name-only match is insufficient when two people are plausible. Resolve the employer against Pipedrive organisation `name`, `website` and saved ID using the [organisation model](https://developers.pipedrive.com/docs/api/v1/Organizations). Retain the rejected-parent explanation when an operating subsidiary is required.
+3. **Map fields without changing their meaning.** The v2 person API uses `emails` and `phones` arrays, not a single email/phone property. Preserve primary flags and existing entries under a reviewed collection policy. The documented `job_title` field is conditional on contact sync; use an approved custom field when it is unavailable. Stage candidate email, match state and receipt under proposed `ops_` labels; a provider result does not authorise changing the primary address.
+4. **Prepare employer linkage explicitly.** Compare the current person `org_id` with the proposed organisation ID. Changing it is a distinct reviewed update, not adding a generic labelled association. Historic deal `org_id` and `person_id` remain unchanged unless separately authorised.
+5. **Separate review from write preparation.** Produce old value, candidate value, evidence, reviewer decision and input revision for each field. A future writer rereads the contact and employer relationship, rejects changed snapshots, submits only approved changes and reads back each affected record. The single-writer rule and conflict check are proposed controls, not automatic guarantees provided by Apollo or Pipedrive.
+
+## Approval boundary and failure handling
+
+The offline plan authorises no provider spend, person creation, linkage changes or outreach. Before a pilot, approve rows, budget, fields and reviewer. A matched address is not marketing consent: [Pipedrive Campaigns](https://support.pipedrive.com/en/article/campaigns-marketing-contacts) requires opt-in and attaches marketing status to the email address.
+
+Distinguish no match, stale employer, conflicting person, quota failure and temporary outage. Only the last two are operational retries, subject to limits. A fallback provider must not erase contrary evidence. If an update outcome is unknown, inspect the CRM record before retrying; avoid replaying a create operation that may already have succeeded.
+
+## Validation and acceptance
+
+Use authorised test fixtures for duplicate rows, common names, changed employers, personal addresses, missing domains and a parent/subsidiary pair. Confirm that accepted person matches do not automatically imply accepted email or organisation links. Test replay against the same input revision and verify no duplicate persons or unintended relationship changes. Measure reviewed usable persons per total lookup cost, not provider response count. These checks are proposed; no match accuracy, live integration or delivery behaviour has been verified here.

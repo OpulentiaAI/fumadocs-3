@@ -1,0 +1,6 @@
+{
+  "title": "Agent operating model",
+  "icon": "Bot",
+  "pages": ["index", "orchestration"],
+  "defaultOpen": false
+}

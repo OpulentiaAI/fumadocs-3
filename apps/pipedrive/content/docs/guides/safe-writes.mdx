@@ -1,0 +1,42 @@
+---
+title: Make every Pipedrive write deliberate
+description: Freeze a tenant-specific plan, approve its exact digest and reconcile each authorised effect.
+---
+
+Reading Pipedrive data and changing it are separate permissions. A successful lookup does not authorise an update, and approval for one organisation does not cover every result from a broader search. The default path in this app is offline: generate and review a plan without changing Pipedrive.
+
+## Establish the write boundary
+
+Record the Pipedrive tenant, actor, entity type, resolved record IDs, proposed fields and authorised purpose. Read the current records and relevant field definitions. Person, organisation, deal, owner, pipeline and stage IDs are account-specific; fixture keys are not substitutes. Collect all required pages before calculating impact, and document any visibility limits.
+
+Store the proposed inputs in an access-controlled location. Never rerun a changing search to construct the apply cohort after approval. An organisation relationship is not a generic association command: use the selected endpoint's documented relationship fields and real record IDs.
+
+## Generate a deterministic plan
+
+Use the local plan/approval interface in the [Pipedrive API reference](/docs/reference/pipedrive-api). The implemented operation is narrowly limited to changing an existing deal's `title`; it is not a generic person, organisation, merge or delete executor. Its deterministic plan binds the tenant, adapter, record ID, proposed title and expected record state. Keep supporting evidence alongside that plan and inspect the difference before approval. A digest identifies proposed content; it does not prove the content is correct or that Pipedrive accepted anything.
+
+The approval must explicitly bind the reviewer, tenant and plan digest. A changed target, payload or tenant requires a new plan and approval. Approval is not a token to reuse for unrelated work. These are this application's safeguards, not native Pipedrive confirmation parameters, expiry guarantees or command-line flags.
+
+The optional Deepline adapter is not a verified live integration. Review its documented boundary before configuring it; an installed provider tool or API credential must never turn an offline review into an implicit live write. No handbook example grants authority to delete, merge, change consent or send outreach.
+
+## Keep authentication and authority separate
+
+Use Pipedrive-specific authentication and least-privilege scopes for the selected endpoints. Confirm the effective account and record visibility before preparing a write. Another CRM's scopes, identifiers, workflow APIs and edition assumptions do not carry over. A valid credential proves access, not the user's approval of a proposed effect.
+
+For example, the [Persons reference](https://developers.pipedrive.com/docs/api/v1/Persons) defines Pipedrive's person schema, including `name`, `owner_id`, `org_id`, `emails` and `phones`. Some fields, including `job_title`, depend on contact sync, and marketing status has additional conditions. Do not create unsupported fields or mark a person subscribed merely because a research tool found an address.
+
+## Make uncertain outcomes recoverable
+
+A production executor needs a durable replay ledger, with atomic reservation of each approved operation before dispatch, tenant and digest binding, per-operation outcomes and read-back evidence. The local executor uses a locked, file-backed journal; retaining that state directory across restarts is essential, and this does not establish multi-host production safety or a remote transaction. An in-memory record or a passing local test is not production replay protection. Record uncertain outcomes explicitly and reconcile them before retrying: a timeout may occur after the remote update succeeded.
+
+Read affected records back and compare actual fields with the approved plan. Preserve partial failures separately; never repeat a whole batch because one row failed. Do not assume that Pipedrive offers a universal idempotency key, automatic rollback or undo for your chosen endpoint. Recovery must be designed and authorised for that operation.
+
+Respect Pipedrive's [daily token budget and burst limits](https://pipedrive.readme.io/docs/core-api-concepts-rate-limiting). A `429` caused by daily exhaustion needs a budget-aware pause, not an aggressive retry loop. Limit concurrency, inspect rate-limit headers and stop on access refusals.
+
+## Treat webhooks as signals, not approvals
+
+The [webhooks v2 migration guide](https://pipedrive.readme.io/docs/webhooks-v2-migration-guide) describes `meta`, `data` and changed-field-only `previous` payloads. Missing fields may need a fresh API read; a webhook is not a complete snapshot or permission to perform a follow-up mutation. Keep receiver retries and downstream job replay safe even though v2 reduces duplicate change events.
+
+## Keep publication separate
+
+Never place personal contact values, account exports, credentials or raw provider receipts in this public app. A public dossier can expose verification and gate states without a usable contact route. An outreach draft remains unsent until a separately authorised sending action is executed and verified. See [seed mapping](/docs/guides/seed-data) and [orchestration](/docs/guides/orchestration) for evidence and ownership boundaries.

@@ -1,0 +1,69 @@
+---
+title: Build a read-only Pipedrive brief
+description: Resolve a person and organisation, record actual coverage and deliver a cited brief without changing the CRM.
+---
+
+Produce a brief that distinguishes the person you resolved, the Pipedrive records actually read and the questions those reads cannot answer. This recipe uses documented HTTP request shapes, not a Pipedrive CLI. It has not been executed against a live account; the optional Deepline adapter remains unverified in a live tenant.
+
+## 1. Establish read-first authorisation
+
+Identify the Pipedrive company account, person or organisation in scope, purpose, permitted fields and authorised audience. Check the actual connection's scopes and record visibility; another provider's scope names do not apply. A lookup does not authorise enrichment writes, reassignment, activity creation, contact export or sending.
+
+Use the [quickstart](/docs/get-started/quickstart) and [API reference](/docs/reference/pipedrive-api) for the account and adapter boundary. This recipe contains no mutations. Propose any later change separately under [safe writes](/docs/guides/safe-writes).
+
+## 2. Resolve identity with an exact key
+
+Use a supplied email, URL-encoded for the request. These examples use a reserved example address and a placeholder for the returned ID:
+
+```http
+GET /api/v2/persons/search?term=reviewer%40example.com&fields=email&exact_match=true&limit=10
+GET /api/v2/persons/{id}
+```
+
+The [official Persons reference](https://developers.pipedrive.com/docs/api/v1/Persons) documents full, case-insensitive exact matching. Compare the returned identity and organisation rather than accepting the first result. No match means “not found in the visible query results”, not “does not exist”. Multiple plausible matches require identity review, not an automatic merge.
+
+Use the person's returned `org_id` to resolve organisation context through the documented organisation API in the [API reference](/docs/reference/pipedrive-api). A person is not a Pipedrive user: `owner_id` identifies the owning user, not the contact. Resolve labels from the account rather than interpreting numeric IDs as names.
+
+## 3. Bound the related-record reads
+
+The Persons list endpoint supports `org_id` to restrict a read to an organisation's persons. Its documented pagination uses a cursor:
+
+```http
+GET /api/v2/persons?org_id={resolvedOrganizationId}&limit=100
+```
+
+Only expand this read if the task requires those additional people. Follow the response's next-page marker until the agreed coverage is complete; record any early stop. Search and list endpoints have different page limits and response shapes, so do not flatten away the metadata before inspecting it.
+
+When deals are relevant, use documented Pipedrive endpoints and explicit `person_id` or `org_id` relationships, not an invented generic association API. Record `title`, `value`, `currency`, `status`, `pipeline_id` and `stage_id` only when read. Resolve pipeline, stage and owner labels in the same account; do not infer currency from a number or commercial intent from a deal title.
+
+## 4. Read communications only within the agreed boundary
+
+Pipedrive documents a person flow and associated mail-message reads:
+
+```http
+GET /api/v1/persons/{id}/flow?start=0&limit=10
+GET /api/v1/persons/{id}/mailMessages?start=0&limit=10&include_body=0
+```
+
+These are v1 endpoints alongside v2 person reads, as shown in the [Persons reference](https://developers.pipedrive.com/docs/api/v1/Persons). Do not mechanically replace every API version segment. Flow and mail lists use `start` pagination, not the v2 cursor convention.
+
+Request message bodies only when the approved purpose requires them. A linked message list does not prove access to every inbox, a complete email history or permission to send. Record activity and message identifiers, observation times, requested date window, pages inspected and inaccessible content. A current record edited after a historical cutoff is not a snapshot of what was known then.
+
+Keep requests bounded: Pipedrive has [endpoint token costs, a daily company budget and burst limits](https://pipedrive.readme.io/docs/core-api-concepts-rate-limiting). Do not turn a missing permission or exhausted budget into an absence claim.
+
+## 5. Deliver evidence, not an account narrative
+
+| Section               | Include                                                         | Avoid                                            |
+| --------------------- | --------------------------------------------------------------- | ------------------------------------------------ |
+| Identity              | Tenant, resolved person and organisation IDs, matching evidence | Choosing by display name alone                   |
+| Current CRM context   | Fields actually read and resolved owner or stage labels         | Importing lifecycle assumptions from another CRM |
+| Recent communications | Observed IDs, dates and short factual summaries                 | Copying whole message bodies unnecessarily       |
+| Assessment            | Labelled inference tied to the observed evidence                | Invented intent, sentiment or budget             |
+| Coverage and unknowns | Read time, requested cutoff, page limits and access gaps        | Claiming a complete history from one page        |
+| Next action           | A recommendation for the authorised recipient                   | Implying the action has already happened         |
+
+A recorded promise is not a completed action without later evidence. A public review surface must omit personal contact routes and private message content. The recipe is complete when the brief and its limitations reach the authorised audience; no CRM write is required.
+
+## Source boundary
+
+The Pipedrive request shapes above come from the official API documentation, not from translated commands in the historical HubSpot skills library. The earlier library remains attributed as historical inspiration in [sources and reuse](/docs/reference/sources); it is not evidence of Pipedrive behaviour.

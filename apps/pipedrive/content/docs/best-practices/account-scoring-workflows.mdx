@@ -1,0 +1,40 @@
+---
+title: 'Make Pipedrive account scores reproducible and reviewable'
+description: 'Separate scoring inputs from outputs, version the rules and test score-to-action boundaries before CRM activation.'
+---
+
+An account score is a compact decision model. Its value comes from being reproducible: an operator should be able to take the same accepted evidence, apply the same rules and obtain the same result. Storing one unexplained number on a Pipedrive organisation hides whether the account became more attractive or merely acquired a newly populated field.
+
+Source: [Deepline account scoring workflows guide](https://deepline.com/docs/guides/account-scoring-workflows). Source read date: **2026-10-18**. This original offline implementation plan includes **no live Pipedrive execution**. Example weights, bands and acceptance rules are design recommendations, not documented HubSpot defaults or validated predictive models.
+
+## Deepline-specific guidance versus this Pipedrive adaptation
+
+The Deepline source emphasises accepted signals, workflow version, explanation and action thresholds. Its external data sources and orchestration remain Deepline-specific. The Pipedrive adaptation defines a organisation-level score contract with independent evidence quality checks. It deliberately keeps score computation separate from owner assignment and outreach.
+
+This adaptation calculates an external, versioned organisation score and publishes only reviewed summary fields. Pipedrive’s [organisation](https://developers.pipedrive.com/docs/api/v1/Organizations) and [custom-field](https://pipedrive.readme.io/docs/core-api-concepts-custom-fields) documentation establishes the destination schema, not a native equivalent of the source’s scoring engine.
+
+All `ops_` names in this guide are proposed display labels or external-ledger columns, not literal Pipedrive API keys. Resolve each approved field against the account’s [custom-field metadata](https://pipedrive.readme.io/docs/core-api-concepts-custom-fields), validate its type and option IDs, and map it to its account-specific 40-character hash. For the v2 person, organisation and deal endpoints, send mapped values inside `custom_fields`; never send an `ops_` label as a top-level payload key. Deepline integrations mentioned by the source are documented upstream, not installed or executed here. Pipedrive references were reviewed on **2026-10-20**.
+
+## Prerequisites and licensing
+
+Agree a precise business outcome, such as accepted opportunities within a fixed follow-up window. Select an untouched evaluation cohort and document how customer accounts, open opportunities and disallowed territories are handled. Identify each input's owner and freshness rule before choosing weights.
+
+Use an authorised export and review-first proposals as the baseline. Before a later integration, verify the actual Pipedrive permissions, field capacity and selected API contracts; API access, automation access, Campaigns access and provider rights are separate. This design requires no native scoring engine, custom-code workflow action or Pipedrive CLI. It does not assume that an account has any paid automation or enrichment feature.
+
+## Implementation steps
+
+1. **Create a versioned input snapshot.** Key it by account, organisation object type and record ID. Include accepted firmographics, permitted person-engagement evidence, source dates and unknown indicators. Resolve person `org_id` and deal `org_id`/`person_id` independently so a signal from one relationship does not transfer to another account accidentally.
+2. **Define the score contract.** Specify the allowed range, component weights, exclusions, stale-signal treatment and evidence required before a score can be published. Keep confidence as a separate dimension rather than simply giving unknown accounts a zero. Set a threshold boundary deliberately; a value exactly on the boundary must have one unambiguous result.
+3. **Keep output fields explanatory.** Proposed organisation display labels include `ops_fit_score`, `ops_engagement_score`, `ops_score_state`, `ops_score_version` and `ops_score_receipt_url`. Keep component contributions and rejected inputs in the external receipt. These outputs are not system-generated Pipedrive scores.
+4. **Connect a band to one action.** An illustrative high band may request seller review, a middle band may request missing research, and an unknown state may request identity repair. A high score is not permission to change user `owner_id`, create a lead or deal, or alter a deal’s `pipeline_id`/`stage_id`. If a separately approved handoff later uses stage IDs, verify that the stage belongs to the intended pipeline; do not copy IDs from another account. Put a named action owner and service expectation beside the band.
+5. **Stage a controlled rollout.** Compare candidate rules against the baseline on the same frozen inputs. Have RevOps approve the chosen version, field destinations and cohort. Before a future write, reread the company and compare input revisions; after writing the approved result, read it back. This is a conflict-detection policy, not a guarantee of atomic update semantics.
+
+## Approval boundary and failure handling
+
+No scoring feature is activated and no field is created by this plan. A later pilot requires explicit approval of the model version, publication fields and permitted downstream actions. Account ownership, qualification states, deal stages and communication eligibility stay outside the score writer's authority.
+
+Hold a score when identity is ambiguous, evidence has expired or the action is undefined. A provider error is not negative fit. Record the input revision that produced each output to prevent loops. When candidate models disagree, compare definitions and observation windows rather than treating either calculation as an authoritative native score.
+
+## Validation and monitoring
+
+Test missing inputs, contradictory data, duplicated engagement, exact thresholds, stale evidence, deterministic reruns and a rule-version change. Recalculate every fixture manually and compare the explanation as well as the total. Review accepted opportunity rate by score band over a fixed period, including coverage and unknown rates. A rising average score is not evidence of better sales outcomes. Retain the previous rule for comparison, but treat rollback as a new approved publication rather than assuming field history automatically restores the operational model. All such tests remain planned; no live account results are claimed.

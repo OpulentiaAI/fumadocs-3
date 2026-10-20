@@ -1,0 +1,45 @@
+---
+title: 'Prepare evidence-led outbound drafts in Pipedrive'
+description: 'Use person and organization context for reviewable drafts, with separate eligibility and sending approvals.'
+---
+
+Original source: [Outbound personalization workflow](https://deepline.com/docs/guides/outbound-personalization-workflow) — Deepline. Source retrieved: **2026-10-18**; source SHA-256: `d1ab8285e7f4d040cff368ee07b52696452d173e58ae3ca8849f085a96ff715a`. Pipedrive documentation checked: **2026-10-20**.
+
+This offline plan produces a reviewed draft for a resolved person, not an automatically launched campaign. No live Pipedrive execution, provider lookup or sending has occurred. This original adaptation does not reproduce source prose or code or assume redistribution rights.
+
+## Deepline-specific versus Pipedrive adaptation
+
+Deepline's research and connected-provider references describe possible execution surfaces, not installed integrations. This design uses Pipedrive persons, organizations, deals and internal activities as context. Evidence capture, suppression reconciliation, draft versioning and approval invalidation remain external application controls.
+
+The [Persons API](https://developers.pipedrive.com/docs/api/v1/Persons) supports record retrieval and updates. The [Activities API](https://developers.pipedrive.com/docs/api/v1/Activities) supports an internal review obligation. Neither proves that an email draft exists in an inbox or that a message was delivered. This guide assumes no native sequence, workflow custom-code action or sending API.
+
+## Prerequisites and feature licensing
+
+Approve the audience, research sources, permitted purpose, retention and reviewer. Check endpoint permissions and the actual account's feature availability before choosing any later mail integration. A populated address or provider confidence score is not communication authority. Keep provider rights and spend separate from Pipedrive access; no subscription purchase or provider execution is authorised by this page.
+
+## Proposed Pipedrive data model
+
+Retain company account, person ID, `name`, relevant `emails` and `org_id`. A person belongs to an organization; a matching email domain is only a candidate signal. Select a relevant deal explicitly when several exist, using its `person_id` and `org_id` rather than guessing a relationship label.
+
+Optional display labels such as `outreach_draft_status`, `outreach_draft_version` and `outreach_evidence_ref` are proposals, not API keys. Resolve their actual 40-character hashes and allowed option IDs using the [custom-field definitions](https://pipedrive.readme.io/docs/core-api-concepts-custom-fields); v2 person updates place them in `custom_fields`. Keep the full draft, evidence and exact approval revision in a controlled external store.
+
+## Practical implementation steps
+
+1. Freeze a small audience with person IDs, campaign purpose and current suppression decisions. Exclude unresolved identities, duplicate attempts and restricted customers before research.
+2. Read the person and intended organization. Capture business evidence, URL and observation date. An advertised job proves only that a role was advertised, not that budget has been approved.
+3. Separate direct facts from commercial hypotheses. Remove unsupported specifics and sensitive personal inferences instead of generating plausible filler.
+4. Bind a draft to its recipient, sender, channel and evidence revision. A changed employer invalidates the relationship assumption and prior approval; it must not silently change `org_id`.
+5. Under an approved internal-write policy, create one review activity with `subject`, `note`, `owner_id`, `due_date` and `due_time`. For v2, use a primary `participants` entry with the person's `person_id`; add `org_id` or `deal_id` only when established. Store the returned activity ID and verify it.
+6. Obtain approval of the exact message. Before any separately authorised send, recheck suppression, recent engagement and the chosen channel's current contract. An activity marked done is not a delivery receipt.
+
+## Approval boundary
+
+Administrators approve schema and permitted writes; sales approves audience and content; the appropriate compliance owner decides eligibility. No ownership change, deal movement, marketing-status override or outreach may follow incidentally from draft preparation. A refusal is a valid outcome. See the [Pipedrive API reference](/docs/reference/pipedrive-api).
+
+## Failure handling
+
+Block drafts when evidence disappears or identity conflicts. Reconcile a timed-out activity creation by its ledger and known destination IDs before creating another. Missing permissions require repair, not a broader credential. Another provider's new address must not override suppression. Keep CRM writes separate from research so one failure does not repurchase completed evidence.
+
+## Validation and operating measures
+
+Use fictional fixtures for an eligible person, opted-out person, recent engagement, disputed employer, missing evidence and repeated event. Confirm every claim has a source, revisions invalidate approval and repeated events do not duplicate activities. A future authorised pilot must inspect activity owner, due time and links. Measure accepted drafts, unsupported claims and duplicate-attempt prevention; no live conversion or compliance result is claimed.

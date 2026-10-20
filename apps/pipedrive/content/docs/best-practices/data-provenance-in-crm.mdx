@@ -1,0 +1,50 @@
+---
+title: 'Preserving field-level data provenance in Pipedrive'
+description: 'Design a Pipedrive provenance model that records evidence, freshness, field ownership and conflicts without confusing history with verification.'
+---
+
+Source: [Deepline data provenance in CRM](https://deepline.com/docs/guides/data-provenance-in-crm). Source read date: 2026-10-18.
+
+This offline implementation plan has had no live Pipedrive execution. It addresses a reporting problem that a populated field cannot solve: whether someone can explain where a value came from, when it was observed and why the business trusted it.
+
+## Deepline-specific behaviour versus Pipedrive adaptation
+
+Deepline's source frames provenance as a control around critical CRM fields and authorised writers. Its integration references do not establish that Pipedrive automatically retains a provider's supporting evidence. This adaptation recommends an external field-level evidence ledger, with concise pointers on Pipedrive records. Neither the ledger format nor the proposed completeness metric is a documented Pipedrive feature.
+
+Pipedrive documents separate field-value changelog endpoints for [persons](https://developers.pipedrive.com/docs/api/v1/Persons), [organisations](https://developers.pipedrive.com/docs/api/v1/Organizations) and [deals](https://developers.pipedrive.com/docs/api/v1/Deals). These may help investigate revisions; retrieve history through the documented endpoint rather than an invented read parameter. An integration-originated update is not proof of the external claim that prompted it.
+
+All `ops_` names in this guide are proposed display labels or external-ledger columns, not literal Pipedrive API keys. Resolve each approved field against the account’s [custom-field metadata](https://pipedrive.readme.io/docs/core-api-concepts-custom-fields), validate its type and option IDs, and map it to its account-specific 40-character hash. For the v2 person, organisation and deal endpoints, send mapped values inside `custom_fields`; never send an `ops_` label as a top-level payload key. Deepline integrations mentioned by the source are documented upstream, not installed or executed here. Pipedrive references were reviewed on **2026-10-20**.
+
+## Prerequisites and licensing
+
+Name a data steward and choose the few fields that materially affect segmentation, routing or forecasts. Secure read access to those objects and their history; request write access only for a later approved metadata rollout. Obtain provider retention and redistribution rights before saving raw evidence, especially personal data. A permission to view a CRM record does not imply permission to see every externally stored document.
+
+Use an authorised export and review-first proposals as the baseline. Before a later integration, verify the actual Pipedrive permissions, field capacity and selected API contracts; API access, automation access, Campaigns access and provider rights are separate. This design requires no native scoring engine, custom-code workflow action or Pipedrive CLI. It does not assume that an account has any paid automation or enrichment feature. Keep the secured field-level evidence ledger outside CRM.
+
+## Design the evidence model
+
+A provenance row identifies Pipedrive organisation/account ID, object type, record ID and the default field key or account-specific custom-field hash. Add source system and record identifier, observed-at, fetched-at and accepted-at times, validation decision, policy version and authorised writer. Retrieving an old estimate today does not make it current.
+
+For a company employee estimate, retain the provider's range or methodology if supplied instead of manufacturing an exact headcount. For a contact job title, record whether the contact supplied it or a third party inferred it. For a deal amount, reference the approved commercial evidence rather than replacing it with a firmographic estimate.
+
+Suggested Pipedrive custom fields include `ops_evidence_reference`, `ops_evidence_checked_at` and `ops_provenance_state`. They are proposed names, not built-ins. One record-level reference cannot fully represent every field; it should lead to a ledger that can distinguish each field. Avoid storing complete raw receipts in a long CRM text field that sales users can unintentionally expose.
+
+## Implementation steps
+
+1. **Inventory consumers.** Map each critical field to the reports, workflows and integrations that use it. Assign a steward, permitted writers, evidence requirements and a field-specific freshness window. A postal region and a buying signal need different expiry rules.
+2. **Reconstruct carefully.** Read current values and available field history. Link verifiable integration receipts to the relevant revisions. Where historical evidence is missing, label the source unknown; do not infer it merely because an enrichment app was installed at the time.
+3. **Preserve relationships.** Resolve person `org_id` and deal `person_id`/`org_id` explicitly. Use the [documented record model](https://developers.pipedrive.com/docs/api/v1/Deals) rather than unsupported relationship-label assumptions. Organisation-industry evidence belongs to its resolved organisation, not to every account that a person or participant has ever worked with.
+4. **Add prospective receipts.** Require approved writers to produce evidence before proposing a value. Record the pre-update value, decision and subsequent read-back result. Preserve rejected candidates outside the accepted-field history so they remain available for conflict review without becoming reporting inputs.
+5. **Expose useful status.** Show missing evidence, stale evidence and conflicting evidence as distinct conditions. An operator should be able to open a permission-controlled receipt and see a repair owner rather than an unexplained red flag.
+
+## Approval boundary
+
+Approve the field registry, retention schedule and source-precedence rules before backfilling metadata. Backfilling a provenance pointer is not permission to overwrite the underlying business value. Changing an owner, qualification state, deal amount or primary organisation link requires a separate decision. Legal and privacy owners should decide what external evidence may be retained and who may access it.
+
+## Failure handling
+
+If the value updates but the ledger receipt fails, mark the handoff incomplete and reconcile it; do not invent a successful audit trail. If a source disappears, retain permitted identifiers and the last verified timestamp rather than pretending the URL remains live. When two sources disagree, keep both candidates and the decision reason. Ensure revoked access does not leave a publicly accessible evidence mirror.
+
+## Validation and acceptance
+
+Build fixtures for an unknown legacy value, two conflicting sources, a fresh fetch of old evidence, a changed organisation link and a repeated receipt. Confirm that timestamps retain their meaning, access controls apply and one field's evidence cannot satisfy another field's requirement. Measure completeness at the critical-field level: accepted current values with all required evidence divided by in-scope populated field instances. Report empty fields and stale evidence separately. These checks are planned acceptance tests; no Pipedrive history or records were queried live for this guide.

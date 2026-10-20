@@ -1,0 +1,40 @@
+---
+title: 'Resolve a company domain before enriching Pipedrive'
+description: 'Turn a website into a defensible company match while preserving subsidiary ambiguity, profile evidence and employee-count definitions.'
+---
+
+A website is an input to account resolution, not a complete account identity. The same domain may represent a group, a regional operation or a product brand, while one operating company may own several domains. Resolve the business that your Pipedrive record represents before using a provider response to populate organisation fields or choose a sales segment.
+
+Source: [Deepline company-domain enrichment guide](https://deepline.com/docs/guides/company-domain-enrichment). Source read date: **2026-10-18**. This original offline implementation plan includes **no live Pipedrive execution**. Source code and source prose are not reproduced.
+
+## Deepline-specific guidance versus this Pipedrive adaptation
+
+The source distinguishes company identity from field acceptance, checks company-profile links against website evidence and preserves the meaning of employee counts. Its named enrichment providers and checked execution path are Deepline-specific. This adaptation recommends how to carry those decisions into Pipedrive organisation records without assuming that Pipedrive performs legal-entity matching.
+
+Pipedrive’s [Organizations API](https://developers.pipedrive.com/docs/api/v1/Organizations) documents organisation IDs, `name`, `website`, `owner_id` and updates. People are [persons](https://developers.pipedrive.com/docs/api/v1/Persons) linked by `org_id`; [deals](https://developers.pipedrive.com/docs/api/v1/Deals) carry their own `person_id`, `org_id`, `owner_id`, `pipeline_id` and `stage_id`. These record links do not prove legal-entity identity or authorise reassignment. The website is matching evidence, not a guaranteed unique key.
+
+All `ops_` names in this guide are proposed display labels or external-ledger columns, not literal Pipedrive API keys. Resolve each approved field against the account’s [custom-field metadata](https://pipedrive.readme.io/docs/core-api-concepts-custom-fields), validate its type and option IDs, and map it to its account-specific 40-character hash. For the v2 person, organisation and deal endpoints, send mapped values inside `custom_fields`; never send an `ops_` label as a top-level payload key. Deepline integrations mentioned by the source are documented upstream, not installed or executed here. Pipedrive references were reviewed on **2026-10-20**.
+
+## Prerequisites and licensing
+
+Start with an approved website list, existing organisation IDs where available, a definition of the target entity and provider rights covering the intended use. Obtain a maintained domain parser and preserve the submitted URL. Decide whether the sales account is the operating company, parent or region before evaluating any candidates.
+
+Use an authorised export and review-first proposals as the baseline. Before a later integration, verify the actual Pipedrive permissions, field capacity and selected API contracts; API access, automation access, Campaigns access and provider rights are separate. This design requires no native scoring engine, custom-code workflow action or Pipedrive CLI. It does not assume that an account has any paid automation or enrichment feature.
+
+## Implementation steps
+
+1. **Preserve and parse the input.** Retain the raw URL, extract the hostname and remove paths and tracking parameters from the comparison key. Keep meaningful subdomains until the identity policy permits collapsing them. Do not derive a registrable domain by taking the final two labels. Consumer email domains do not establish an employer.
+2. **Retrieve existing candidates.** Prefer a saved organisation ID and read it directly. Pipedrive [organisation search](https://developers.pipedrive.com/docs/api/v1/Organizations) supports name, address, notes and eligible custom-field types; do not invent a top-level domain filter. Match website evidence against an authorised snapshot or a deliberately configured searchable text custom field, inspect all candidates, and never interpret an empty or inaccessible result as conclusive absence.
+3. **Verify the entity and profile.** Compare the candidate website, trading name, geographic scope and provider record ID. Inspect a professional-network company profile's actual website context; do not invent a profile URL from a name. Record redirects separately because acquisitions and rebrands may connect different entities over time.
+4. **Keep field definitions intact.** Suggested custom fields `ops_domain_match_state`, `ops_company_profile_url`, `ops_employee_range` and `ops_employee_measure` retain the decision and supporting meaning; they are proposed names, not Pipedrive defaults. Store an observed range as a range. Do not average a parent's headcount with a subsidiary estimate or use a midpoint as an exact employee count.
+5. **Prepare a minimal proposal.** Pair the resolved organisation ID with accepted fields, rejected candidates, evidence dates and the original CRM snapshot. Preserve contact and deal associations. A valid profile link can be accepted while employee-based segmentation remains on hold. Any later approved update should be reread and reconciled by ID, not judged from a search result alone.
+
+## Approval boundary and failure handling
+
+A reviewer resolves multiple plausible accounts, company creation, parent/subsidiary interpretation and domain replacements. Existing owner, qualification state, merges and association changes are outside this enrichment plan. A routing decision that would move an account between teams requires separate approval even when the underlying evidence is accepted.
+
+Use different states for malformed input, unresolved identity, provider failure and field ambiguity. A failed lookup must not erase a known website or profile. For a size range spanning two routing segments, retain the uncertainty and assign a reviewer rather than selecting the first matching branch. A future timeout following an update requires direct record inspection before a retry; rereading beforehand is a useful conflict check, not an atomic lock.
+
+## Validation and operating measures
+
+Test ordinary websites, country-code suffixes, meaningful subdomains, rebrands, shared parent domains, consumer-mailbox inputs and no-match cases. Include an employee range that spans a segment threshold. Confirm that identity acceptance and field acceptance are reported separately and that rejected candidates remain inspectable. Reconcile each input to a resolved or explicit exception state. The outcome to optimise is defensible account matches and usable routing evidence, not raw field fill rate. All validation described here is a future pilot specification, not demonstrated live Pipedrive behaviour.

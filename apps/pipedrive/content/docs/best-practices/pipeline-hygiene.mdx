@@ -1,0 +1,45 @@
+---
+title: 'Review Pipedrive deal hygiene without rewriting the forecast'
+description: 'Expose stale evidence and missing next actions while protecting seller-owned deal values, dates and stages.'
+---
+
+Original source: [Pipeline hygiene: controls for deals that keep moving](https://deepline.com/docs/guides/pipeline-hygiene) — Deepline. Source retrieved: **2026-10-18**; source SHA-256: `a9a7dc8ba43fd3fe7908a0d48d5f309adc3110c1577f197b0fa706080eafbdae`. Pipedrive documentation checked: **2026-10-20**.
+
+This original offline plan includes no live Pipedrive execution, deal update or activity creation. Source licensing is unestablished; source prose and code are not reproduced. The aim is an accountable next action, not a cleaner-looking forecast produced by moving dates. An internal reminder is not proof of a buyer commitment.
+
+## Deepline-specific versus Pipedrive adaptation
+
+Deepline's orchestration and transcript extraction are separate from Pipedrive's records. This design reviews deals, persons, organizations, notes and activities and prepares narrowly approved internal work. Risk classification, stage evidence and exception ageing are policies, not native CRM judgements. Missing logged activity may mean incomplete logging, not buyer silence.
+
+## Prerequisites and feature licensing
+
+Sales leadership must define stage exit criteria, active-deal scope and overdue-commitment thresholds per sales motion. Name approvers for value, date, stage and ownership changes. Use authorised read access or an export initially; no native workflow, custom object or paid reporting feature is presumed.
+
+The [Deals API](https://developers.pipedrive.com/docs/api/v1/Deals) documents numeric `pipeline_id` and `stage_id`, `status` and archive handling. Define open/closed using status rather than a guessed stage label. Reconcile the chosen cohort explicitly: the ordinary list endpoint excludes archived deals. Follow cursor pagination and the actual endpoint filters rather than importing limits from another CRM.
+
+## Proposed Pipedrive data model
+
+Read deal `id`, `title`, `pipeline_id`, `stage_id`, `status`, `value`, `currency`, `expected_close_date`, `owner_id`, `person_id` and `org_id`. Confirm the stage belongs to the intended pipeline using account metadata. Review additional deal participants where relevant; a participant or linked person is not automatically a decision maker.
+
+Optional labels `hygiene_review_state`, `hygiene_reviewed_at`, `buyer_next_step_text` and `hygiene_evidence_ref` are [custom-field proposals](https://pipedrive.readme.io/docs/core-api-concepts-custom-fields), not built-ins. Resolve their hashes and allowed options and use the v2 `custom_fields` object. Keep detailed evidence, UTC deadlines, competing interpretations and history in an external receipt.
+
+## Practical implementation steps
+
+1. Snapshot the approved deal cohort and policy version. Include explicit statuses and archive exclusions and reconcile every page; a partial result is not the whole pipeline.
+2. Read permitted notes and activities. For every buyer commitment, retain the source and time. Mark incomplete evidence as insufficient rather than asserting silence.
+3. Evaluate missing ownership, overdue buyer commitments, stage-evidence questions, stakeholder gaps and unsupported expected-close dates separately. Preserve each reason rather than hiding them in one score.
+4. Present an exception proposal with current commercial state, evidence, next decision and reviewer. A risk flag must not change `stage_id`, `status` or forecast values.
+5. If an internal-write pilot is approved, create one [activity](https://developers.pipedrive.com/docs/api/v1/Activities) per deal/review cycle with `owner_id`, `subject`, `note`, `due_date`, `due_time` and `deal_id`. Add `org_id` or primary person participants only when independently established. Persist its ID and verify the links.
+6. Ask the seller to confirm a buyer-facing next step or explicitly state that none is agreed. Read back approved metadata and activities, and keep unresolved exceptions visible.
+
+## Approval boundary
+
+Assessment may run under a read policy. Schema changes and activities need approved write scope. The sales authority approves changes to `stage_id`, `pipeline_id`, `status`, `value`, `currency`, `expected_close_date` and `owner_id`. Never manufacture meetings, close deals as lost to clear a queue or move all expected-close dates to month end. See the [Pipedrive API reference](/docs/reference/pipedrive-api).
+
+## Failure handling
+
+Missing or inactive users go to an approved operational reviewer, not an arbitrary rep. Reconcile activity IDs after uncertain creation before retrying. Invalidate proposals when the deal changes; a pre-write read is not an atomic lock. Permissions failures and missing activities remain coverage limitations. Reserve API capacity across workers and pause on `429` under Pipedrive's [company budget and per-token burst limits](https://pipedrive.readme.io/docs/core-api-concepts-rate-limiting).
+
+## Validation and operating measures
+
+Use offline fixtures for a buyer commitment, overdue action, internal reminder without agreement, closed deal, archived exclusion, inactive owner, changed stage and concurrent edit. Confirm commercial fields remain untouched and repeated runs reuse the intended review identity. A future authorised pilot must inspect activity owner, date and deal links. Track evidenced next-step coverage, false positives and exception age; task completion does not prove buyer progress or forecast accuracy.

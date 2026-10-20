@@ -1,0 +1,61 @@
+---
+title: Sources, provenance and reuse
+description: Official Pipedrive references, historical inspiration and the limits on reusing source material.
+---
+
+Pipedrive behaviour is grounded in official developer documentation, not inferred from another CRM's commands. Historical repositories informed evidence handling and review boundaries. Source inspection does not prove live account access, provider compatibility, current campaign claims or production execution.
+
+## Official Pipedrive references
+
+| Source                                                                                      | What it establishes                                                                                        | Limit                                                                  |
+| ------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| [Persons API](https://developers.pipedrive.com/docs/api/v1/Persons)                         | Person identity, v2 reads and search, person fields, endpoint-specific pagination and related v1 resources | Account permissions and field configuration still require verification |
+| [Rate limiting](https://pipedrive.readme.io/docs/core-api-concepts-rate-limiting)           | Shared daily token budget, endpoint costs, burst limits and response handling                              | Consult current account usage and actual response headers              |
+| [Webhooks v2 migration guide](https://pipedrive.readme.io/docs/webhooks-v2-migration-guide) | `meta`, `data`, changed-field-only `previous`, custom-field and merge-event differences                    | A webhook is not a full snapshot or permission to write                |
+
+These references were read on 20 October 2026 and may change. The Persons reference URL includes `v1`, but the page documents v2 endpoints alongside remaining v1 resources. See the [API and local automation reference](/docs/reference/pipedrive-api) for the implementation boundary. No live Pipedrive read, mutation or optional Deepline adapter execution is established by these citations.
+
+## Historical inspiration and operational sources
+
+| Source                                                                                                                             | Inspected revision                         | Use in this handbook                                                                                                                        |
+| ---------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| Sponsor context showcase                                                                                                           | `662ddba58c42f28ae71d0aca1a9cbb7794ec3d26` | Historical campaign fixtures, evidence envelope, draft gates and public-safe review patterns                                                |
+| [HubSpot Agent CLI Skills](https://github.com/OpulentiaAI/hubspot-agent-cli-skills/tree/a015a48982b922279d8521677b7c72b0acfb9506)  | `a015a48982b922279d8521677b7c72b0acfb9506` | Historical inspiration for read-first CRM work, identity review and bounded change review; not a Pipedrive command source                   |
+| [I Can't Believe It's Not AGI](https://github.com/OpulentiaAI/icantbelieveitsnotagi/tree/d0ddeb2474c57a76b7f8e5e0b23385ba9c502b4c) | `d0ddeb2474c57a76b7f8e5e0b23385ba9c502b4c` | Historical setup and orchestration boundaries, described in original language                                                               |
+| Private operational source, README                                                                                                 | `ceeef602af0294ee7e36b0e18cb69622b78abaad` | Generic relationship-path, owner, dated-evidence, status and next-action controls only; reference-only, with no distribution grant verified |
+
+The private source is not bundled, quoted or made public by this handbook. No private prospect identities, budgets, contact routes, project labels or business details are reproduced. Generic safeguards include business-channel-only contact, parking uncertain identity, free research before paid access, confirmed participation before public naming, and separate project authority. A reference to its revision does not grant access or redistribution rights.
+
+## What the historical sources establish
+
+The sponsor source includes a six-key evidence envelope, compliance and owner-decision gates, a renderer that refuses blocked targets, a validator and a dashboard backed by run packets. Its client materials remain supplied claims, not independent verification. Campaign details here are attributed to text extracts and structured source packets; the PDF and PPTX were not independently re-extracted for this handbook. September 2026 campaign dates are historical, not an invitation to sell current inventory.
+
+HubSpot Agent CLI Skills is a skills collection, not a Pipedrive client or the implementation of a CLI. Its commands, edition assumptions, workflow interfaces and confirmation semantics are not portable to Pipedrive. The Pipedrive pages are an adaptation with newly written provider-specific guidance, not an upstream Pipedrive recipe or evidence of a verified adapter.
+
+The installation repository's inspected tree has three text files: a README, setup guide and macOS installer. It is a distribution wrapper, not a tracked orchestration engine. Provider consent and recurring-runner restrictions are instructions, not demonstrated runtime enforcement. The release archive and packaged runtime were not inspected or launched for this handbook.
+
+## Sponsor showcase: MIT
+
+The sponsor source includes an MIT licence. Reuse of covered software and associated documentation requires retaining the copyright and permission notice in copies or substantial portions; it is supplied without warranty. The content bundle retains `licenses/sponsor-showcase-MIT.txt`.
+
+Do not assume that licence grants rights to client decks, third-party brands, logos, personal information or external website content. Public availability does not authorise outreach. This handbook does not redistribute client decks or usable private contact routes. The [sponsor qualification recipe](/docs/recipes/sponsor-qualification) retains fixed source citations for evidence controls.
+
+## Historical HubSpot skills: Apache-2.0
+
+The original HubSpot Agent CLI Skills repository includes [Apache License 2.0](https://github.com/OpulentiaAI/hubspot-agent-cli-skills/blob/a015a48982b922279d8521677b7c72b0acfb9506/LICENSE), copyright 2026 HubSpot, Inc. Retain the licence and applicable notices when distributing copied or adapted material, mark modified files and preserve any applicable NOTICE attribution. The licence provides neither general trademark permission nor access to any CRM service.
+
+The content bundle retains the actual licence filename `licenses/hubspot-agent-cli-skills-APACHE-2.0.txt` alongside `licenses/sponsor-showcase-MIT.txt`. These are historical attribution and reuse records, not endorsements or proof of Pipedrive command compatibility. A citation alone is not a substitute for licence compliance.
+
+## Reference-only material
+
+No standalone licence file or general reuse grant was found in the historical installation repository's inspected tracked tree. Its README refers to bundled notices but does not establish rights to redistribute the app or its third-party components. Describe observed boundaries in original language; do not copy the installer or setup prose on the assumption that a public repository is openly licensed.
+
+The private operational source is likewise reference-only: no distribution grant was verified. Its useful generic controls are explained without reproducing private data or source prose. Resolve uncertain rights with the rights holder before redistributing substantial material.
+
+## Fixture and execution provenance
+
+The offline `fixtures/sponsor-crm.json` contains synthetic organisations, persons, deals and local associations. Category archetypes and package labels derive from the cited sponsor source; identities and amounts are invented. Fixture keys and associations are not live Pipedrive identifiers or API payloads. See [seed mapping](/docs/guides/seed-data).
+
+The local automation module demonstrates deterministic planning and tenant-bound approval without live writes by default. The optional Deepline adapter is documented but not live-verified. Production needs separately authorised execution, a durable replay ledger and read-back reconciliation. Passing offline tests proves only the tested local behaviour; see [safe writes](/docs/guides/safe-writes) and [local development](/docs/reference/local-development).
+
+These summaries are practical reuse guidance, not legal advice.
